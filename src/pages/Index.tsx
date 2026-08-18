@@ -1,17 +1,50 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { useState } from 'react';
+import { AuthProvider } from '@/hooks/use-auth';
+import Header from '@/components/Header';
+import Hero from '@/components/Hero';
+import Ticker from '@/components/Ticker';
+import Rooms from '@/components/Rooms';
+import ChatWindow from '@/components/ChatWindow';
+import Stats from '@/components/Stats';
+import Rules from '@/components/Rules';
+import CTA from '@/components/CTA';
+import Footer from '@/components/Footer';
+import AuthDialog from '@/components/AuthDialog';
+import ProfileDialog from '@/components/ProfileDialog';
+import { rooms } from '@/data/chat';
 
-const Index = () => {
+const PageBody = () => {
+  const [activeRoom, setActiveRoom] = useState(rooms[1].id);
+  const [profileOpen, setProfileOpen] = useState(false);
+
+  const pickRoom = (id: string) => {
+    setActiveRoom(id);
+    document.querySelector('#chat')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4 color-black text-black">Добро пожаловать!</h1>
-        <p className="text-xl text-gray-600">тут будет отображаться ваш проект</p>
-      </div>
-      <span className="absolute bottom-8 left-1/2 -translate-x-1/2 inline-block bg-[#FF6637] text-white text-sm px-4 py-2 rounded-full whitespace-nowrap">
-        Подождите 5 минут, Юра создает первую версию проекта с нуля
-      </span>
+    <div className="min-h-screen bg-background text-foreground">
+      <Header onProfile={() => setProfileOpen(true)} />
+      <main>
+        <Hero />
+        <Ticker />
+        <Rooms activeRoom={activeRoom} onPick={pickRoom} />
+        <ChatWindow activeRoom={activeRoom} onPick={setActiveRoom} />
+        <Stats />
+        <Rules />
+        <CTA />
+      </main>
+      <Footer />
+      <AuthDialog />
+      <ProfileDialog open={profileOpen} onOpenChange={setProfileOpen} />
     </div>
   );
 };
+
+const Index = () => (
+  <AuthProvider>
+    <PageBody />
+  </AuthProvider>
+);
 
 export default Index;
