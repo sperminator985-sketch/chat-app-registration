@@ -1,0 +1,27 @@
+{
+  "tests": [
+    {
+      "name": "Лента комнаты",
+      "method": "GET",
+      "path": "/?action=feed&room=kurilka",
+      "expectedStatus": 200
+    },
+    {
+      "name": "Неизвестное действие",
+      "method": "GET",
+      "path": "/?action=unknown",
+      "expectedStatus": 400,
+      "expectedBody": {"error": "string"},
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Вход с неверным ником",
+      "method": "POST",
+      "path": "/?action=login",
+      "body": {"nick": "no_such_user_zzz", "password": "12345"},
+      "expectedStatus": 401,
+      "expectedBody": {"error": "string"},
+      "bodyMatcher": "partial"
+    }
+  ]
+}

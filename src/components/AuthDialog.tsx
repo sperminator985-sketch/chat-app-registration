@@ -9,7 +9,8 @@ import { toast } from '@/hooks/use-toast';
 type Errors = { nick?: string; pass?: string; pass2?: string; agree?: string };
 
 const AuthDialog = () => {
-  const { authOpen, authTab, closeAuth, openAuth, signIn } = useAuth();
+  const { authOpen, authTab, closeAuth, openAuth, register, login } = useAuth();
+  const [busy, setBusy] = useState(false);
 
   const [nick, setNick] = useState('');
   const [pass, setPass] = useState('');
@@ -37,25 +38,33 @@ const AuthDialog = () => {
     return Object.keys(next).length === 0;
   };
 
-  const submit = (e: React.FormEvent) => {
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!validate()) return;
+    if (!validate() || busy) return;
     const chosen = rooms.find((r) => r.id === room) ?? rooms[0];
-    signIn({
-      nick: nick.trim(),
-      color,
-      status: isRegister ? 'только заселился' : 'снова в сети',
-      room: chosen.id,
-      since: isRegister ? 'сегодня' : '2019',
-    });
-    toast({
-      title: isRegister ? 'Комната твоя' : 'С возвращением',
-      description: isRegister
-        ? `Заселили на этаж ${chosen.floor} — ${chosen.title}. Ник ${nick.trim()} занят навсегда.`
-        : `Свет на этаже ${chosen.floor} горит, ${nick.trim()}.`,
-    });
-    setPass('');
-    setPass2('');
+    setBusy(true);
+    try {
+      if (isRegister) {
+        await register({ nick: nick.trim(), password: pass, color, room: chosen.id });
+        toast({
+          title: 'Комната твоя',
+          description: `Заселили на этаж ${chosen.floor} — ${chosen.title}. Ник ${nick.trim()} занят навсегда.`,
+        });
+      } else {
+        await login({ nick: nick.trim(), password: pass });
+        toast({ title: 'С возвращением', description: `Свет в общаге горит, ${nick.trim()}.` });
+      }
+      setPass('');
+      setPass2('');
+    } catch (err) {
+      toast({
+        title: 'Вахтёрша не пустила',
+        description: err instanceof Error ? err.message : 'Попробуй ещё раз',
+        variant: 'destructive',
+      });
+    } finally {
+      setBusy(false);
+    }
   };
 
   const field = 'w-full border-2 border-foreground/35 bg-input px-3 py-2.5 text-foreground outline-none transition-colors placeholder:text-muted-foreground/70 focus:border-secondary';
@@ -196,8 +205,8 @@ const AuthDialog = () => {
             </>
           )}
 
-          <button type="submit" className="btn-brut w-full">
-            {isRegister ? 'Занять комнату' : 'Войти'}
+          <button type="submit" disabled={busy} className="btn-brut w-full disabled:opacity-60">
+            {busy ? 'Секунду…' : isRegister ? 'Занять комнату' : 'Войти'}
           </button>
         </form>
       </DialogContent>

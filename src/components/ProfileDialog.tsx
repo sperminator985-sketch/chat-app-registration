@@ -12,7 +12,7 @@ type ProfileDialogProps = {
 };
 
 const ProfileDialog = ({ open, onOpenChange }: ProfileDialogProps) => {
-  const { user, updateUser, signOut } = useAuth();
+  const { user, saveProfile, signOut } = useAuth();
   const [status, setStatus] = useState('');
   const [color, setColor] = useState<NickColor>(1);
 
@@ -27,10 +27,18 @@ const ProfileDialog = ({ open, onOpenChange }: ProfileDialogProps) => {
 
   const room = rooms.find((r) => r.id === user.room) ?? rooms[0];
 
-  const save = () => {
-    updateUser({ status: status.trim() || 'молча наблюдает', color });
-    toast({ title: 'Профиль обновлён', description: 'Соседи уже видят новый цвет.' });
-    onOpenChange(false);
+  const save = async () => {
+    try {
+      await saveProfile({ status: status.trim() || 'молча наблюдает', color });
+      toast({ title: 'Профиль обновлён', description: 'Соседи уже видят новый цвет.' });
+      onOpenChange(false);
+    } catch (err) {
+      toast({
+        title: 'Не сохранилось',
+        description: err instanceof Error ? err.message : 'Попробуй ещё раз',
+        variant: 'destructive',
+      });
+    }
   };
 
   return (
