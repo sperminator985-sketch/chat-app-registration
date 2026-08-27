@@ -103,7 +103,7 @@ def handler(event: dict, context) -> dict:
             ]
             cur.execute(
                 f"SELECT nick, color, status, avatar, avatar_url FROM {SCHEMA}.users "
-                f"WHERE last_seen > NOW() - INTERVAL '5 minutes' ORDER BY last_seen DESC LIMIT 40"
+                f"WHERE last_seen > NOW() - INTERVAL '2 minutes' ORDER BY last_seen DESC LIMIT 40"
             )
             online = [
                 {'nick': r[0], 'color': r[1], 'status': r[2], 'avatar': r[3], 'avatarUrl': r[4]}
@@ -111,7 +111,7 @@ def handler(event: dict, context) -> dict:
             ]
             cur.execute(
                 f"SELECT room, COUNT(*) FROM {SCHEMA}.users "
-                f"WHERE last_seen > NOW() - INTERVAL '5 minutes' GROUP BY room"
+                f"WHERE last_seen > NOW() - INTERVAL '2 minutes' GROUP BY room"
             )
             counts = {r[0]: r[1] for r in cur.fetchall()}
             cur.execute(f"SELECT COUNT(*) FROM {SCHEMA}.users")
@@ -255,7 +255,7 @@ def handler(event: dict, context) -> dict:
             cur.execute(
                 f"SELECT u.nick, u.color, MAX(d.id) AS last_id, "
                 f"SUM(CASE WHEN d.recipient_id = {me} AND d.read_at IS NULL THEN 1 ELSE 0 END) AS unread, u.avatar, u.avatar_url, "
-                f"BOOL_OR(u.last_seen > NOW() - INTERVAL '5 minutes') AS online, "
+                f"BOOL_OR(u.last_seen > NOW() - INTERVAL '2 minutes') AS online, "
                 f"MAX(EXTRACT(EPOCH FROM (NOW() - u.last_seen))) AS ago "
                 f"FROM {SCHEMA}.direct_messages d "
                 f"JOIN {SCHEMA}.users u ON u.id = CASE WHEN d.sender_id = {me} THEN d.recipient_id ELSE d.sender_id END "
@@ -301,7 +301,7 @@ def handler(event: dict, context) -> dict:
                     'nick': other[1], 'color': other[2], 'status': other[3],
                     'avatar': other[4], 'avatarUrl': other[5],
                     'seenAgo': int(other[6]) if other[6] is not None else None,
-                    'online': other[6] is not None and other[6] < 300,
+                    'online': other[6] is not None and other[6] < 120,
                 },
                 'messages': [
                     {

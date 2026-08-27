@@ -25,7 +25,7 @@ export const useLiveStats = () => {
         )
         .catch(() => undefined);
     load();
-    const timer = window.setInterval(load, 20000);
+    const timer = window.setInterval(load, 10000);
     return () => window.clearInterval(timer);
   }, []);
 
