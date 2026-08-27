@@ -3,6 +3,7 @@ import Icon from '@/components/ui/icon';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/use-auth';
 import { nickColorClass } from '@/data/chat';
+import { useDm } from '@/hooks/use-dm';
 
 const links = [
   { href: '#etazhi', label: 'Этажи' },
@@ -18,6 +19,29 @@ const Header = ({ onProfile }: HeaderProps) => {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const { user, openAuth } = useAuth();
+  const { unread, openList } = useDm();
+
+  const mailButton = (extra?: string) => (
+    <button
+      onClick={() => {
+        setOpen(false);
+        openList();
+      }}
+      aria-label="Личные сообщения"
+      title="Личные сообщения"
+      className={cn(
+        'relative flex h-10 w-10 items-center justify-center border-2 border-foreground/40 text-foreground transition-colors hover:border-secondary hover:text-secondary',
+        extra,
+      )}
+    >
+      <Icon name="Mail" size={18} />
+      {unread > 0 && (
+        <span className="absolute -right-2 -top-2 min-w-[20px] border-2 border-foreground/40 bg-primary px-1 font-mono text-[0.68rem] font-bold leading-[16px] text-primary-foreground">
+          {unread > 99 ? '99+' : unread}
+        </span>
+      )}
+    </button>
+  );
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24);
@@ -55,13 +79,16 @@ const Header = ({ onProfile }: HeaderProps) => {
             </a>
           ))}
           {user ? (
-            <button
-              onClick={onProfile}
-              className="flex items-center gap-2 border-2 border-foreground/40 px-4 py-2 text-[0.8rem] font-semibold uppercase tracking-[0.12em] transition-colors hover:border-secondary"
-            >
-              <span className={cn('h-2 w-2', 'bg-nick-3')} />
-              <span className={nickColorClass[user.color]}>{user.nick}</span>
-            </button>
+            <>
+              {mailButton()}
+              <button
+                onClick={onProfile}
+                className="flex items-center gap-2 border-2 border-foreground/40 px-4 py-2 text-[0.8rem] font-semibold uppercase tracking-[0.12em] transition-colors hover:border-secondary"
+              >
+                <span className={cn('h-2 w-2', 'bg-nick-3')} />
+                <span className={nickColorClass[user.color]}>{user.nick}</span>
+              </button>
+            </>
           ) : (
             <>
               <button onClick={() => openAuth('login')} className="nav-link">
@@ -74,13 +101,16 @@ const Header = ({ onProfile }: HeaderProps) => {
           )}
         </nav>
 
-        <button
-          className="flex h-10 w-10 items-center justify-center border-2 border-foreground/40 text-foreground md:hidden"
-          onClick={() => setOpen((v) => !v)}
-          aria-label="Меню"
-        >
-          <Icon name={open ? 'X' : 'Menu'} size={20} />
-        </button>
+        <div className="flex items-center gap-3 md:hidden">
+          {user && mailButton()}
+          <button
+            className="flex h-10 w-10 items-center justify-center border-2 border-foreground/40 text-foreground"
+            onClick={() => setOpen((v) => !v)}
+            aria-label="Меню"
+          >
+            <Icon name={open ? 'X' : 'Menu'} size={20} />
+          </button>
+        </div>
       </div>
 
       {open && (

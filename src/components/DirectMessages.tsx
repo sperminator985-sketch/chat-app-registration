@@ -6,14 +6,11 @@ import { toast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/use-auth';
 import { api, ApiMessage } from '@/lib/api';
 import { nickColorClass, NickColor } from '@/data/chat';
+import { useDm } from '@/hooks/use-dm';
 
-type DirectMessagesProps = {
-  nick: string | null;
-  onClose: () => void;
-};
-
-const DirectMessages = ({ nick, onClose }: DirectMessagesProps) => {
+const DirectMessages = () => {
   const { user } = useAuth();
+  const { dmNick: nick, closeDm: onClose, refresh } = useDm();
   const [messages, setMessages] = useState<ApiMessage[]>([]);
   const [peer, setPeer] = useState<{ nick: string; color: NickColor; status: string } | null>(null);
   const [draft, setDraft] = useState('');
@@ -57,6 +54,7 @@ const DirectMessages = ({ nick, onClose }: DirectMessagesProps) => {
       const res = await api.dmSend({ nick, text });
       setMessages((prev) => [...prev, res.message]);
       setDraft('');
+      refresh();
     } catch (err) {
       toast({
         title: 'Записка не дошла',

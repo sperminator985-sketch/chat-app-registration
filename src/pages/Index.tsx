@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { AuthProvider } from '@/hooks/use-auth';
+import { DmProvider } from '@/hooks/use-dm';
 import Header from '@/components/Header';
 import Hero from '@/components/Hero';
 import Ticker from '@/components/Ticker';
@@ -10,6 +11,8 @@ import Rules from '@/components/Rules';
 import Footer from '@/components/Footer';
 import AuthDialog from '@/components/AuthDialog';
 import WelcomeDialog from '@/components/WelcomeDialog';
+import DialogsList from '@/components/DialogsList';
+import DirectMessages from '@/components/DirectMessages';
 import ProfileDialog from '@/components/ProfileDialog';
 import { rooms } from '@/data/chat';
 
@@ -36,6 +39,8 @@ const PageBody = () => {
       <Footer />
       <AuthDialog />
       <WelcomeDialog />
+      <DialogsList />
+      <DirectMessages />
       <ProfileDialog open={profileOpen} onOpenChange={setProfileOpen} />
     </div>
   );
@@ -43,7 +48,9 @@ const PageBody = () => {
 
 const Index = () => (
   <AuthProvider>
-    <PageBody />
+    <DmProvider>
+      <PageBody />
+    </DmProvider>
   </AuthProvider>
 );
 

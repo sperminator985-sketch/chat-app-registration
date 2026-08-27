@@ -5,7 +5,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { api, ApiMessage } from '@/lib/api';
 import { toast } from '@/hooks/use-toast';
 import { nickColorClass, roomMessages, rooms, onlineUsers as demoUsers } from '@/data/chat';
-import DirectMessages from '@/components/DirectMessages';
+import { useDm } from '@/hooks/use-dm';
 
 type ChatWindowProps = {
   activeRoom: string;
@@ -22,8 +22,7 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
   const [draft, setDraft] = useState('');
   const [sending, setSending] = useState(false);
   const [loaded, setLoaded] = useState(false);
-  const [dmNick, setDmNick] = useState<string | null>(null);
-  const [unread, setUnread] = useState<Record<string, number>>({});
+  const { unreadBy: unread, openDm } = useDm();
   const feedRef = useRef<HTMLDivElement>(null);
 
   const load = useCallback(async () => {
@@ -49,41 +48,6 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
     const el = feedRef.current;
     if (el) el.scrollTop = el.scrollHeight;
   }, [messages]);
-
-  useEffect(() => {
-    if (!user) {
-      setUnread({});
-      return;
-    }
-    const check = () =>
-      api
-        .dialogs()
-        .then((res) => {
-          const map: Record<string, number> = {};
-          res.dialogs.forEach((d) => {
-            if (d.unread > 0) map[d.nick] = d.unread;
-          });
-          setUnread(map);
-        })
-        .catch(() => undefined);
-    check();
-    const timer = window.setInterval(check, 6000);
-    return () => window.clearInterval(timer);
-  }, [user, dmNick]);
-
-  const openDm = (nick: string) => {
-    if (!user) {
-      openAuth('register');
-      return;
-    }
-    if (nick === user.nick) return;
-    setUnread((prev) => {
-      const next = { ...prev };
-      delete next[nick];
-      return next;
-    });
-    setDmNick(nick);
-  };
 
   const send = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -278,8 +242,6 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
           </aside>
         </div>
       </div>
-
-      <DirectMessages nick={dmNick} onClose={() => setDmNick(null)} />
     </section>
   );
 };
