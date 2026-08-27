@@ -24,6 +24,7 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
   const [draft, setDraft] = useState('');
   const [sending, setSending] = useState(false);
   const [loaded, setLoaded] = useState(false);
+  const [whoOpen, setWhoOpen] = useState(false);
   const { unreadBy: unread, openDm } = useDm();
   const { startCall } = useCall();
   const feedRef = useRef<HTMLDivElement>(null);
@@ -111,14 +112,29 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
                   </button>
                 ))}
               </div>
-              <button
-                onClick={signOut}
-                title="Выйти из общаги"
-                className="ml-auto flex shrink-0 items-center gap-1.5 border-2 border-foreground/35 px-2.5 py-1 text-[0.72rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground transition-colors hover:border-primary hover:text-primary"
-              >
-                <Icon name="LogOut" size={14} />
-                <span className="hidden sm:inline">Выйти</span>
-              </button>
+              <div className="ml-auto flex shrink-0 items-center gap-2">
+                <button
+                  onClick={() => setWhoOpen((v) => !v)}
+                  title="Кто в чате"
+                  className={cn(
+                    'flex items-center gap-1.5 border-2 px-2.5 py-1 text-[0.72rem] font-semibold uppercase tracking-[0.1em] transition-colors lg:hidden',
+                    whoOpen
+                      ? 'border-secondary bg-secondary text-secondary-foreground'
+                      : 'border-foreground/35 text-muted-foreground hover:border-secondary',
+                  )}
+                >
+                  <Icon name="Users" size={14} />
+                  {onlineList.length}
+                </button>
+                <button
+                  onClick={signOut}
+                  title="Выйти из общаги"
+                  className="flex items-center gap-1.5 border-2 border-foreground/35 px-2.5 py-1 text-[0.72rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground transition-colors hover:border-primary hover:text-primary"
+                >
+                  <Icon name="LogOut" size={14} />
+                  <span className="hidden sm:inline">Выйти</span>
+                </button>
+              </div>
             </div>
 
             <div
@@ -208,7 +224,7 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
             </form>
           </div>
 
-          <aside className="flex min-h-0 flex-col bg-background">
+          <aside className={cn('min-h-0 flex-col bg-background lg:flex', whoOpen ? 'flex' : 'hidden')}>
             <div className="border-b-2 border-foreground/35 px-4 py-4 text-center">
               <h3 className="text-[0.8rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
                 Кто в чате · {onlineList.length}
