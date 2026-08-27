@@ -164,14 +164,6 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
               ref={feedRef}
               className="scrollbar-brut min-h-0 flex-1 space-y-3 overflow-y-auto px-5 py-5"
             >
-              {room.id === 'sex' && (
-                <p className="flex items-start gap-2 border-2 border-primary bg-primary/10 px-3 py-2 text-[0.88rem] leading-[1.4] text-foreground">
-                  <Icon name="TriangleAlert" size={16} className="mt-0.5 shrink-0 text-primary" />
-                  Этаж 18+. Только для совершеннолетних. Без имён и фото реальных людей, без несовершеннолетних,
-                  без торговли услугами — за это выселяют сразу.
-                </p>
-              )}
-
               {!loaded && (
                 <p className="font-mono text-[0.85rem] text-muted-foreground">соединяемся с этажом…</p>
               )}
