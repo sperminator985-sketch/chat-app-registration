@@ -7,7 +7,6 @@ import Rooms from '@/components/Rooms';
 import ChatWindow from '@/components/ChatWindow';
 import Stats from '@/components/Stats';
 import Rules from '@/components/Rules';
-import CTA from '@/components/CTA';
 import Footer from '@/components/Footer';
 import AuthDialog from '@/components/AuthDialog';
 import WelcomeDialog from '@/components/WelcomeDialog';
@@ -33,7 +32,6 @@ const PageBody = () => {
         <ChatWindow activeRoom={activeRoom} onPick={setActiveRoom} />
         <Stats />
         <Rules />
-        <CTA />
       </main>
       <Footer />
       <AuthDialog />
