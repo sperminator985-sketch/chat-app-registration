@@ -9,11 +9,7 @@ const CTA = () => {
   return (
     <section className="mx-auto max-w-[1400px] px-5 py-16 md:px-10 md:py-20">
       <div className="plate origin-left -rotate-[0.8deg] px-6 py-10 md:px-12 md:py-14">
-        <h2 className="text-[clamp(2.2rem,7vw,4.4rem)] font-extrabold leading-[0.9] tracking-[-0.045em]">
-          Свободных комнат
-          <span className="block">хватит на всех</span>
-        </h2>
-        <p className="mt-5 max-w-[520px] text-[1.06rem] leading-[1.45] opacity-80">
+        <p className="max-w-[520px] text-[1.06rem] leading-[1.45] opacity-80">
           Ник, пароль, цвет — сорок секунд, и ты уже здороваешься с этажом. Ни анкет, ни паспортов, ни приглашений.
         </p>
         <div className="mt-8 flex flex-col gap-3 sm:flex-row">
