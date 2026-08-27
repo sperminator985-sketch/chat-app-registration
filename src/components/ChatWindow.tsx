@@ -79,14 +79,14 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
   const onlineList: OnlineItem[] = online.length ? online : demoUsers;
 
   return (
-    <section id="chat" className="flex min-h-screen flex-col justify-center bg-card">
+    <section id="chat" className="flex flex-col justify-center bg-card md:min-h-screen">
       <div className="mx-auto w-full max-w-[1400px] px-5 py-16 md:px-10 md:py-20">
         <h2 className="text-center text-[clamp(2rem,6vw,3.4rem)] font-extrabold leading-[0.95] tracking-[-0.035em]">
           Окно переписки
         </h2>
 
         <div className="mt-10 grid gap-px border-2 border-foreground/35 bg-foreground/25 lg:grid-cols-[1fr_280px]">
-          <div className="flex min-h-[540px] flex-col bg-background">
+          <div className="flex min-h-[400px] flex-col bg-background md:min-h-[540px]">
             <div className="flex flex-wrap items-center justify-between gap-3 border-b-2 border-foreground/35 px-5 py-4">
               <div className="flex items-center gap-3">
                 <Icon name={room.icon} size={20} className="text-secondary" />
