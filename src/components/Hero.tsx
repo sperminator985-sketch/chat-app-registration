@@ -5,7 +5,7 @@ const Hero = () => {
   const { openAuth } = useAuth();
 
   return (
-    <section id="top" className="mx-auto max-w-[1400px] overflow-hidden px-5 pb-10 pt-6 md:px-10 md:pb-12">
+    <section id="top" className="mx-auto w-full max-w-[1400px] overflow-hidden px-5 py-6 md:px-10 md:py-8">
       <div className="flex flex-col justify-center gap-2.5">
         <div className="flex animate-rise flex-col items-start gap-6 md:flex-row md:items-end md:justify-between md:gap-7">
           <h1 className="font-extrabold uppercase tracking-[-0.035em]">
