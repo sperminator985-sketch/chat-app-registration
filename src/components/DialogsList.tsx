@@ -57,7 +57,7 @@ const DialogsList = () => {
                   className="flex w-full items-center gap-3 py-3.5 pl-5 pr-16 text-left transition-colors hover:bg-muted/50"
                 >
                   <span className="relative shrink-0">
-                    <Avatar avatar={d.avatar} avatarUrl={d.avatarUrl} color={d.color} size={26} />
+                    <Avatar avatar={d.avatar} avatarUrl={d.avatarUrl} color={d.color} size={52} />
                     <span
                       className={cn(
                         'absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 border-2 border-background',
