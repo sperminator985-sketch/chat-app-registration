@@ -2,6 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import { api, CallSignal } from '@/lib/api';
 import { useAuth } from '@/hooks/use-auth';
 import { toast } from '@/hooks/use-toast';
+import { startRinging } from '@/lib/notify-sound';
 
 export type CallStatus = 'idle' | 'calling' | 'incoming' | 'active';
 
@@ -49,6 +50,20 @@ export const CallProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     statusRef.current = status;
   }, [status]);
+
+  useEffect(() => {
+    if (status !== 'incoming' && status !== 'calling') return;
+    const stop = startRinging();
+    return () => stop();
+  }, [status]);
+
+  useEffect(() => {
+    const base = document.title.replace(/^Звонит .*? · /, '');
+    if (status === 'incoming' && peerNick) document.title = `Звонит ${peerNick} · ${base}`;
+    return () => {
+      document.title = document.title.replace(/^Звонит .*? · /, '');
+    };
+  }, [status, peerNick]);
 
   useEffect(() => {
     peerRef.current = peerNick;
