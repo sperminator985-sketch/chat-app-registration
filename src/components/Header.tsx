@@ -5,6 +5,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { nickColorClass } from '@/data/chat';
 import { useDm } from '@/hooks/use-dm';
 import { useWeather, formatTemp } from '@/hooks/use-weather';
+import { useLiveStats } from '@/hooks/use-live-stats';
 import Avatar from '@/components/Avatar';
 
 const links = [
@@ -23,6 +24,7 @@ const Header = ({ onProfile }: HeaderProps) => {
   const { user, openAuth } = useAuth();
   const { unread, openList } = useDm();
   const temp = useWeather();
+  const live = useLiveStats();
 
   const mailButton = (extra?: string) => (
     <button
@@ -158,6 +160,16 @@ const Header = ({ onProfile }: HeaderProps) => {
                 градусов
               </span>
             )}
+            <span className="flex items-center gap-2 border-2 border-foreground/30 px-3 py-2 text-[0.76rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground">
+              <Icon name="Lightbulb" size={14} className="text-secondary" />
+              Свет горит на всех этажах
+              {live && (
+                <span className="ml-auto flex items-center gap-1.5 font-mono text-[1.05rem] font-bold leading-none text-secondary">
+                  <span className="h-2 w-2 animate-pulse bg-secondary" />
+                  {live.online}
+                </span>
+              )}
+            </span>
             {links.map((l) => (
               <a key={l.href} href={l.href} onClick={go(l.href)} className="nav-link">
                 {l.label}
