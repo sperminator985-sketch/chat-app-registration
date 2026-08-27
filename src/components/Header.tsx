@@ -79,13 +79,19 @@ const Header = ({ onProfile }: HeaderProps) => {
       )}
     >
       <div className="mx-auto flex max-w-[1400px] items-center justify-between gap-4 rule-bottom px-5 py-4 md:px-10">
-        <a
-          href="#top"
-          onClick={go('#top')}
-          className="font-display text-base font-extrabold tracking-[0.06em] text-foreground md:text-lg"
-        >
-          ОБЩАГА<span className="text-secondary">.</span>ТОМСК
-        </a>
+        {user ? (
+          <span className="font-display text-base font-extrabold tracking-[0.06em] text-foreground md:text-lg">
+            ОБЩАГА<span className="text-secondary">.</span>ТОМСК
+          </span>
+        ) : (
+          <a
+            href="#top"
+            onClick={go('#top')}
+            className="font-display text-base font-extrabold tracking-[0.06em] text-foreground md:text-lg"
+          >
+            ОБЩАГА<span className="text-secondary">.</span>ТОМСК
+          </a>
+        )}
 
         {temp !== null && (
           <span className="hidden items-center gap-2 border-2 border-foreground/30 px-3 py-1.5 text-[0.76rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground lg:flex">
