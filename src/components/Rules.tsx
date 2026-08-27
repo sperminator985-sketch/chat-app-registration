@@ -12,8 +12,7 @@ const Rules = () => (
     <div className="mx-auto grid w-full max-w-[1400px] gap-12 px-5 py-16 md:px-10 md:py-20 lg:grid-cols-[1fr_420px]">
       <div>
         <h2 className="text-[clamp(2rem,6vw,3.4rem)] font-extrabold leading-[0.95] tracking-[-0.035em]">
-          Правила
-          <span className="block text-primary">общаги</span>
+          Правила <span className="text-primary">общаги</span>
         </h2>
         <p className="mt-4 max-w-[460px] text-[1.02rem] leading-[1.45] text-muted-foreground">
           Их немного, и они простые. Нарушишь — вахтёрша Зина напомнит, второй раз напоминать не будет.
