@@ -97,7 +97,7 @@ export const DmProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     refresh();
     if (!user) return;
-    const timer = window.setInterval(refresh, 6000);
+    const timer = window.setInterval(refresh, 15000);
     return () => window.clearInterval(timer);
   }, [user, refresh, dmNick]);
 

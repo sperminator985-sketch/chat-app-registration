@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 
-const WEATHER_URL = 'https://functions.poehali.dev/2c6a74d1-2f8a-481c-ac3e-49927c9727a9';
+const WEATHER_URL =
+  'https://api.open-meteo.com/v1/forecast?latitude=56.4977&longitude=84.9744&current=temperature_2m&timezone=Asia%2FTomsk';
 
 export const useWeather = () => {
   const [temp, setTemp] = useState<number | null>(null);
@@ -8,7 +9,10 @@ export const useWeather = () => {
   useEffect(() => {
     fetch(WEATHER_URL)
       .then((r) => r.json())
-      .then((d) => setTemp(typeof d.temp === 'number' ? d.temp : null))
+      .then((d) => {
+        const t = d?.current?.temperature_2m;
+        setTemp(typeof t === 'number' ? Math.round(t) : null);
+      })
       .catch(() => undefined);
   }, []);
 

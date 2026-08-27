@@ -44,7 +44,7 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
   useEffect(() => {
     setLoaded(false);
     load();
-    const timer = window.setInterval(load, 4000);
+    const timer = window.setInterval(load, 8000);
     return () => window.clearInterval(timer);
   }, [load]);
 
@@ -249,7 +249,10 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
                     )}
                     <button
                       type="button"
-                      onClick={() => openDm(u.nick)}
+                      onClick={() => {
+                        setWhoOpen(false);
+                        openDm(u.nick);
+                      }}
                       disabled={isMe}
                       className="w-full px-4 py-3 text-left transition-colors hover:bg-muted/50 disabled:cursor-default disabled:hover:bg-transparent"
                     >

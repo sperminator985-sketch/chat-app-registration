@@ -293,7 +293,7 @@ export const CallProvider = ({ children }: { children: ReactNode }) => {
       }
     };
     poll();
-    const timer = window.setInterval(poll, 2500);
+    const timer = window.setInterval(poll, 5000);
     return () => {
       stop = true;
       window.clearInterval(timer);

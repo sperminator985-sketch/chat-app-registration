@@ -388,8 +388,13 @@ def handler(event: dict, context) -> dict:
             ]})
 
         if method == 'POST' and action == 'logout':
+            me = get_user_by_token(cur, token) if token else None
+            if me:
+                cur.execute(
+                    f"UPDATE {SCHEMA}.users SET last_seen = NOW() - INTERVAL '1 hour' WHERE id = {me['id']}"
+                )
             if token:
-                cur.execute(f"UPDATE {SCHEMA}.sessions SET user_id = user_id WHERE token = '{esc(token)}'")
+                cur.execute(f"DELETE FROM {SCHEMA}.sessions WHERE token = '{esc(token)}'")
             return respond(200, {'ok': True})
 
         return respond(400, {'error': 'Неизвестное действие'})

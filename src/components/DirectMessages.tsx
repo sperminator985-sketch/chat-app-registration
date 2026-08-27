@@ -40,7 +40,7 @@ const DirectMessages = () => {
     setLoaded(false);
     setMessages([]);
     load();
-    const timer = window.setInterval(load, 4000);
+    const timer = window.setInterval(load, 8000);
     return () => window.clearInterval(timer);
   }, [nick, load]);
 
