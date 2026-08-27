@@ -16,7 +16,7 @@ const Stats = () => {
           value: String(live.dayMessages),
           label: `${plural(live.dayMessages, 'сообщение за сутки', 'сообщения за сутки', 'сообщений за сутки')}`,
         },
-        stats[1],
+        stats[3],
       ]
     : stats;
 
