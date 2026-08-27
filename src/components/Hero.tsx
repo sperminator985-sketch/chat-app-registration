@@ -7,13 +7,13 @@ const Hero = () => {
   return (
     <section id="top" className="mx-auto w-full max-w-[1400px] overflow-hidden px-5 py-6 md:px-10 md:py-8">
       <div className="flex flex-col justify-center gap-2.5">
-        <div className="flex animate-rise flex-col items-start gap-6 md:flex-row md:items-start md:justify-between md:gap-7">
-          <h1 className="mt-[38px] flex min-w-0 flex-wrap items-center gap-x-4 gap-y-2 font-extrabold uppercase tracking-[-0.035em] sm:flex-nowrap">
-            <span className="whitespace-nowrap text-[clamp(2rem,6vw,5.8rem)] leading-[.92] text-foreground">
+        <div className="flex animate-rise flex-col items-center gap-6 md:flex-row md:items-start md:justify-between md:gap-7">
+          <h1 className="mt-[38px] flex min-w-0 flex-nowrap items-center justify-center gap-x-2 font-extrabold uppercase tracking-[-0.035em] md:justify-start md:gap-x-4">
+            <span className="whitespace-nowrap text-[clamp(1.5rem,7vw,5.8rem)] leading-[.92] text-foreground">
               ЧАТ<b className="font-extrabold text-primary"> —</b>
             </span>
-            <span className="plate inline-block w-fit max-w-full origin-left -rotate-[1.1deg] px-5 pb-4 pt-2">
-              <span className="block whitespace-nowrap text-[clamp(1.8rem,5.4vw,5.2rem)] leading-[.9] tracking-[-0.045em]">
+            <span className="plate inline-block w-fit max-w-full origin-center -rotate-[1.1deg] px-3 pb-3 pt-1.5 md:origin-left md:px-5 md:pb-4 md:pt-2">
+              <span className="block whitespace-nowrap text-[clamp(1.35rem,6.4vw,5.2rem)] leading-[.9] tracking-[-0.045em]">
                 ОБЩАГА
               </span>
             </span>
