@@ -11,6 +11,20 @@ type RoomsProps = {
 const Rooms = ({ activeRoom, onPick }: RoomsProps) => {
   const live = useLiveStats();
 
+  const hottest = (() => {
+    if (!live) return null;
+    let best: string | null = null;
+    let max = 0;
+    rooms.forEach((r) => {
+      const c = live.roomCounts[r.id] ?? 0;
+      if (c > max) {
+        max = c;
+        best = r.id;
+      }
+    });
+    return max >= 2 ? best : null;
+  })();
+
   return (
   <section id="etazhi" className="mx-auto max-w-[1400px] px-5 py-16 md:px-10 md:py-20">
     <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
@@ -27,16 +41,27 @@ const Rooms = ({ activeRoom, onPick }: RoomsProps) => {
       {rooms.map((room, i) => {
         const active = room.id === activeRoom;
         const count = live ? (live.roomCounts[room.id] ?? 0) : null;
+        const hot = room.id === hottest;
         return (
           <button
             key={room.id}
             onClick={() => onPick(room.id)}
             style={{ animationDelay: `${i * 60}ms` }}
             className={cn(
-              'group animate-fade-in flex flex-col items-start gap-3 p-6 text-left transition-colors duration-200',
-              active ? 'bg-secondary text-secondary-foreground' : 'bg-card text-card-foreground hover:bg-muted',
+              'group animate-fade-in relative flex flex-col items-start gap-3 p-6 text-left transition-colors duration-200',
+              active
+                ? 'bg-secondary text-secondary-foreground'
+                : hot
+                  ? 'bg-card text-card-foreground ring-2 ring-inset ring-primary hover:bg-muted'
+                  : 'bg-card text-card-foreground hover:bg-muted',
             )}
           >
+            {hot && !active && (
+              <span className="absolute right-0 top-0 flex items-center gap-1 bg-primary px-2 py-1 font-mono text-[0.66rem] font-bold uppercase tracking-[0.1em] text-primary-foreground">
+                <Icon name="Flame" size={11} />
+                Тут жизнь
+              </span>
+            )}
             <div className="flex w-full items-center justify-between">
               <span
                 className={cn(
@@ -46,7 +71,11 @@ const Rooms = ({ activeRoom, onPick }: RoomsProps) => {
               >
                 {room.floor}
               </span>
-              <Icon name={room.icon} size={22} className={active ? 'opacity-70' : 'text-muted-foreground'} />
+              <Icon
+                name={room.icon}
+                size={22}
+                className={cn(active ? 'opacity-70' : 'text-muted-foreground', hot && !active && 'opacity-0')}
+              />
             </div>
 
             <h3 className="font-display text-xl font-extrabold uppercase tracking-[-0.02em]">{room.title}</h3>
