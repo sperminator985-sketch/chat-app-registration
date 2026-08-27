@@ -17,7 +17,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 }
 
 const ROOMS = ['kuhnya', 'kurilka', 'baraholka', 'ucheba', 'tomsk', 'znakomstva', 'flirt', 'sex', 'noch'];
-const ONLINE_SEC = 120;
+const ONLINE_SEC = 45;
 const OWNER_NICK = 'админ';
 
 function out(int $code, array $payload): void
@@ -133,6 +133,11 @@ try {
             fail(400, 'Неизвестная комната');
         }
 
+        $viewer = currentUser();
+        if ($viewer) {
+            touch_user($viewer['id'], param('here') === '1' ? $room : null);
+        }
+
         $rows = q(
             'SELECT * FROM messages WHERE room = ? AND hidden_at IS NULL ORDER BY id DESC LIMIT 60',
             [$room]
@@ -239,6 +244,15 @@ try {
         q('INSERT INTO sessions (token, user_id, created_at) VALUES (?, ?, UTC_TIMESTAMP())', [$new, $user['id']]);
         touch_user($user['id']);
         out(200, ['user' => $user, 'token' => $new]);
+    }
+
+    // --- Ушёл из вкладки: снимаем с онлайна ---
+    if ($method === 'POST' && $action === 'away') {
+        $user = currentUser();
+        if ($user) {
+            q('UPDATE users SET last_seen = UTC_TIMESTAMP() - INTERVAL 1 HOUR WHERE id = ?', [$user['id']]);
+        }
+        out(200, ['ok' => true]);
     }
 
     // --- Выход ---

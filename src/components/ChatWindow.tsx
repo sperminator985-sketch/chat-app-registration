@@ -3,7 +3,7 @@ import Icon from '@/components/ui/icon';
 import { cn } from '@/lib/utils';
 import { usePolling } from '@/hooks/use-polling';
 import { useAuth } from '@/hooks/use-auth';
-import { api, ApiMessage } from '@/lib/api';
+import { getToken, api, ApiMessage } from '@/lib/api';
 import { toast } from '@/hooks/use-toast';
 import { nickColorClass, rooms } from '@/data/chat';
 import { useDm } from '@/hooks/use-dm';
@@ -32,7 +32,7 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
 
   const load = useCallback(async () => {
     try {
-      const data = await api.feed(room.id);
+      const data = await api.feed(room.id, true);
       setMessages(data.messages);
       setOnline(data.online);
     } catch {
@@ -47,6 +47,20 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
   }, [room.id]);
 
   usePolling(load, 15000);
+
+  useEffect(() => {
+    const onHide = () => {
+      if (document.visibilityState === 'hidden' && getToken()) {
+        api.away().catch(() => undefined);
+      }
+    };
+    document.addEventListener('visibilitychange', onHide);
+    window.addEventListener('pagehide', onHide);
+    return () => {
+      document.removeEventListener('visibilitychange', onHide);
+      window.removeEventListener('pagehide', onHide);
+    };
+  }, []);
 
   useEffect(() => {
     const el = feedRef.current;

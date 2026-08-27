@@ -148,7 +148,9 @@ const request = async <T>(action: string, options: { method?: string; body?: unk
 };
 
 export const api = {
-  feed: (room: string) => request<FeedResponse>('feed', { query: `&room=${room}` }),
+  feed: (room: string, here = false) =>
+    request<FeedResponse>('feed', { query: `&room=${room}${here ? '&here=1' : ''}` }),
+  away: () => request<{ ok: boolean }>('away', { method: 'POST' }),
   me: () => request<{ user: ApiUser }>('me'),
   register: (body: { nick: string; password: string; color: number; room: string; avatar: number }) =>
     request<{ user: ApiUser; token: string }>('register', { method: 'POST', body }),
