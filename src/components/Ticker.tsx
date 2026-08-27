@@ -44,7 +44,7 @@ const Ticker = () => {
             {items.map((t) => (
               <span
                 key={`${pass}-${t}`}
-                className="flex items-center gap-6 px-6 font-display text-sm font-extrabold uppercase tracking-[0.08em] text-foreground"
+                className="flex items-center gap-4 px-4 font-display text-[0.72rem] font-extrabold uppercase tracking-[0.06em] text-foreground md:gap-6 md:px-6 md:text-sm md:tracking-[0.08em]"
               >
                 {t}
                 <span className="h-2 w-2 bg-primary" />
