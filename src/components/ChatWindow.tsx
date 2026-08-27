@@ -83,18 +83,18 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
   if (!user) return null;
 
   return (
-    <section id="chat" className="flex h-[calc(100vh-4.5rem)] flex-col bg-card">
+    <section id="chat" className="flex min-h-[calc(100vh-4.5rem)] flex-col bg-card lg:h-[calc(100vh-4.5rem)] lg:min-h-0">
       <div className="mx-auto flex w-full max-w-[1400px] flex-1 flex-col px-3 py-4 md:px-6 md:py-6">
         <div className="grid flex-1 gap-px border-2 border-foreground/35 bg-foreground/25 lg:grid-cols-[1fr_280px]">
           <div className="flex min-h-0 flex-col bg-background">
-            <div className="flex flex-wrap items-center gap-3 border-b-2 border-foreground/35 px-5 py-4">
-              <div className="flex items-center gap-3">
-                <Icon name={room.icon} size={20} className="text-secondary" />
-                <span className="font-display text-lg font-extrabold uppercase tracking-[-0.02em]">
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-2 border-b-2 border-foreground/35 px-4 py-3 md:px-5 md:py-4">
+              <div className="flex min-w-0 items-center gap-2 md:gap-3">
+                <Icon name={room.icon} size={20} className="shrink-0 text-secondary" />
+                <span className="truncate font-display text-base font-extrabold uppercase tracking-[-0.02em] md:text-lg">
                   Этаж {room.floor} · {room.title}
                 </span>
               </div>
-              <div className="mx-auto flex items-center gap-2">
+              <div className="order-last flex w-full items-center justify-center gap-1.5 md:order-none md:mx-auto md:w-auto md:gap-2">
                 {rooms.map((r) => (
                   <button
                     key={r.id}
@@ -114,7 +114,7 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
               <button
                 onClick={signOut}
                 title="Выйти из общаги"
-                className="flex shrink-0 items-center gap-1.5 border-2 border-foreground/35 px-2.5 py-1 text-[0.72rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground transition-colors hover:border-primary hover:text-primary"
+                className="ml-auto flex shrink-0 items-center gap-1.5 border-2 border-foreground/35 px-2.5 py-1 text-[0.72rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground transition-colors hover:border-primary hover:text-primary"
               >
                 <Icon name="LogOut" size={14} />
                 <span className="hidden sm:inline">Выйти</span>
