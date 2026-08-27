@@ -50,10 +50,15 @@ const AuthDialog = () => {
         toast({
           title: 'Комната твоя',
           description: `Заселили на этаж ${chosen.floor} — ${chosen.title}. Ник ${nick.trim()} занят навсегда.`,
+          variant: 'success',
         });
       } else {
         await login({ nick: nick.trim(), password: pass });
-        toast({ title: 'С возвращением', description: `Свет в общаге горит, ${nick.trim()}.` });
+        toast({
+          title: 'С возвращением',
+          description: `Свет в общаге горит, ${nick.trim()}.`,
+          variant: 'success',
+        });
       }
       setPass('');
       setPass2('');
