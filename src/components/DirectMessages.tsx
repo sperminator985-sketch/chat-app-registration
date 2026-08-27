@@ -109,13 +109,24 @@ const DirectMessages = () => {
                 <p
                   key={m.id}
                   className={cn(
-                    'flex items-center gap-2 border-l-2 bg-muted/50 px-3 py-2 font-mono text-[0.8rem] uppercase tracking-[0.06em]',
+                    'flex flex-wrap items-center gap-2 border-l-2 bg-muted/50 px-3 py-2 font-mono text-[0.8rem] uppercase tracking-[0.06em]',
                     missed ? 'border-primary text-primary' : 'border-secondary text-muted-foreground',
                   )}
                 >
                   <Icon name={missed ? 'PhoneMissed' : 'Video'} size={14} className="shrink-0" />
                   {m.text}
                   <span className="ml-auto text-[0.72rem] normal-case">{m.time}</span>
+                  {nick && (
+                    <button
+                      type="button"
+                      onClick={() => startCall(nick)}
+                      title="Перезвонить"
+                      className="flex shrink-0 items-center gap-1 border-2 border-current px-1.5 py-0.5 text-[0.7rem] font-semibold uppercase tracking-[0.06em] transition-colors hover:bg-current/10"
+                    >
+                      <Icon name="Video" size={12} />
+                      Перезвонить
+                    </button>
+                  )}
                 </p>
               );
             }
