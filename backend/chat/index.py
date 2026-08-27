@@ -8,7 +8,7 @@ from datetime import datetime
 import psycopg2
 
 SCHEMA = 't_p16512527_chat_app_registratio'
-ROOMS = ['kuhnya', 'kurilka', 'baraholka', 'ucheba', 'tomsk', 'flirt', 'sex', 'noch']
+ROOMS = ['kuhnya', 'kurilka', 'baraholka', 'ucheba', 'tomsk', 'znakomstva', 'flirt', 'sex', 'noch']
 NICK_RE = re.compile(r'^[a-zA-Zа-яА-ЯёЁ0-9_]{3,18}$')
 
 CORS = {
