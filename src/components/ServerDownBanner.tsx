@@ -6,8 +6,14 @@ import { cn } from '@/lib/utils';
 const ServerDownBanner = () => {
   const [down, setDown] = useState(isServerDown());
   const [checking, setChecking] = useState(false);
+  const [hidden, setHidden] = useState(false);
 
-  useEffect(() => onServerStatus(setDown), []);
+  useEffect(() =>
+    onServerStatus((v) => {
+      setDown(v);
+      if (!v) setHidden(false);
+    }),
+  []);
 
   useEffect(() => {
     if (!down) return;
@@ -31,7 +37,7 @@ const ServerDownBanner = () => {
     }
   };
 
-  if (!down) return null;
+  if (!down || hidden) return null;
 
   return (
     <div className="border-b-2 border-foreground/35 bg-primary px-4 py-1.5 text-primary-foreground md:px-5 md:py-3">
@@ -53,6 +59,14 @@ const ServerDownBanner = () => {
         >
           <Icon name="RefreshCw" size={13} className={checking ? 'animate-spin' : undefined} />
           <span className="hidden sm:inline">{checking ? 'Проверяю' : 'Обновить'}</span>
+        </button>
+        <button
+          onClick={() => setHidden(true)}
+          aria-label="Закрыть"
+          title="Закрыть"
+          className="flex h-7 w-7 shrink-0 items-center justify-center border-2 border-primary-foreground/60 transition-colors hover:bg-primary-foreground hover:text-primary md:h-8 md:w-8"
+        >
+          <Icon name="X" size={14} />
         </button>
       </div>
     </div>
