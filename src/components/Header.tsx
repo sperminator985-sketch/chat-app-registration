@@ -65,21 +65,35 @@ const Header = ({ onProfile }: HeaderProps) => {
     e.preventDefault();
     setOpen(false);
 
-    const scroll = () => {
-      if (href === '#top') {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        return;
-      }
+    const targetTop = () => {
       const el = document.querySelector(href);
-      if (!el) return;
+      if (!el) return null;
       const offset = parseFloat(
         getComputedStyle(document.documentElement).getPropertyValue('--top-offset') || '0',
       );
-      const top = el.getBoundingClientRect().top + window.scrollY - (offset || 0);
-      window.scrollTo({ top: Math.max(top, 0), behavior: 'smooth' });
+      return Math.max(el.getBoundingClientRect().top + window.scrollY - (offset || 0), 0);
     };
 
-    requestAnimationFrame(() => requestAnimationFrame(scroll));
+    const scroll = (behavior: ScrollBehavior) => {
+      if (href === '#top') {
+        window.scrollTo({ top: 0, behavior });
+        return;
+      }
+      const top = targetTop();
+      if (top !== null) window.scrollTo({ top, behavior });
+    };
+
+    requestAnimationFrame(() =>
+      requestAnimationFrame(() => {
+        scroll('smooth');
+        window.setTimeout(() => {
+          const top = href === '#top' ? 0 : targetTop();
+          if (top !== null && Math.abs(window.scrollY - top) > 4) {
+            window.scrollTo({ top, behavior: 'auto' });
+          }
+        }, 600);
+      }),
+    );
   };
 
   return (
