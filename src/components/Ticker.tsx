@@ -1,4 +1,5 @@
 import { useWeather, formatTemp } from '@/hooks/use-weather';
+import { useLiveStats } from '@/hooks/use-live-stats';
 
 const base = [
   'КТО ИДЁТ ЗА ХЛЕБОМ',
@@ -11,6 +12,15 @@ const base = [
 
 const Ticker = () => {
   const temp = useWeather();
+  const live = useLiveStats();
+
+  const plural = (n: number, one: string, few: string, many: string) => {
+    const m10 = n % 10;
+    const m100 = n % 100;
+    if (m10 === 1 && m100 !== 11) return one;
+    if (m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14)) return few;
+    return many;
+  };
 
   const weatherLine =
     temp === null
@@ -19,7 +29,12 @@ const Ticker = () => {
         ? `ЗА ОКНОМ ${formatTemp(temp)}, ОДЕНЬТЕСЬ КАК ЛЮДИ`
         : `ЗА ОКНОМ ${formatTemp(temp)} ГРАДУСОВ`;
 
-  const items = [base[0], base[1], weatherLine, base[2], base[3], base[4], base[5]];
+  const liveLine =
+    live && live.online > 0
+      ? `СЕЙЧАС В ЧАТЕ ${live.online} ${plural(live.online, 'ЖИЛЕЦ', 'ЖИЛЬЦА', 'ЖИЛЬЦОВ')}`
+      : 'ЭТАЖИ ПУСТЫЕ — ЗАХОДИ ПЕРВЫМ';
+
+  const items = [liveLine, base[0], base[1], weatherLine, base[2], base[3], base[4], base[5]];
 
   return (
     <div className="overflow-hidden border-y-2 border-foreground/35 bg-card py-3">
