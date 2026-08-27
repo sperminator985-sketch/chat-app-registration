@@ -87,8 +87,16 @@ const Header = ({ onProfile }: HeaderProps) => {
 
         {temp !== null && (
           <span className="hidden items-center gap-2 border-2 border-foreground/30 px-3 py-1.5 text-[0.76rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground lg:flex">
-            <Icon name={temp <= 0 ? 'Snowflake' : 'Sun'} size={14} className="text-secondary" />
-            Сейчас за окном {formatTemp(temp)} градусов
+            <Icon
+              name={temp <= 0 ? 'Snowflake' : 'Sun'}
+              size={14}
+              className={temp < 0 ? 'text-primary' : 'text-secondary'}
+            />
+            Сейчас за окном{' '}
+            <span className={cn('text-[1.05rem] font-bold', temp < 0 ? 'text-primary' : 'text-secondary')}>
+              {formatTemp(temp)}
+            </span>{' '}
+            градусов
           </span>
         )}
 
