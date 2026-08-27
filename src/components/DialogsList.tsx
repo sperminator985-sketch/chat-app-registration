@@ -5,7 +5,7 @@ import { useDm } from '@/hooks/use-dm';
 import { nickColorClass } from '@/data/chat';
 
 const DialogsList = () => {
-  const { listOpen, closeList, dialogs, openDm } = useDm();
+  const { listOpen, closeList, dialogs, openDm, soundOn, toggleSound } = useDm();
 
   return (
     <Dialog open={listOpen} onOpenChange={(open) => !open && closeList()}>
@@ -15,6 +15,20 @@ const DialogsList = () => {
           <p className="font-display text-lg font-extrabold uppercase leading-none tracking-[-0.02em]">
             Личные сообщения
           </p>
+          <button
+            type="button"
+            onClick={toggleSound}
+            title={soundOn ? 'Выключить звук уведомлений' : 'Включить звук уведомлений'}
+            className={cn(
+              'ml-auto flex items-center gap-1.5 border-2 px-2.5 py-1.5 text-[0.74rem] font-semibold uppercase tracking-[0.1em] transition-colors',
+              soundOn
+                ? 'border-secondary text-secondary'
+                : 'border-foreground/30 text-muted-foreground hover:border-secondary',
+            )}
+          >
+            <Icon name={soundOn ? 'Volume2' : 'VolumeX'} size={14} />
+            {soundOn ? 'Звук' : 'Тихо'}
+          </button>
         </div>
 
         {dialogs.length === 0 ? (

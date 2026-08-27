@@ -1,6 +1,8 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, ReactNode } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, ReactNode } from 'react';
 import { api } from '@/lib/api';
 import { useAuth } from '@/hooks/use-auth';
+import { toast } from '@/hooks/use-toast';
+import { playKnock } from '@/lib/notify-sound';
 import type { NickColor } from '@/data/chat';
 
 export type Dialog = { nick: string; color: NickColor; unread: number };
@@ -16,6 +18,8 @@ type DmState = {
   openList: () => void;
   closeList: () => void;
   refresh: () => void;
+  soundOn: boolean;
+  toggleSound: () => void;
 };
 
 const DmContext = createContext<DmState | null>(null);
@@ -25,15 +29,60 @@ export const DmProvider = ({ children }: { children: ReactNode }) => {
   const [dialogs, setDialogs] = useState<Dialog[]>([]);
   const [dmNick, setDmNick] = useState<string | null>(null);
   const [listOpen, setListOpen] = useState(false);
+  const [soundOn, setSoundOn] = useState(() => localStorage.getItem('obshaga_sound') !== 'off');
+  const seenRef = useRef<Record<string, number> | null>(null);
+  const soundRef = useRef(soundOn);
+  const openNickRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    soundRef.current = soundOn;
+  }, [soundOn]);
+
+  useEffect(() => {
+    openNickRef.current = dmNick;
+  }, [dmNick]);
+
+  const toggleSound = useCallback(() => {
+    setSoundOn((prev) => {
+      localStorage.setItem('obshaga_sound', prev ? 'off' : 'on');
+      return !prev;
+    });
+  }, []);
 
   const refresh = useCallback(() => {
     if (!user) {
       setDialogs([]);
+      seenRef.current = null;
       return;
     }
     api
       .dialogs()
-      .then((res) => setDialogs(res.dialogs))
+      .then((res) => {
+        const current: Record<string, number> = {};
+        res.dialogs.forEach((d) => {
+          current[d.nick] = d.unread;
+        });
+
+        const prev = seenRef.current;
+        if (prev) {
+          const fresh = res.dialogs.filter(
+            (d) => d.unread > (prev[d.nick] ?? 0) && d.nick !== openNickRef.current,
+          );
+          if (fresh.length > 0) {
+            if (soundRef.current) playKnock();
+            const first = fresh[0];
+            toast({
+              title: `Стук в дверь: ${first.nick}`,
+              description:
+                fresh.length > 1
+                  ? `Новые записки ещё от ${fresh.length - 1} соседей. Открой конверт в шапке.`
+                  : 'Новая записка в личке. Открой конверт в шапке.',
+            });
+          }
+        }
+        seenRef.current = current;
+        setDialogs(res.dialogs);
+      })
       .catch(() => undefined);
   }, [user]);
 
@@ -80,8 +129,11 @@ export const DmProvider = ({ children }: { children: ReactNode }) => {
   const unread = useMemo(() => dialogs.reduce((sum, d) => sum + d.unread, 0), [dialogs]);
 
   const value = useMemo(
-    () => ({ dialogs, unread, unreadBy, dmNick, listOpen, openDm, closeDm, openList, closeList, refresh }),
-    [dialogs, unread, unreadBy, dmNick, listOpen, openDm, closeDm, openList, closeList, refresh],
+    () => ({
+      dialogs, unread, unreadBy, dmNick, listOpen,
+      openDm, closeDm, openList, closeList, refresh, soundOn, toggleSound,
+    }),
+    [dialogs, unread, unreadBy, dmNick, listOpen, openDm, closeDm, openList, closeList, refresh, soundOn, toggleSound],
   );
 
   return <DmContext.Provider value={value}>{children}</DmContext.Provider>;
