@@ -9,6 +9,17 @@ const ServerDownBanner = () => {
 
   useEffect(() => onServerStatus(setDown), []);
 
+  useEffect(() => {
+    if (!down) return;
+    const timer = window.setInterval(() => {
+      api
+        .feed('kurilka')
+        .then(() => window.location.reload())
+        .catch(() => undefined);
+    }, 30000);
+    return () => window.clearInterval(timer);
+  }, [down]);
+
   const retry = async () => {
     if (checking) return;
     setChecking(true);
