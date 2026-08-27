@@ -29,6 +29,7 @@ const AdminPanel = () => {
   const [room, setRoom] = useState('');
   const [busy, setBusy] = useState(false);
   const [search, setSearch] = useState('');
+  const [filter, setFilter] = useState<'all' | 'banned' | 'online'>('all');
   const [denied, setDenied] = useState(false);
 
   const loadUsers = useCallback(async () => {
@@ -100,9 +101,11 @@ const AdminPanel = () => {
   };
 
   const needle = search.trim().toLowerCase();
-  const shownUsers = needle
-    ? users.filter((u) => u.nick.toLowerCase().includes(needle) || u.status.toLowerCase().includes(needle))
-    : users;
+  const shownUsers = users
+    .filter((u) => (filter === 'banned' ? u.banned : filter === 'online' ? u.online : true))
+    .filter((u) =>
+      needle ? u.nick.toLowerCase().includes(needle) || u.status.toLowerCase().includes(needle) : true,
+    );
   const shownMessages = needle
     ? messages.filter((m) => m.nick.toLowerCase().includes(needle) || m.text.toLowerCase().includes(needle))
     : messages;
@@ -191,12 +194,35 @@ const AdminPanel = () => {
         </div>
         {tab === 'users' ? (
           <>
+            <div className="mb-4 flex flex-wrap gap-2">
+              {([
+                ['all', `Все · ${users.length}`],
+                ['online', `В сети · ${users.filter((u) => u.online).length}`],
+                ['banned', `Выселенные · ${users.filter((u) => u.banned).length}`],
+              ] as const).map(([id, label]) => (
+                <button
+                  key={id}
+                  onClick={() => setFilter(id)}
+                  className={cn(
+                    'border-2 px-3 py-1.5 text-[0.68rem] font-bold uppercase tracking-[0.1em] transition-colors',
+                    filter === id
+                      ? 'border-secondary bg-secondary text-secondary-foreground'
+                      : 'border-foreground/35 text-muted-foreground hover:border-secondary',
+                  )}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
             <p className="mb-4 text-[0.78rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
-              {needle
-                ? `Найдено: ${shownUsers.length} из ${users.length}`
-                : `Всего жильцов: ${users.length} · выселено: ${users.filter((u) => u.banned).length}`}
+              Показано: {shownUsers.length} из {users.length}
             </p>
             <div className="grid gap-px bg-foreground/25 md:grid-cols-2">
+              {shownUsers.length === 0 && (
+                <p className="bg-card px-4 py-6 text-center text-muted-foreground md:col-span-2">
+                  {filter === 'banned' ? 'Выселенных нет — в общаге тихо' : 'Никого не нашлось'}
+                </p>
+              )}
               {shownUsers.map((u) => (
                 <div
                   key={u.id}
