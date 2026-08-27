@@ -79,8 +79,8 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
   const onlineList: OnlineItem[] = online.length ? online : demoUsers;
 
   return (
-    <section id="chat" className="bg-card">
-      <div className="mx-auto max-w-[1400px] px-5 py-16 md:px-10 md:py-20">
+    <section id="chat" className="flex min-h-screen flex-col justify-center bg-card">
+      <div className="mx-auto w-full max-w-[1400px] px-5 py-16 md:px-10 md:py-20">
         <h2 className="text-center text-[clamp(2rem,6vw,3.4rem)] font-extrabold leading-[0.95] tracking-[-0.035em]">
           Окно переписки
         </h2>
