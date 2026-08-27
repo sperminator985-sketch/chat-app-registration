@@ -209,7 +209,7 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
           </div>
 
           <aside className="flex min-h-0 flex-col bg-background">
-            <div className="border-b-2 border-foreground/35 px-4 py-4">
+            <div className="border-b-2 border-foreground/35 px-4 py-4 text-center">
               <h3 className="text-[0.8rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
                 Кто в чате · {onlineList.length}
               </h3>
