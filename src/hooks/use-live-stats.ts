@@ -5,6 +5,7 @@ export type LiveStats = {
   online: number;
   totalUsers: number;
   dayMessages: number;
+  roomCounts: Record<string, number>;
 };
 
 export const useLiveStats = () => {
@@ -19,6 +20,7 @@ export const useLiveStats = () => {
             online: res.online.length,
             totalUsers: res.totalUsers,
             dayMessages: res.dayMessages,
+            roomCounts: res.roomCounts ?? {},
           }),
         )
         .catch(() => undefined);
