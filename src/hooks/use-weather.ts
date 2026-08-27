@@ -16,3 +16,12 @@ export const useWeather = () => {
 };
 
 export const formatTemp = (t: number) => (t > 0 ? `+${t}` : `${t}`);
+
+export const degreeWord = (t: number) => {
+  const n = Math.abs(Math.trunc(t)) % 100;
+  if (n >= 11 && n <= 14) return 'градусов';
+  const last = n % 10;
+  if (last === 1) return 'градус';
+  if (last >= 2 && last <= 4) return 'градуса';
+  return 'градусов';
+};

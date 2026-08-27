@@ -4,7 +4,7 @@ import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/use-auth';
 import { nickColorClass } from '@/data/chat';
 import { useDm } from '@/hooks/use-dm';
-import { useWeather, formatTemp } from '@/hooks/use-weather';
+import { useWeather, formatTemp, degreeWord } from '@/hooks/use-weather';
 import { useLiveStats } from '@/hooks/use-live-stats';
 import Avatar from '@/components/Avatar';
 
@@ -98,7 +98,7 @@ const Header = ({ onProfile }: HeaderProps) => {
             <span className={cn('text-[1.05rem] font-bold', temp < 0 ? 'text-primary' : 'text-secondary')}>
               {formatTemp(temp)}
             </span>{' '}
-            градусов
+            {degreeWord(temp)}
           </span>
         )}
 
@@ -168,7 +168,7 @@ const Header = ({ onProfile }: HeaderProps) => {
                 <span className={cn('text-[1.05rem] font-bold', temp < 0 ? 'text-primary' : 'text-secondary')}>
                   {formatTemp(temp)}
                 </span>{' '}
-                градусов
+                {degreeWord(temp)}
               </span>
             )}
             <span className="flex items-center gap-2 border-2 border-foreground/30 px-3 py-2 text-[0.76rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground">
