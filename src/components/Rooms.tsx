@@ -30,7 +30,7 @@ const Rooms = ({ activeRoom, onPick }: RoomsProps) => {
     id="etazhi"
     className="mx-auto flex max-w-[1400px] flex-col justify-center px-5 py-16 md:min-h-screen md:px-10 md:py-20"
   >
-    <h2 className="text-center text-[clamp(1.15rem,3.6vw,3.4rem)] font-extrabold leading-[0.95] tracking-[-0.035em] sm:whitespace-nowrap">
+    <h2 className="mt-10 text-center text-[clamp(1.15rem,3.6vw,3.4rem)] font-extrabold leading-[0.95] tracking-[-0.035em] sm:whitespace-nowrap md:mt-16">
       Девять этажей <span className="text-primary">— выбирай свой</span>
     </h2>
 
