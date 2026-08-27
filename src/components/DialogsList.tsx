@@ -11,9 +11,9 @@ const DialogsList = () => {
   return (
     <Dialog open={listOpen} onOpenChange={(open) => !open && closeList()}>
       <DialogContent className="max-w-[460px] border-2 border-foreground/40 bg-background p-0 [&>button]:hidden">
-        <div className="flex items-center gap-3 border-b-2 border-foreground/35 px-5 py-4">
-          <Icon name="Mail" size={18} className="text-secondary" />
-          <p className="font-display text-lg font-extrabold uppercase leading-none tracking-[-0.02em]">
+        <div className="flex items-center gap-2 border-b-2 border-foreground/35 px-4 py-4 sm:gap-3 sm:px-5">
+          <Icon name="Mail" size={18} className="shrink-0 text-secondary" />
+          <p className="font-display text-base font-extrabold uppercase leading-none tracking-[-0.02em] sm:text-lg">
             Личные сообщения
           </p>
           <button
@@ -21,7 +21,7 @@ const DialogsList = () => {
             onClick={toggleSound}
             title={soundOn ? 'Выключить звук уведомлений' : 'Включить звук уведомлений'}
             className={cn(
-              'ml-auto flex items-center gap-1.5 border-2 px-2.5 py-1.5 text-[0.74rem] font-semibold uppercase tracking-[0.1em] transition-colors',
+              'ml-auto flex shrink-0 items-center gap-1.5 border-2 px-2 py-1.5 text-[0.74rem] font-semibold uppercase tracking-[0.1em] transition-colors sm:px-2.5',
               soundOn
                 ? 'border-secondary text-secondary'
                 : 'border-foreground/30 text-muted-foreground hover:border-secondary',
@@ -34,7 +34,7 @@ const DialogsList = () => {
             type="button"
             onClick={closeList}
             aria-label="Закрыть"
-            className="flex h-8 w-8 items-center justify-center border-2 border-foreground/30 text-muted-foreground transition-colors hover:border-primary hover:text-foreground"
+            className="flex h-8 w-8 shrink-0 items-center justify-center border-2 border-foreground/30 text-muted-foreground transition-colors hover:border-primary hover:text-foreground"
           >
             <Icon name="X" size={16} />
           </button>

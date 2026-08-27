@@ -81,7 +81,7 @@ const DirectMessages = () => {
           </div>
         </div>
 
-        <div ref={feedRef} className="scrollbar-brut space-y-2 overflow-y-auto px-5 py-4" style={{ height: 320 }}>
+        <div ref={feedRef} className="scrollbar-brut h-[240px] space-y-2 overflow-y-auto px-5 py-4 sm:h-[320px]">
           {!loaded && <p className="font-mono text-[0.85rem] text-muted-foreground">открываем переписку…</p>}
           {loaded && messages.length === 0 && (
             <p className="border-l-2 border-secondary bg-muted/60 px-3 py-2 font-mono text-[0.82rem] uppercase tracking-[0.08em] text-muted-foreground">
