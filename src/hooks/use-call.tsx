@@ -46,6 +46,9 @@ export const CallProvider = ({ children }: { children: ReactNode }) => {
   const pendingOfferRef = useRef<RTCSessionDescriptionInit | null>(null);
   const pendingIceRef = useRef<RTCIceCandidateInit[]>([]);
   const statusRef = useRef<CallStatus>('idle');
+  const startedAtRef = useRef<number | null>(null);
+  const loggedRef = useRef(false);
+  const isCallerRef = useRef(false);
 
   useEffect(() => {
     statusRef.current = status;
@@ -69,7 +72,28 @@ export const CallProvider = ({ children }: { children: ReactNode }) => {
     peerRef.current = peerNick;
   }, [peerNick]);
 
+  const logCall = useCallback((nick: string, text: string) => {
+    if (loggedRef.current) return;
+    loggedRef.current = true;
+    api.dmSend({ nick, text }).catch(() => undefined);
+  }, []);
+
   const cleanup = useCallback(() => {
+    const nick = peerRef.current;
+    const started = startedAtRef.current;
+    if (nick && isCallerRef.current) {
+      if (started) {
+        const sec = Math.max(1, Math.round((Date.now() - started) / 1000));
+        const mm = Math.floor(sec / 60);
+        const ss = sec % 60;
+        const dur = mm > 0 ? `${mm} мин ${ss} с` : `${ss} с`;
+        logCall(nick, `Видеозвонок — ${dur}`);
+      } else {
+        logCall(nick, 'Видеозвонок без ответа');
+      }
+    }
+    startedAtRef.current = null;
+    isCallerRef.current = false;
     pcRef.current?.close();
     pcRef.current = null;
     localRef.current?.getTracks().forEach((t) => t.stop());
@@ -83,7 +107,7 @@ export const CallProvider = ({ children }: { children: ReactNode }) => {
     callIdRef.current = '';
     pendingOfferRef.current = null;
     pendingIceRef.current = [];
-  }, []);
+  }, [logCall]);
 
   const send = useCallback(
     (nick: string, kind: 'offer' | 'answer' | 'ice' | 'hangup' | 'decline', payload?: unknown) =>
@@ -112,7 +136,10 @@ export const CallProvider = ({ children }: { children: ReactNode }) => {
         if (e.candidate) send(nick, 'ice', e.candidate.toJSON());
       };
       pc.onconnectionstatechange = () => {
-        if (pc.connectionState === 'connected') setStatus('active');
+        if (pc.connectionState === 'connected') {
+          if (!startedAtRef.current) startedAtRef.current = Date.now();
+          setStatus('active');
+        }
         if (pc.connectionState === 'failed' || pc.connectionState === 'disconnected') {
           toast({ title: 'Связь оборвалась', description: 'Провод в общаге опять барахлит' });
           cleanup();
@@ -131,6 +158,9 @@ export const CallProvider = ({ children }: { children: ReactNode }) => {
         return;
       }
       if (statusRef.current !== 'idle') return;
+      loggedRef.current = false;
+      isCallerRef.current = true;
+      startedAtRef.current = null;
       callIdRef.current = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
       setPeerNick(nick);
       setStatus('calling');
@@ -165,6 +195,7 @@ export const CallProvider = ({ children }: { children: ReactNode }) => {
       const answer = await pc.createAnswer();
       await pc.setLocalDescription(answer);
       await send(nick, 'answer', answer);
+      startedAtRef.current = Date.now();
       setStatus('active');
     } catch {
       toast({
@@ -212,6 +243,9 @@ export const CallProvider = ({ children }: { children: ReactNode }) => {
           return;
         }
         callIdRef.current = s.callId;
+        loggedRef.current = false;
+        isCallerRef.current = false;
+        startedAtRef.current = null;
         pendingOfferRef.current = s.payload as RTCSessionDescriptionInit;
         setPeerNick(s.from.nick);
         setStatus('incoming');
@@ -222,6 +256,7 @@ export const CallProvider = ({ children }: { children: ReactNode }) => {
         await pc.setRemoteDescription(new RTCSessionDescription(s.payload as RTCSessionDescriptionInit));
         for (const c of pendingIceRef.current) await pc.addIceCandidate(new RTCIceCandidate(c));
         pendingIceRef.current = [];
+        startedAtRef.current = Date.now();
         setStatus('active');
         return;
       }
@@ -233,6 +268,7 @@ export const CallProvider = ({ children }: { children: ReactNode }) => {
       }
       if (s.kind === 'decline') {
         toast({ title: 'Не берут трубку', description: `${s.from.nick} сейчас не может говорить` });
+        if (isCallerRef.current) logCall(s.from.nick, 'Видеозвонок отклонён');
         cleanup();
         return;
       }
@@ -241,7 +277,7 @@ export const CallProvider = ({ children }: { children: ReactNode }) => {
         cleanup();
       }
     },
-    [cleanup],
+    [cleanup, logCall],
   );
 
   useEffect(() => {

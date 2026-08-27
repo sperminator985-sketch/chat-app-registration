@@ -103,6 +103,22 @@ const DirectMessages = () => {
           )}
           {messages.map((m) => {
             const mine = user && m.nick === user.nick;
+            if (m.text.startsWith('Видеозвонок')) {
+              const missed = m.text.includes('без ответа') || m.text.includes('отклонён');
+              return (
+                <p
+                  key={m.id}
+                  className={cn(
+                    'flex items-center gap-2 border-l-2 bg-muted/50 px-3 py-2 font-mono text-[0.8rem] uppercase tracking-[0.06em]',
+                    missed ? 'border-primary text-primary' : 'border-secondary text-muted-foreground',
+                  )}
+                >
+                  <Icon name={missed ? 'PhoneMissed' : 'Video'} size={14} className="shrink-0" />
+                  {m.text}
+                  <span className="ml-auto text-[0.72rem] normal-case">{m.time}</span>
+                </p>
+              );
+            }
             return (
               <div
                 key={m.id}
