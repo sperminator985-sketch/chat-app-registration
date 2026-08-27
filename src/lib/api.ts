@@ -66,12 +66,12 @@ export const api = {
   logout: () => request<{ ok: boolean }>('logout', { method: 'POST' }),
   dialogs: () =>
     request<{
-      dialogs: { nick: string; color: NickColor; unread: number; avatar?: number; avatarUrl?: string | null; online?: boolean }[];
+      dialogs: { nick: string; color: NickColor; unread: number; avatar?: number; avatarUrl?: string | null; online?: boolean; seenAgo?: number | null }[];
       unread: number;
     }>('dialogs'),
   dm: (nick: string) =>
     request<{
-      peer: { nick: string; color: NickColor; status: string; avatar?: number; avatarUrl?: string | null };
+      peer: { nick: string; color: NickColor; status: string; avatar?: number; avatarUrl?: string | null; online?: boolean; seenAgo?: number | null };
       messages: ApiMessage[];
     }>('dm', {
       query: `&nick=${encodeURIComponent(nick)}`,

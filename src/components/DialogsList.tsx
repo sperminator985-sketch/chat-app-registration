@@ -4,6 +4,7 @@ import { cn } from '@/lib/utils';
 import { useDm } from '@/hooks/use-dm';
 import { useCall } from '@/hooks/use-call';
 import { nickColorClass } from '@/data/chat';
+import { lastSeenText } from '@/lib/last-seen';
 import Avatar from '@/components/Avatar';
 
 const DialogsList = () => {
@@ -67,7 +68,7 @@ const DialogsList = () => {
                   <span className="min-w-0">
                     <span className={cn('block truncate font-semibold', nickColorClass[d.color])}>{d.nick}</span>
                     <span className="block font-mono text-[0.7rem] uppercase tracking-[0.08em] text-muted-foreground">
-                      {d.online ? 'в сети' : 'свет погашен'}
+                      {d.online ? 'в сети' : lastSeenText(d.seenAgo)}
                     </span>
                   </span>
                   {d.unread > 0 && (

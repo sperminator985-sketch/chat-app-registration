@@ -6,7 +6,7 @@ import { ToastAction } from '@/components/ui/toast';
 import { playKnock } from '@/lib/notify-sound';
 import type { NickColor } from '@/data/chat';
 
-export type Dialog = { nick: string; color: NickColor; unread: number; avatar?: number; avatarUrl?: string | null; online?: boolean };
+export type Dialog = { nick: string; color: NickColor; unread: number; avatar?: number; avatarUrl?: string | null; online?: boolean; seenAgo?: number | null };
 
 type DmState = {
   dialogs: Dialog[];

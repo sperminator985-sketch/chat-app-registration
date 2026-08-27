@@ -255,7 +255,8 @@ def handler(event: dict, context) -> dict:
             cur.execute(
                 f"SELECT u.nick, u.color, MAX(d.id) AS last_id, "
                 f"SUM(CASE WHEN d.recipient_id = {me} AND d.read_at IS NULL THEN 1 ELSE 0 END) AS unread, u.avatar, u.avatar_url, "
-                f"BOOL_OR(u.last_seen > NOW() - INTERVAL '5 minutes') AS online "
+                f"BOOL_OR(u.last_seen > NOW() - INTERVAL '5 minutes') AS online, "
+                f"MAX(EXTRACT(EPOCH FROM (NOW() - u.last_seen))) AS ago "
                 f"FROM {SCHEMA}.direct_messages d "
                 f"JOIN {SCHEMA}.users u ON u.id = CASE WHEN d.sender_id = {me} THEN d.recipient_id ELSE d.sender_id END "
                 f"WHERE d.sender_id = {me} OR d.recipient_id = {me} "
@@ -263,7 +264,7 @@ def handler(event: dict, context) -> dict:
             )
             dialogs = [
                 {'nick': r[0], 'color': r[1], 'unread': int(r[3] or 0), 'avatar': r[4], 'avatarUrl': r[5],
-                 'online': bool(r[6])}
+                 'online': bool(r[6]), 'seenAgo': int(r[7]) if r[7] is not None else None}
                 for r in cur.fetchall()
             ]
             total_unread = sum(d['unread'] for d in dialogs)
@@ -275,7 +276,8 @@ def handler(event: dict, context) -> dict:
                 return respond(401, {'error': 'Не авторизован'})
             with_nick = (params.get('nick') or '').strip()
             cur.execute(
-                f"SELECT id, nick, color, status, avatar, avatar_url FROM {SCHEMA}.users "
+                f"SELECT id, nick, color, status, avatar, avatar_url, "
+                f"EXTRACT(EPOCH FROM (NOW() - last_seen)) FROM {SCHEMA}.users "
                 f"WHERE nick_lower = '{esc(with_nick.lower())}'"
             )
             other = cur.fetchone()
@@ -298,6 +300,8 @@ def handler(event: dict, context) -> dict:
                 'peer': {
                     'nick': other[1], 'color': other[2], 'status': other[3],
                     'avatar': other[4], 'avatarUrl': other[5],
+                    'seenAgo': int(other[6]) if other[6] is not None else None,
+                    'online': other[6] is not None and other[6] < 300,
                 },
                 'messages': [
                     {

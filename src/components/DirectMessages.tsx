@@ -6,6 +6,7 @@ import { toast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/use-auth';
 import { api, ApiMessage } from '@/lib/api';
 import { nickColorClass, NickColor } from '@/data/chat';
+import { lastSeenText } from '@/lib/last-seen';
 import { useDm } from '@/hooks/use-dm';
 import { useCall } from '@/hooks/use-call';
 import Avatar from '@/components/Avatar';
@@ -15,7 +16,7 @@ const DirectMessages = () => {
   const { dmNick: nick, closeDm: onClose, refresh } = useDm();
   const { startCall } = useCall();
   const [messages, setMessages] = useState<ApiMessage[]>([]);
-  const [peer, setPeer] = useState<{ nick: string; color: NickColor; status: string; avatar?: number; avatarUrl?: string | null } | null>(null);
+  const [peer, setPeer] = useState<{ nick: string; color: NickColor; status: string; avatar?: number; avatarUrl?: string | null; online?: boolean; seenAgo?: number | null } | null>(null);
   const [draft, setDraft] = useState('');
   const [sending, setSending] = useState(false);
   const [loaded, setLoaded] = useState(false);
@@ -79,7 +80,20 @@ const DirectMessages = () => {
               Личка с{' '}
               <span className={cn(peer ? nickColorClass[peer.color] : 'text-foreground')}>{nick}</span>
             </p>
-            {peer && <p className="mt-1 text-[0.85rem] text-muted-foreground">{peer.status}</p>}
+            {peer && (
+              <p className="mt-1 flex flex-wrap items-center gap-2 text-[0.85rem] text-muted-foreground">
+                {peer.status}
+                <span
+                  className={cn(
+                    'flex items-center gap-1.5 font-mono text-[0.72rem] uppercase tracking-[0.08em]',
+                    peer.online ? 'text-secondary' : 'text-muted-foreground/80',
+                  )}
+                >
+                  <span className={cn('h-2 w-2 shrink-0', peer.online ? 'bg-secondary' : 'bg-muted-foreground/50')} />
+                  {peer.online ? 'в сети' : lastSeenText(peer.seenAgo)}
+                </span>
+              </p>
+            )}
           </div>
           {nick && (
             <button
