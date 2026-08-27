@@ -8,8 +8,8 @@ import Facade from '@/components/Facade';
 import { rules } from '@/data/chat';
 
 const Rules = () => (
-  <section id="pravila" className="bg-card">
-    <div className="mx-auto grid max-w-[1400px] gap-12 px-5 py-16 md:px-10 md:py-20 lg:grid-cols-[1fr_420px]">
+  <section id="pravila" className="flex min-h-screen flex-col justify-center bg-card">
+    <div className="mx-auto grid w-full max-w-[1400px] gap-12 px-5 py-16 md:px-10 md:py-20 lg:grid-cols-[1fr_420px]">
       <div>
         <h2 className="text-[clamp(2rem,6vw,3.4rem)] font-extrabold leading-[0.95] tracking-[-0.035em]">
           Правила
