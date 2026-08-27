@@ -117,6 +117,18 @@ const request = async <T>(action: string, options: { method?: string; body?: unk
   try {
     data = JSON.parse(raw);
   } catch {
+    const start = raw.search(/[[{]/);
+    const end = Math.max(raw.lastIndexOf('}'), raw.lastIndexOf(']'));
+    if (start !== -1 && end > start) {
+      try {
+        data = JSON.parse(raw.slice(start, end + 1));
+      } catch {
+        data = null;
+      }
+    }
+  }
+
+  if (!data) {
     setServerDown(true);
     throw new Error('Общага не отвечает — сервер временно недоступен');
   }

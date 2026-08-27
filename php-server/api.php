@@ -1,4 +1,8 @@
 <?php
+ini_set('display_errors', '0');
+error_reporting(E_ALL & ~E_WARNING & ~E_NOTICE & ~E_DEPRECATED);
+ob_start();
+
 require __DIR__ . '/db.php';
 
 header('Access-Control-Allow-Origin: *');
@@ -18,6 +22,9 @@ const OWNER_NICK = 'админ';
 
 function out(int $code, array $payload): void
 {
+    if (ob_get_level() > 0) {
+        ob_clean();
+    }
     http_response_code($code);
     echo json_encode($payload, JSON_UNESCAPED_UNICODE);
     exit;
@@ -106,12 +113,12 @@ function shapeMessage(array $r): array
 {
     return [
         'id' => (int) $r['id'],
-        'nick' => $r['nick'] ?? $r['sender_nick'],
-        'color' => (int) ($r['color'] ?? $r['sender_color']),
+        'nick' => array_key_exists('nick', $r) ? $r['nick'] : ($r['sender_nick'] ?? ''),
+        'color' => (int) (array_key_exists('color', $r) ? $r['color'] : ($r['sender_color'] ?? 1)),
         'text' => $r['text'],
         'time' => date('H:i', strtotime($r['created_at'] . ' UTC')),
-        'avatar' => (int) ($r['avatar'] ?? $r['sender_avatar']),
-        'avatarUrl' => $r['avatar_url'] ?? $r['sender_avatar_url'],
+        'avatar' => (int) (array_key_exists('avatar', $r) ? $r['avatar'] : ($r['sender_avatar'] ?? 1)),
+        'avatarUrl' => array_key_exists('avatar_url', $r) ? $r['avatar_url'] : ($r['sender_avatar_url'] ?? null),
     ];
 }
 
@@ -159,7 +166,7 @@ try {
         out(200, [
             'messages' => $messages,
             'online' => $online,
-            'roomCounts' => $counts,
+            'roomCounts' => (object) $counts,
             'totalUsers' => (int) scalar('SELECT COUNT(*) FROM users'),
             'dayMessages' => (int) scalar(
                 'SELECT COUNT(*) FROM messages WHERE hidden_at IS NULL AND created_at > UTC_TIMESTAMP() - INTERVAL 24 HOUR'
