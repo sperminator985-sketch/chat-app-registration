@@ -84,9 +84,6 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
           <h2 className="text-[clamp(2rem,6vw,3.4rem)] font-extrabold leading-[0.95] tracking-[-0.035em]">
             Окно переписки
           </h2>
-          <p className="max-w-[420px] text-[1.02rem] leading-[1.45] text-muted-foreground">
-            Лента этажа обновляется сама: пиши, и соседи увидят сообщение у себя.
-          </p>
         </div>
 
         <div className="mt-10 grid gap-px border-2 border-foreground/35 bg-foreground/25 lg:grid-cols-[1fr_280px]">
