@@ -11,6 +11,7 @@ import psycopg2
 SCHEMA = 't_p16512527_chat_app_registratio'
 ROOMS = ['kuhnya', 'kurilka', 'baraholka', 'ucheba', 'tomsk', 'znakomstva', 'flirt', 'sex', 'noch']
 NICK_RE = re.compile(r'^[a-zA-Zа-яА-ЯёЁ0-9_]{3,18}$')
+OWNER_NICK = 'админ'
 
 CORS = {
     'Access-Control-Allow-Origin': '*',
@@ -45,6 +46,7 @@ def user_row(row) -> dict:
         'id': row[0], 'nick': row[1], 'color': row[2], 'status': row[3],
         'room': row[4], 'since': row[5].strftime('%Y'), 'avatar': row[6],
         'avatarUrl': row[7] if len(row) > 7 else None,
+        'isAdmin': bool(row[8]) if len(row) > 8 else False,
     }
 
 
@@ -56,7 +58,7 @@ def get_user_by_token(cur, token: str):
     if not token:
         return None
     cur.execute(
-        f"SELECT u.id, u.nick, u.color, u.status, u.room, u.created_at, u.avatar, u.avatar_url FROM {SCHEMA}.sessions s "
+        f"SELECT u.id, u.nick, u.color, u.status, u.room, u.created_at, u.avatar, u.avatar_url, u.is_admin FROM {SCHEMA}.sessions s "
         f"JOIN {SCHEMA}.users u ON u.id = s.user_id WHERE s.token = '{esc(token)}'"
     )
     row = cur.fetchone()
@@ -91,7 +93,7 @@ def handler(event: dict, context) -> dict:
                 return respond(400, {'error': 'Неизвестная комната'})
             cur.execute(
                 f"SELECT id, nick, color, text, created_at, avatar, avatar_url FROM {SCHEMA}.messages "
-                f"WHERE room = '{esc(room)}' ORDER BY id DESC LIMIT 60"
+                f"WHERE room = '{esc(room)}' AND hidden_at IS NULL ORDER BY id DESC LIMIT 60"
             )
             rows = cur.fetchall()[::-1]
             messages = [
@@ -116,7 +118,7 @@ def handler(event: dict, context) -> dict:
             counts = {r[0]: r[1] for r in cur.fetchall()}
             cur.execute(f"SELECT COUNT(*) FROM {SCHEMA}.users")
             total_users = cur.fetchone()[0]
-            cur.execute(f"SELECT COUNT(*) FROM {SCHEMA}.messages WHERE created_at > NOW() - INTERVAL '24 hours'")
+            cur.execute(f"SELECT COUNT(*) FROM {SCHEMA}.messages WHERE hidden_at IS NULL AND created_at > NOW() - INTERVAL '24 hours'")
             day_messages = cur.fetchone()[0]
             return respond(200, {
                 'messages': messages,
@@ -153,10 +155,11 @@ def handler(event: dict, context) -> dict:
             if cur.fetchone():
                 return respond(409, {'error': 'Такой ник уже занят'})
             pwd = hash_password(password, secrets.token_hex(8))
+            owner = 'TRUE' if nick.lower() == OWNER_NICK else 'FALSE'
             cur.execute(
-                f"INSERT INTO {SCHEMA}.users (nick, nick_lower, password_hash, color, status, room, avatar) "
-                f"VALUES ('{esc(nick)}', '{esc(nick.lower())}', '{esc(pwd)}', {color}, 'только заселился', '{esc(room)}', {avatar}) "
-                f"RETURNING id, nick, color, status, room, created_at, avatar, avatar_url"
+                f"INSERT INTO {SCHEMA}.users (nick, nick_lower, password_hash, color, status, room, avatar, is_admin) "
+                f"VALUES ('{esc(nick)}', '{esc(nick.lower())}', '{esc(pwd)}', {color}, 'только заселился', '{esc(room)}', {avatar}, {owner}) "
+                f"RETURNING id, nick, color, status, room, created_at, avatar, avatar_url, is_admin"
             )
             user = user_row(cur.fetchone())
             new_token = secrets.token_hex(24)
@@ -167,12 +170,15 @@ def handler(event: dict, context) -> dict:
             nick = (body.get('nick') or '').strip()
             password = body.get('password') or ''
             cur.execute(
-                f"SELECT id, nick, color, status, room, created_at, avatar, avatar_url, password_hash FROM {SCHEMA}.users "
+                f"SELECT id, nick, color, status, room, created_at, avatar, avatar_url, is_admin, password_hash, banned_at, ban_reason FROM {SCHEMA}.users "
                 f"WHERE nick_lower = '{esc(nick.lower())}'"
             )
             row = cur.fetchone()
-            if not row or not check_password(password, row[8]):
+            if not row or not check_password(password, row[9]):
                 return respond(401, {'error': 'Ник или пароль не подходят'})
+            if row[10] is not None:
+                reason = row[11] or 'нарушение правил'
+                return respond(403, {'error': f'Ты выселен из общаги: {reason}'})
             user = user_row(row)
             new_token = secrets.token_hex(24)
             cur.execute(f"INSERT INTO {SCHEMA}.sessions (token, user_id) VALUES ('{new_token}', {user['id']})")
@@ -243,7 +249,7 @@ def handler(event: dict, context) -> dict:
             cur.execute(
                 f"UPDATE {SCHEMA}.users SET status = '{esc(status)}', color = {color}, avatar = {avatar}, "
                 f"avatar_url = {sql_str(avatar_url)}, last_seen = NOW() "
-                f"WHERE id = {user['id']} RETURNING id, nick, color, status, room, created_at, avatar, avatar_url"
+                f"WHERE id = {user['id']} RETURNING id, nick, color, status, room, created_at, avatar, avatar_url, is_admin"
             )
             return respond(200, {'user': user_row(cur.fetchone())})
 
@@ -396,6 +402,84 @@ def handler(event: dict, context) -> dict:
             if token:
                 cur.execute(f"DELETE FROM {SCHEMA}.sessions WHERE token = '{esc(token)}'")
             return respond(200, {'ok': True})
+
+        if action in ('admin_users', 'admin_messages', 'admin_ban', 'admin_hide'):
+            user = get_user_by_token(cur, token)
+            if not user:
+                return respond(401, {'error': 'Не авторизован'})
+            cur.execute(f"SELECT is_admin FROM {SCHEMA}.users WHERE id = {user['id']}")
+            row = cur.fetchone()
+            if not row or not row[0]:
+                return respond(403, {'error': 'Доступ только для владельца чата'})
+
+            if method == 'GET' and action == 'admin_users':
+                cur.execute(
+                    f"SELECT u.id, u.nick, u.color, u.status, u.room, u.created_at, u.avatar, u.avatar_url, "
+                    f"u.is_admin, u.banned_at, u.ban_reason, "
+                    f"EXTRACT(EPOCH FROM (NOW() - u.last_seen)), "
+                    f"(SELECT COUNT(*) FROM {SCHEMA}.messages m WHERE m.user_id = u.id AND m.hidden_at IS NULL) "
+                    f"FROM {SCHEMA}.users u ORDER BY u.last_seen DESC LIMIT 200"
+                )
+                return respond(200, {'users': [
+                    {
+                        'id': r[0], 'nick': r[1], 'color': r[2], 'status': r[3], 'room': r[4],
+                        'since': r[5].strftime('%d.%m.%Y'), 'avatar': r[6], 'avatarUrl': r[7],
+                        'isAdmin': bool(r[8]), 'banned': r[9] is not None,
+                        'banReason': r[10],
+                        'seenAgo': int(r[11]) if r[11] is not None else None,
+                        'online': r[11] is not None and r[11] < 120,
+                        'messages': r[12],
+                    }
+                    for r in cur.fetchall()
+                ]})
+
+            if method == 'GET' and action == 'admin_messages':
+                room = params.get('room') or ''
+                where = "WHERE m.hidden_at IS NULL"
+                if room in ROOMS:
+                    where += f" AND m.room = '{esc(room)}'"
+                cur.execute(
+                    f"SELECT m.id, m.room, m.nick, m.color, m.text, m.created_at, m.user_id "
+                    f"FROM {SCHEMA}.messages m {where} ORDER BY m.id DESC LIMIT 120"
+                )
+                return respond(200, {'messages': [
+                    {
+                        'id': r[0], 'room': r[1], 'nick': r[2], 'color': r[3], 'text': r[4],
+                        'time': r[5].strftime('%d.%m %H:%M'), 'userId': r[6],
+                    }
+                    for r in cur.fetchall()
+                ]})
+
+            if method == 'POST' and action == 'admin_hide':
+                mid = int(body.get('id') or 0)
+                if not mid:
+                    return respond(400, {'error': 'Не указано сообщение'})
+                cur.execute(f"UPDATE {SCHEMA}.messages SET hidden_at = NOW() WHERE id = {mid}")
+                return respond(200, {'ok': True})
+
+            if method == 'POST' and action == 'admin_ban':
+                target = int(body.get('id') or 0)
+                ban = bool(body.get('ban'))
+                reason = (body.get('reason') or '').strip()[:200]
+                if not target:
+                    return respond(400, {'error': 'Не указан жилец'})
+                if target == user['id']:
+                    return respond(400, {'error': 'Себя блокировать нельзя'})
+                cur.execute(f"SELECT is_admin FROM {SCHEMA}.users WHERE id = {target}")
+                t = cur.fetchone()
+                if t and t[0]:
+                    return respond(400, {'error': 'Нельзя блокировать владельца'})
+                if ban:
+                    cur.execute(
+                        f"UPDATE {SCHEMA}.users SET banned_at = NOW(), ban_reason = {sql_str(reason or None)} "
+                        f"WHERE id = {target}"
+                    )
+                    cur.execute(f"DELETE FROM {SCHEMA}.sessions WHERE user_id = {target}")
+                else:
+                    cur.execute(
+                        f"UPDATE {SCHEMA}.users SET banned_at = NULL, ban_reason = NULL WHERE id = {target}"
+                    )
+                return respond(200, {'ok': True})
 
         return respond(400, {'error': 'Неизвестное действие'})
     finally:

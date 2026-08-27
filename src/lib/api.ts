@@ -15,6 +15,34 @@ export type ApiUser = {
   since: string;
   avatar: number;
   avatarUrl?: string | null;
+  isAdmin?: boolean;
+};
+
+export type AdminUser = {
+  id: number;
+  nick: string;
+  color: NickColor;
+  status: string;
+  room: string;
+  since: string;
+  avatar: number;
+  avatarUrl?: string | null;
+  isAdmin: boolean;
+  banned: boolean;
+  banReason?: string | null;
+  seenAgo?: number | null;
+  online: boolean;
+  messages: number;
+};
+
+export type AdminMessage = {
+  id: number;
+  room: string;
+  nick: string;
+  color: NickColor;
+  text: string;
+  time: string;
+  userId: number;
 };
 
 export type ApiMessage = {
@@ -102,6 +130,12 @@ export const api = {
   profile: (body: { status: string; color: number; avatar: number; image?: string; removeImage?: boolean }) =>
     request<{ user: ApiUser }>('profile', { method: 'POST', body }),
   logout: () => request<{ ok: boolean }>('logout', { method: 'POST' }),
+  adminUsers: () => request<{ users: AdminUser[] }>('admin_users'),
+  adminMessages: (room?: string) =>
+    request<{ messages: AdminMessage[] }>('admin_messages', { query: room ? `&room=${room}` : '' }),
+  adminHide: (id: number) => request<{ ok: boolean }>('admin_hide', { method: 'POST', body: { id } }),
+  adminBan: (body: { id: number; ban: boolean; reason?: string }) =>
+    request<{ ok: boolean }>('admin_ban', { method: 'POST', body }),
   dialogs: () =>
     request<{
       dialogs: { nick: string; color: NickColor; unread: number; avatar?: number; avatarUrl?: string | null; online?: boolean; seenAgo?: number | null }[];

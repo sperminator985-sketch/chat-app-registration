@@ -14,6 +14,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 
 const ROOMS = ['kuhnya', 'kurilka', 'baraholka', 'ucheba', 'tomsk', 'znakomstva', 'flirt', 'sex', 'noch'];
 const ONLINE_SEC = 120;
+const OWNER_NICK = 'админ';
 
 function out(int $code, array $payload): void
 {
@@ -66,6 +67,7 @@ function shapeUser(array $r): array
         'since' => date('Y', strtotime($r['created_at'])),
         'avatar' => (int) $r['avatar'],
         'avatarUrl' => $r['avatar_url'],
+        'isAdmin' => (bool) ($r['is_admin'] ?? false),
     ];
 }
 
@@ -125,7 +127,7 @@ try {
         }
 
         $rows = q(
-            'SELECT * FROM messages WHERE room = ? ORDER BY id DESC LIMIT 60',
+            'SELECT * FROM messages WHERE room = ? AND hidden_at IS NULL ORDER BY id DESC LIMIT 60',
             [$room]
         )->fetchAll();
         $messages = array_map('shapeMessage', array_reverse($rows));
@@ -160,7 +162,7 @@ try {
             'roomCounts' => $counts,
             'totalUsers' => (int) scalar('SELECT COUNT(*) FROM users'),
             'dayMessages' => (int) scalar(
-                'SELECT COUNT(*) FROM messages WHERE created_at > UTC_TIMESTAMP() - INTERVAL 24 HOUR'
+                'SELECT COUNT(*) FROM messages WHERE hidden_at IS NULL AND created_at > UTC_TIMESTAMP() - INTERVAL 24 HOUR'
             ),
         ]);
     }
@@ -202,9 +204,10 @@ try {
         }
 
         q(
-            'INSERT INTO users (nick, nick_lower, password_hash, color, status, room, avatar, created_at, last_seen)
-             VALUES (?, ?, ?, ?, ?, ?, ?, UTC_TIMESTAMP(), UTC_TIMESTAMP())',
-            [$nick, $lower, password_hash($password, PASSWORD_DEFAULT), $color, 'только заселился', $room, $avatar]
+            'INSERT INTO users (nick, nick_lower, password_hash, color, status, room, avatar, is_admin, created_at, last_seen)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, UTC_TIMESTAMP(), UTC_TIMESTAMP())',
+            [$nick, $lower, password_hash($password, PASSWORD_DEFAULT), $color, 'только заселился', $room, $avatar,
+             $lower === mb_strtolower(OWNER_NICK) ? 1 : 0]
         );
         $user = shapeUser(one('SELECT * FROM users WHERE id = ?', [(int) db()->lastInsertId()]));
 
@@ -220,6 +223,9 @@ try {
         $row = one('SELECT * FROM users WHERE nick_lower = ?', [mb_strtolower($nick)]);
         if (!$row || !password_verify($password, $row['password_hash'])) {
             fail(401, 'Ник или пароль не подходят');
+        }
+        if ($row['banned_at'] !== null) {
+            fail(403, 'Ты выселен из общаги: ' . ($row['ban_reason'] ?: 'нарушение правил'));
         }
         $user = shapeUser($row);
         $new = bin2hex(random_bytes(24));
@@ -499,6 +505,98 @@ try {
                 ],
             ];
         }, $rows)]);
+    }
+
+    // --- Комендантская: только для владельца ---
+    if (in_array($action, ['admin_users', 'admin_messages', 'admin_ban', 'admin_hide'], true)) {
+        $user = requireUser();
+        $row = one('SELECT is_admin FROM users WHERE id = ?', [$user['id']]);
+        if (!$row || !$row['is_admin']) {
+            fail(403, 'Доступ только для владельца чата');
+        }
+
+        if ($method === 'GET' && $action === 'admin_users') {
+            $rows = q(
+                'SELECT u.*, TIMESTAMPDIFF(SECOND, u.last_seen, UTC_TIMESTAMP()) AS ago,
+                        (SELECT COUNT(*) FROM messages m WHERE m.user_id = u.id AND m.hidden_at IS NULL) AS msgs
+                 FROM users u ORDER BY u.last_seen DESC LIMIT 200'
+            )->fetchAll();
+            out(200, ['users' => array_map(static function (array $r): array {
+                $ago = $r['ago'] === null ? null : (int) $r['ago'];
+                return [
+                    'id' => (int) $r['id'],
+                    'nick' => $r['nick'],
+                    'color' => (int) $r['color'],
+                    'status' => $r['status'],
+                    'room' => $r['room'],
+                    'since' => date('d.m.Y', strtotime($r['created_at'])),
+                    'avatar' => (int) $r['avatar'],
+                    'avatarUrl' => $r['avatar_url'],
+                    'isAdmin' => (bool) $r['is_admin'],
+                    'banned' => $r['banned_at'] !== null,
+                    'banReason' => $r['ban_reason'],
+                    'seenAgo' => $ago,
+                    'online' => $ago !== null && $ago < ONLINE_SEC,
+                    'messages' => (int) $r['msgs'],
+                ];
+            }, $rows)]);
+        }
+
+        if ($method === 'GET' && $action === 'admin_messages') {
+            $room = (string) param('room', '');
+            if (in_array($room, ROOMS, true)) {
+                $rows = q(
+                    'SELECT * FROM messages WHERE hidden_at IS NULL AND room = ? ORDER BY id DESC LIMIT 120',
+                    [$room]
+                )->fetchAll();
+            } else {
+                $rows = q('SELECT * FROM messages WHERE hidden_at IS NULL ORDER BY id DESC LIMIT 120')->fetchAll();
+            }
+            out(200, ['messages' => array_map(static function (array $r): array {
+                return [
+                    'id' => (int) $r['id'],
+                    'room' => $r['room'],
+                    'nick' => $r['nick'],
+                    'color' => (int) $r['color'],
+                    'text' => $r['text'],
+                    'time' => date('d.m H:i', strtotime($r['created_at'] . ' UTC')),
+                    'userId' => (int) $r['user_id'],
+                ];
+            }, $rows)]);
+        }
+
+        if ($method === 'POST' && $action === 'admin_hide') {
+            $id = (int) param('id', 0);
+            if (!$id) {
+                fail(400, 'Не указано сообщение');
+            }
+            q('UPDATE messages SET hidden_at = UTC_TIMESTAMP() WHERE id = ?', [$id]);
+            out(200, ['ok' => true]);
+        }
+
+        if ($method === 'POST' && $action === 'admin_ban') {
+            $target = (int) param('id', 0);
+            $ban = (bool) param('ban', false);
+            $reason = mb_substr(trim((string) param('reason', '')), 0, 200);
+            if (!$target) {
+                fail(400, 'Не указан жилец');
+            }
+            if ($target === $user['id']) {
+                fail(400, 'Себя блокировать нельзя');
+            }
+            $t = one('SELECT is_admin FROM users WHERE id = ?', [$target]);
+            if ($t && $t['is_admin']) {
+                fail(400, 'Нельзя блокировать владельца');
+            }
+            if ($ban) {
+                q('UPDATE users SET banned_at = UTC_TIMESTAMP(), ban_reason = ? WHERE id = ?',
+                  [$reason ?: null, $target]);
+                q('DELETE FROM sessions WHERE user_id = ?', [$target]);
+            } else {
+                q('UPDATE users SET banned_at = NULL, ban_reason = NULL WHERE id = ?', [$target]);
+            }
+            out(200, ['ok' => true]);
+        }
     }
 
     fail(400, 'Неизвестное действие');

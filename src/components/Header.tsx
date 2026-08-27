@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import Icon from '@/components/ui/icon';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/use-auth';
@@ -120,6 +121,15 @@ const Header = ({ onProfile }: HeaderProps) => {
           {user ? (
             <>
               {mailButton()}
+              {user.isAdmin && (
+                <Link
+                  to="/admin"
+                  title="Комендантская"
+                  className="flex h-10 w-10 items-center justify-center border-2 border-secondary text-secondary transition-colors hover:bg-secondary hover:text-secondary-foreground"
+                >
+                  <Icon name="Shield" size={18} />
+                </Link>
+              )}
               <button
                 onClick={onProfile}
                 className="flex items-center gap-2 border-2 border-foreground/40 px-4 py-2 text-[0.8rem] font-semibold uppercase tracking-[0.12em] transition-colors hover:border-secondary"
@@ -207,6 +217,11 @@ const Header = ({ onProfile }: HeaderProps) => {
                 >
                   Профиль — {user.nick}
                 </button>
+                {user.isAdmin && (
+                  <Link to="/admin" onClick={() => setOpen(false)} className="btn-ghost-brut text-center">
+                    Комендантская
+                  </Link>
+                )}
               </>
             ) : (
               <div className="flex flex-col gap-3 pt-1">

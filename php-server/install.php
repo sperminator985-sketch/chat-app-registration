@@ -21,6 +21,9 @@ $sql[] = "CREATE TABLE IF NOT EXISTS users (
     room VARCHAR(32) NOT NULL DEFAULT 'kurilka',
     avatar TINYINT NOT NULL DEFAULT 1,
     avatar_url VARCHAR(255) NULL,
+    is_admin TINYINT(1) NOT NULL DEFAULT 0,
+    banned_at DATETIME NULL,
+    ban_reason VARCHAR(200) NULL,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     last_seen DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     INDEX idx_last_seen (last_seen),
@@ -43,6 +46,7 @@ $sql[] = "CREATE TABLE IF NOT EXISTS messages (
     text VARCHAR(500) NOT NULL,
     avatar TINYINT NOT NULL DEFAULT 1,
     avatar_url VARCHAR(255) NULL,
+    hidden_at DATETIME NULL,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     INDEX idx_room_id (room, id),
     INDEX idx_created (created_at)
