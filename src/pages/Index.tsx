@@ -6,7 +6,6 @@ import Hero from '@/components/Hero';
 import Ticker from '@/components/Ticker';
 import Rooms from '@/components/Rooms';
 import ChatWindow from '@/components/ChatWindow';
-import Stats from '@/components/Stats';
 import Rules from '@/components/Rules';
 import Footer from '@/components/Footer';
 import AuthDialog from '@/components/AuthDialog';
@@ -33,7 +32,6 @@ const PageBody = () => {
         <Ticker />
         <Rooms activeRoom={activeRoom} onPick={pickRoom} />
         <ChatWindow activeRoom={activeRoom} onPick={setActiveRoom} />
-        <Stats />
         <Rules />
       </main>
       <Footer />
