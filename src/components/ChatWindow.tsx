@@ -80,11 +80,9 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
   return (
     <section id="chat" className="bg-card">
       <div className="mx-auto max-w-[1400px] px-5 py-16 md:px-10 md:py-20">
-        <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-          <h2 className="text-[clamp(2rem,6vw,3.4rem)] font-extrabold leading-[0.95] tracking-[-0.035em]">
-            Окно переписки
-          </h2>
-        </div>
+        <h2 className="text-center text-[clamp(2rem,6vw,3.4rem)] font-extrabold leading-[0.95] tracking-[-0.035em]">
+          Окно переписки
+        </h2>
 
         <div className="mt-10 grid gap-px border-2 border-foreground/35 bg-foreground/25 lg:grid-cols-[1fr_280px]">
           <div className="flex min-h-[540px] flex-col bg-background">

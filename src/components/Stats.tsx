@@ -14,19 +14,19 @@ const Stats = () => {
     : stats;
 
   return (
-    <section className="mx-auto max-w-[1400px] px-5 py-14 md:px-10">
-      <div className="grid gap-px bg-foreground/25 sm:grid-cols-2 lg:grid-cols-4">
+    <section className="mx-auto max-w-[520px] px-5 py-12 md:px-10">
+      <div className="flex flex-col gap-px bg-foreground/25">
         {items.map((s, i) => (
           <div
             key={s.label}
             style={{ animationDelay: `${i * 70}ms` }}
-            className="animate-fade-in bg-background px-5 py-8"
+            className="animate-fade-in flex items-baseline justify-between gap-4 bg-background px-4 py-3"
           >
-            <p className="font-display text-[clamp(2rem,4vw,2.8rem)] font-extrabold leading-none tracking-[-0.045em] text-secondary">
-              {s.value}
-            </p>
-            <p className="mt-3 text-[0.8rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+            <p className="text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
               {s.label}
+            </p>
+            <p className="font-display text-[1.15rem] font-extrabold leading-none tracking-[-0.03em] text-secondary">
+              {s.value}
             </p>
           </div>
         ))}
