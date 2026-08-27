@@ -66,7 +66,7 @@ def respond(status: int, payload: dict) -> dict:
 def user_row(row) -> dict:
     return {
         'id': row[0], 'nick': row[1], 'color': row[2], 'status': row[3],
-        'room': row[4], 'since': row[5].strftime('%Y'), 'avatar': row[6],
+        'room': row[4], 'since': tomsk(row[5]).strftime('%d.%m.%Y'), 'avatar': row[6],
         'avatarUrl': row[7] if len(row) > 7 else None,
         'isAdmin': bool(row[8]) if len(row) > 8 else False,
     }
@@ -469,7 +469,7 @@ def handler(event: dict, context) -> dict:
                 return respond(200, {'users': [
                     {
                         'id': r[0], 'nick': r[1], 'color': r[2], 'status': r[3], 'room': r[4],
-                        'since': r[5].strftime('%d.%m.%Y'), 'avatar': r[6], 'avatarUrl': r[7],
+                        'since': tomsk(r[5]).strftime('%d.%m.%Y'), 'avatar': r[6], 'avatarUrl': r[7],
                         'isAdmin': bool(r[8]), 'banned': r[9] is not None,
                         'banReason': r[10],
                         'seenAgo': int(r[11]) if r[11] is not None else None,
