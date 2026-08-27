@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import Icon from '@/components/ui/icon';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/use-auth';
-import { nickColorClass } from '@/data/chat';
+import { nickColorClass, onlineUsers } from '@/data/chat';
 import { useDm } from '@/hooks/use-dm';
 import { useWeather, formatTemp, degreeWord } from '@/hooks/use-weather';
 import { useLiveStats } from '@/hooks/use-live-stats';
@@ -24,6 +24,7 @@ const Header = ({ onProfile }: HeaderProps) => {
   const { unread, openList } = useDm();
   const temp = useWeather();
   const live = useLiveStats();
+  const onlineFallback = onlineUsers.length;
   const links = user ? [] : guestLinks;
 
   const mailButton = (extra?: string) => (
@@ -102,16 +103,14 @@ const Header = ({ onProfile }: HeaderProps) => {
           </span>
         )}
 
-        {live && (
-          <span className="hidden items-center gap-2 border-2 border-foreground/30 px-3 py-1.5 text-[0.76rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground lg:flex">
-            <Icon name="Lightbulb" size={14} className="text-secondary" />
-            Сейчас в чате{' '}
-            <span className="flex items-center gap-1.5 text-[1.05rem] font-bold text-secondary">
-              <span className="h-2 w-2 animate-pulse bg-secondary" />
-              {live.online}
-            </span>
+        <span className="hidden items-center gap-2 border-2 border-foreground/30 px-3 py-1.5 text-[0.76rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground lg:flex">
+          <Icon name="Lightbulb" size={14} className="text-secondary" />
+          Сейчас в чате{' '}
+          <span className="flex items-center gap-1.5 text-[1.05rem] font-bold text-secondary">
+            <span className="h-2 w-2 animate-pulse bg-secondary" />
+            {live ? live.online : onlineFallback}
           </span>
-        )}
+        </span>
 
         <nav className="hidden items-center gap-7 md:flex">
           {links.map((l) => (
@@ -173,13 +172,11 @@ const Header = ({ onProfile }: HeaderProps) => {
             )}
             <span className="flex items-center gap-2 border-2 border-foreground/30 px-3 py-2 text-[0.76rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground">
               <Icon name="Lightbulb" size={14} className="text-secondary" />
-              Свет горит на всех этажах
-              {live && (
-                <span className="ml-auto flex items-center gap-1.5 font-mono text-[1.05rem] font-bold leading-none text-secondary">
-                  <span className="h-2 w-2 animate-pulse bg-secondary" />
-                  {live.online}
-                </span>
-              )}
+              Сейчас в чате
+              <span className="ml-auto flex items-center gap-1.5 font-mono text-[1.05rem] font-bold leading-none text-secondary">
+                <span className="h-2 w-2 animate-pulse bg-secondary" />
+                {live ? live.online : onlineFallback}
+              </span>
             </span>
             {links.map((l) => (
               <a key={l.href} href={l.href} onClick={go(l.href)} className="nav-link">
