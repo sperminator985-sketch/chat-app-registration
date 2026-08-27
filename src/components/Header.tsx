@@ -53,6 +53,10 @@ const Header = ({ onProfile }: HeaderProps) => {
   const go = (href: string) => (e: React.MouseEvent) => {
     e.preventDefault();
     setOpen(false);
+    if (href === '#top') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
     document.querySelector(href)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
