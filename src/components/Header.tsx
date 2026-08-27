@@ -144,6 +144,20 @@ const Header = ({ onProfile }: HeaderProps) => {
       {open && (
         <div className="animate-fade-in border-b-2 border-foreground/35 bg-card px-5 py-5 md:hidden">
           <div className="flex flex-col gap-4">
+            {temp !== null && (
+              <span className="flex items-center gap-2 border-2 border-foreground/30 px-3 py-2 text-[0.76rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground">
+                <Icon
+                  name={temp <= 0 ? 'Snowflake' : 'Sun'}
+                  size={14}
+                  className={temp < 0 ? 'text-primary' : 'text-secondary'}
+                />
+                За окном{' '}
+                <span className={cn('text-[1.05rem] font-bold', temp < 0 ? 'text-primary' : 'text-secondary')}>
+                  {formatTemp(temp)}
+                </span>{' '}
+                градусов
+              </span>
+            )}
             {links.map((l) => (
               <a key={l.href} href={l.href} onClick={go(l.href)} className="nav-link">
                 {l.label}
