@@ -99,9 +99,10 @@ const DirectMessages = () => {
             <button
               type="button"
               onClick={() => startCall(nick)}
-              title="Позвонить по видео"
+              disabled={!peer?.online}
+              title={peer?.online ? 'Позвонить по видео' : 'Сосед не в сети — трубку не возьмут'}
               aria-label="Позвонить по видео"
-              className="ml-auto mr-8 flex h-9 w-9 shrink-0 items-center justify-center border-2 border-foreground/35 text-foreground transition-colors hover:border-secondary hover:text-secondary"
+              className="ml-auto mr-8 flex h-9 w-9 shrink-0 items-center justify-center border-2 border-foreground/35 text-foreground transition-colors hover:border-secondary hover:text-secondary disabled:cursor-not-allowed disabled:border-foreground/20 disabled:text-muted-foreground/40 disabled:hover:border-foreground/20 disabled:hover:text-muted-foreground/40"
             >
               <Icon name="Video" size={18} />
             </button>
@@ -134,8 +135,9 @@ const DirectMessages = () => {
                     <button
                       type="button"
                       onClick={() => startCall(nick)}
-                      title="Перезвонить"
-                      className="flex shrink-0 items-center gap-1 border-2 border-current px-1.5 py-0.5 text-[0.7rem] font-semibold uppercase tracking-[0.06em] transition-colors hover:bg-current/10"
+                      disabled={!peer?.online}
+                      title={peer?.online ? 'Перезвонить' : 'Сосед не в сети'}
+                      className="flex shrink-0 items-center gap-1 border-2 border-current px-1.5 py-0.5 text-[0.7rem] font-semibold uppercase tracking-[0.06em] transition-colors hover:bg-current/10 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent"
                     >
                       <Icon name="Video" size={12} />
                       Перезвонить

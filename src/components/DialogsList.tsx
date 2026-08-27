@@ -77,17 +77,16 @@ const DialogsList = () => {
                     </span>
                   )}
                 </button>
-                {d.online && (
-                  <button
-                    type="button"
-                    onClick={() => startCall(d.nick)}
-                    title={`Видеозвонок: ${d.nick}`}
-                    aria-label={`Видеозвонок: ${d.nick}`}
-                    className="absolute right-4 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center border-2 border-foreground/30 text-muted-foreground transition-colors hover:border-secondary hover:text-secondary"
-                  >
-                    <Icon name="Video" size={14} />
-                  </button>
-                )}
+                <button
+                  type="button"
+                  onClick={() => startCall(d.nick)}
+                  disabled={!d.online}
+                  title={d.online ? `Видеозвонок: ${d.nick}` : `${d.nick} не в сети`}
+                  aria-label={`Видеозвонок: ${d.nick}`}
+                  className="absolute right-4 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center border-2 border-foreground/30 text-muted-foreground transition-colors hover:border-secondary hover:text-secondary disabled:cursor-not-allowed disabled:border-foreground/15 disabled:text-muted-foreground/30 disabled:hover:border-foreground/15 disabled:hover:text-muted-foreground/30"
+                >
+                  <Icon name="Video" size={14} />
+                </button>
               </li>
             ))}
           </ul>
