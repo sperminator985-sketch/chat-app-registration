@@ -7,6 +7,13 @@ import secrets
 
 import boto3
 import psycopg2
+from datetime import timedelta
+
+TOMSK_OFFSET = timedelta(hours=7)
+
+
+def tomsk(dt):
+    return dt + TOMSK_OFFSET if dt else dt
 
 SCHEMA = 't_p16512527_chat_app_registratio'
 ROOMS = ['kuhnya', 'kurilka', 'baraholka', 'ucheba', 'tomsk', 'znakomstva', 'flirt', 'sex', 'noch']
@@ -90,6 +97,7 @@ def handler(event: dict, context) -> dict:
     conn = psycopg2.connect(os.environ['DATABASE_URL'])
     conn.autocommit = True
     cur = conn.cursor()
+    cur.execute("SET TIME ZONE 'UTC'")
 
     try:
         if method == 'GET' and action == 'feed':
@@ -104,7 +112,7 @@ def handler(event: dict, context) -> dict:
             messages = [
                 {
                     'id': r[0], 'nick': r[1], 'color': r[2], 'text': r[3],
-                    'time': r[4].strftime('%H:%M'), 'avatar': r[5], 'avatarUrl': r[6],
+                    'time': tomsk(r[4]).strftime('%H:%M'), 'avatar': r[5], 'avatarUrl': r[6],
                 }
                 for r in rows
             ]
@@ -214,7 +222,7 @@ def handler(event: dict, context) -> dict:
             cur.execute(f"UPDATE {SCHEMA}.users SET last_seen = NOW(), room = '{esc(room)}' WHERE id = {user['id']}")
             return respond(200, {'message': {
                 'id': mid, 'nick': user['nick'], 'color': user['color'], 'text': text,
-                'time': created.strftime('%H:%M'), 'avatar': user['avatar'], 'avatarUrl': user['avatarUrl'],
+                'time': tomsk(created).strftime('%H:%M'), 'avatar': user['avatar'], 'avatarUrl': user['avatarUrl'],
             }})
 
         if method == 'POST' and action == 'profile':
@@ -327,7 +335,7 @@ def handler(event: dict, context) -> dict:
                 'messages': [
                     {
                         'id': r[0], 'nick': r[1], 'color': r[2], 'text': r[3],
-                        'time': r[4].strftime('%H:%M'), 'avatar': r[5], 'avatarUrl': r[6],
+                        'time': tomsk(r[4]).strftime('%H:%M'), 'avatar': r[5], 'avatarUrl': r[6],
                     }
                     for r in rows
                 ],
@@ -360,7 +368,7 @@ def handler(event: dict, context) -> dict:
             cur.execute(f"UPDATE {SCHEMA}.users SET last_seen = NOW() WHERE id = {user['id']}")
             return respond(200, {'message': {
                 'id': mid, 'nick': user['nick'], 'color': user['color'], 'text': text,
-                'time': created.strftime('%H:%M'), 'avatar': user['avatar'], 'avatarUrl': user['avatarUrl'],
+                'time': tomsk(created).strftime('%H:%M'), 'avatar': user['avatar'], 'avatarUrl': user['avatarUrl'],
             }})
 
         if method == 'POST' and action == 'call_signal':
@@ -468,7 +476,7 @@ def handler(event: dict, context) -> dict:
                 return respond(200, {'messages': [
                     {
                         'id': r[0], 'room': r[1], 'nick': r[2], 'color': r[3], 'text': r[4],
-                        'time': r[5].strftime('%d.%m %H:%M'), 'userId': r[6],
+                        'time': tomsk(r[5]).strftime('%d.%m %H:%M'), 'userId': r[6],
                     }
                     for r in cur.fetchall()
                 ]})
