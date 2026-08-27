@@ -234,7 +234,7 @@ const AuthDialog = () => {
                   className="mt-1 h-4 w-4 accent-[hsl(var(--secondary))]"
                 />
                 <span className={cn(errors.agree ? 'text-primary' : 'text-muted-foreground')}>
-                  Читал правила общаги: после 23:00 капсом не орут, реклама — только на барахолке.
+                  Правила общаги прочитал. Обещаю соблюдать их как воинский устав.
                 </span>
               </label>
             </>
