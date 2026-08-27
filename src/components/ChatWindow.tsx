@@ -8,6 +8,7 @@ import { nickColorClass, roomMessages, rooms, onlineUsers as demoUsers } from '@
 import { useDm } from '@/hooks/use-dm';
 import { useCall } from '@/hooks/use-call';
 import Avatar from '@/components/Avatar';
+import EmojiPicker from '@/components/EmojiPicker';
 
 type ChatWindowProps = {
   activeRoom: string;
@@ -195,10 +196,13 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
                   className="w-full bg-transparent text-[1.02rem] text-foreground outline-none placeholder:text-muted-foreground/70"
                 />
               </div>
-              <button type="submit" disabled={sending} className="btn-brut shrink-0 disabled:opacity-60">
-                <Icon name="Send" size={16} />
-                {sending ? 'Шлём…' : 'Отправить'}
-              </button>
+              <div className="flex shrink-0 items-center gap-3">
+                <EmojiPicker onPick={(e) => setDraft((prev) => (prev + e).slice(0, 480))} />
+                <button type="submit" disabled={sending} className="btn-brut flex-1 disabled:opacity-60 sm:flex-none">
+                  <Icon name="Send" size={16} />
+                  {sending ? 'Шлём…' : 'Отправить'}
+                </button>
+              </div>
             </form>
           </div>
 

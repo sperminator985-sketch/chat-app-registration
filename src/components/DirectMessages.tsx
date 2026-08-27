@@ -10,6 +10,7 @@ import { lastSeenText } from '@/lib/last-seen';
 import { useDm } from '@/hooks/use-dm';
 import { useCall } from '@/hooks/use-call';
 import Avatar from '@/components/Avatar';
+import EmojiPicker from '@/components/EmojiPicker';
 
 const DirectMessages = () => {
   const { user } = useAuth();
@@ -175,6 +176,7 @@ const DirectMessages = () => {
             placeholder="Записка соседу…"
             className="flex-1 border-2 border-foreground/35 bg-input px-3 py-2 text-[1rem] outline-none focus:border-secondary placeholder:text-muted-foreground/70"
           />
+          <EmojiPicker onPick={(e) => setDraft((prev) => (prev + e).slice(0, 480))} />
           <button type="submit" disabled={sending} className="btn-brut shrink-0 disabled:opacity-60">
             <Icon name="Send" size={16} />
             {sending ? '…' : 'Послать'}
