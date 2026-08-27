@@ -33,18 +33,24 @@ const Header = ({ onProfile }: HeaderProps) => {
       aria-label="Личные сообщения"
       title="Личные сообщения"
       className={cn(
-        'relative flex h-10 w-10 items-center justify-center border-2 border-foreground/40 text-foreground transition-colors hover:border-secondary hover:text-secondary',
+        'relative flex h-10 w-10 items-center justify-center border-2 text-foreground transition-colors hover:border-secondary hover:text-secondary',
+        unread > 0 ? 'border-primary text-primary' : 'border-foreground/40',
         extra,
       )}
     >
       <Icon name="Mail" size={18} />
       {unread > 0 && (
-        <span className="absolute -right-2 -top-2 min-w-[20px] border-2 border-foreground/40 bg-primary px-1 font-mono text-[0.68rem] font-bold leading-[16px] text-primary-foreground">
+        <span className="absolute -right-2 -top-2 min-w-[20px] animate-pulse border-2 border-foreground/40 bg-primary px-1 font-mono text-[0.68rem] font-bold leading-[16px] text-primary-foreground">
           {unread > 99 ? '99+' : unread}
         </span>
       )}
     </button>
   );
+
+  useEffect(() => {
+    const base = 'Общага.Томск';
+    document.title = unread > 0 ? `(${unread}) ${base}` : base;
+  }, [unread]);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24);
@@ -136,15 +142,31 @@ const Header = ({ onProfile }: HeaderProps) => {
               </a>
             ))}
             {user ? (
-              <button
-                onClick={() => {
-                  setOpen(false);
-                  onProfile();
-                }}
-                className="btn-ghost-brut"
-              >
-                Профиль — {user.nick}
-              </button>
+              <>
+                <button
+                  onClick={() => {
+                    setOpen(false);
+                    openList();
+                  }}
+                  className="btn-ghost-brut flex items-center justify-center gap-2"
+                >
+                  Личные сообщения
+                  {unread > 0 && (
+                    <span className="min-w-[22px] bg-primary px-1 font-mono text-[0.72rem] font-bold leading-[18px] text-primary-foreground">
+                      {unread > 99 ? '99+' : unread}
+                    </span>
+                  )}
+                </button>
+                <button
+                  onClick={() => {
+                    setOpen(false);
+                    onProfile();
+                  }}
+                  className="btn-ghost-brut"
+                >
+                  Профиль — {user.nick}
+                </button>
+              </>
             ) : (
               <div className="flex flex-col gap-3 pt-1">
                 <button
