@@ -18,7 +18,7 @@ type ChatWindowProps = {
 type OnlineItem = { nick: string; color: number; status: string; avatar?: number; avatarUrl?: string | null };
 
 const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
-  const { user, openAuth } = useAuth();
+  const { user, openAuth, signOut } = useAuth();
   const room = useMemo(() => rooms.find((r) => r.id === activeRoom) ?? rooms[0], [activeRoom]);
   const [messages, setMessages] = useState<ApiMessage[]>([]);
   const [online, setOnline] = useState<OnlineItem[]>([]);
@@ -111,6 +111,14 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
                     {r.floor}
                   </button>
                 ))}
+                <button
+                  onClick={signOut}
+                  title="Выйти из общаги"
+                  className="ml-2 flex items-center gap-1.5 border-2 border-foreground/35 px-2.5 py-1 text-[0.72rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground transition-colors hover:border-primary hover:text-primary"
+                >
+                  <Icon name="LogOut" size={14} />
+                  <span className="hidden sm:inline">Выйти</span>
+                </button>
               </div>
             </div>
 
