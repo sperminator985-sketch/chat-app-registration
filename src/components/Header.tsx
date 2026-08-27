@@ -20,6 +20,14 @@ const Header = ({ onProfile }: HeaderProps) => {
   const [scrolled, setScrolled] = useState(false);
   const { user, openAuth } = useAuth();
   const { unread, openList } = useDm();
+  const [temp, setTemp] = useState<number | null>(null);
+
+  useEffect(() => {
+    fetch('https://functions.poehali.dev/2c6a74d1-2f8a-481c-ac3e-49927c9727a9')
+      .then((r) => r.json())
+      .then((d) => setTemp(d.temp))
+      .catch(() => undefined);
+  }, []);
 
   const mailButton = (extra?: string) => (
     <button
@@ -75,6 +83,13 @@ const Header = ({ onProfile }: HeaderProps) => {
         >
           ОБЩАГА<span className="text-secondary">.</span>ТОМСК
         </a>
+
+        {temp !== null && (
+          <span className="hidden items-center gap-2 border-2 border-foreground/30 px-3 py-1.5 text-[0.76rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground lg:flex">
+            <Icon name={temp <= 0 ? 'Snowflake' : 'Sun'} size={14} className="text-secondary" />
+            Сейчас за окном {temp > 0 ? `+${temp}` : temp} градусов
+          </span>
+        )}
 
         <nav className="hidden items-center gap-7 md:flex">
           {links.map((l) => (

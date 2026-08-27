@@ -1,0 +1,10 @@
+{
+  "tests": [
+    {
+      "name": "Температура в Томске",
+      "method": "GET",
+      "path": "/",
+      "expectedStatus": 200
+    }
+  ]
+}
