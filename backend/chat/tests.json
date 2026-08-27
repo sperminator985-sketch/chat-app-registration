@@ -27,6 +27,14 @@
       "bodyMatcher": "partial"
     },
     {
+      "name": "Сигналы звонка без авторизации",
+      "method": "GET",
+      "path": "/?action=call_poll",
+      "expectedStatus": 401,
+      "expectedBody": {"error": "string"},
+      "bodyMatcher": "partial"
+    },
+    {
       "name": "Вход с неверным ником",
       "method": "POST",
       "path": "/?action=login",

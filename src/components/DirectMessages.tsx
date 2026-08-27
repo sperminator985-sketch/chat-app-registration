@@ -7,11 +7,13 @@ import { useAuth } from '@/hooks/use-auth';
 import { api, ApiMessage } from '@/lib/api';
 import { nickColorClass, NickColor } from '@/data/chat';
 import { useDm } from '@/hooks/use-dm';
+import { useCall } from '@/hooks/use-call';
 import Avatar from '@/components/Avatar';
 
 const DirectMessages = () => {
   const { user } = useAuth();
   const { dmNick: nick, closeDm: onClose, refresh } = useDm();
+  const { startCall } = useCall();
   const [messages, setMessages] = useState<ApiMessage[]>([]);
   const [peer, setPeer] = useState<{ nick: string; color: NickColor; status: string; avatar?: number; avatarUrl?: string | null } | null>(null);
   const [draft, setDraft] = useState('');
@@ -79,6 +81,17 @@ const DirectMessages = () => {
             </p>
             {peer && <p className="mt-1 text-[0.85rem] text-muted-foreground">{peer.status}</p>}
           </div>
+          {nick && (
+            <button
+              type="button"
+              onClick={() => startCall(nick)}
+              title="Позвонить по видео"
+              aria-label="Позвонить по видео"
+              className="ml-auto mr-8 flex h-9 w-9 shrink-0 items-center justify-center border-2 border-foreground/35 text-foreground transition-colors hover:border-secondary hover:text-secondary"
+            >
+              <Icon name="Video" size={18} />
+            </button>
+          )}
         </div>
 
         <div ref={feedRef} className="scrollbar-brut h-[240px] space-y-2 overflow-y-auto px-5 py-4 sm:h-[320px]">

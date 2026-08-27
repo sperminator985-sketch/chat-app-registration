@@ -78,4 +78,17 @@ export const api = {
     }),
   dmSend: (body: { nick: string; text: string }) =>
     request<{ message: ApiMessage }>('dm_send', { method: 'POST', body }),
+  callSignal: (body: { nick: string; callId: string; kind: CallKind; payload?: unknown }) =>
+    request<{ ok: boolean }>('call_signal', { method: 'POST', body }),
+  callPoll: () => request<{ signals: CallSignal[] }>('call_poll'),
+};
+
+export type CallKind = 'offer' | 'answer' | 'ice' | 'hangup' | 'decline';
+
+export type CallSignal = {
+  id: number;
+  callId: string;
+  kind: CallKind;
+  payload: unknown;
+  from: { nick: string; color: NickColor; avatar?: number; avatarUrl?: string | null };
 };

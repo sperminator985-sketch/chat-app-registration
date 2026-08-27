@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { AuthProvider } from '@/hooks/use-auth';
 import { DmProvider } from '@/hooks/use-dm';
+import { CallProvider } from '@/hooks/use-call';
+import CallWindow from '@/components/CallWindow';
 import Header from '@/components/Header';
 import Hero from '@/components/Hero';
 import Ticker from '@/components/Ticker';
@@ -44,6 +46,7 @@ const PageBody = () => {
       <DialogsList />
       <DirectMessages />
       <ProfileDialog open={profileOpen} onOpenChange={setProfileOpen} />
+      <CallWindow />
     </div>
   );
 };
@@ -51,7 +54,9 @@ const PageBody = () => {
 const Index = () => (
   <AuthProvider>
     <DmProvider>
-      <PageBody />
+      <CallProvider>
+        <PageBody />
+      </CallProvider>
     </DmProvider>
   </AuthProvider>
 );

@@ -334,6 +334,53 @@ def handler(event: dict, context) -> dict:
                 'time': created.strftime('%H:%M'), 'avatar': user['avatar'], 'avatarUrl': user['avatarUrl'],
             }})
 
+        if method == 'POST' and action == 'call_signal':
+            user = get_user_by_token(cur, token)
+            if not user:
+                return respond(401, {'error': 'Не авторизован'})
+            to_nick = (body.get('nick') or '').strip()
+            call_id = (body.get('callId') or '').strip()[:64]
+            kind = (body.get('kind') or '').strip()[:16]
+            payload = body.get('payload')
+            if kind not in ('offer', 'answer', 'ice', 'hangup', 'decline'):
+                return respond(400, {'error': 'Неизвестный сигнал'})
+            cur.execute(f"SELECT id FROM {SCHEMA}.users WHERE nick_lower = '{esc(to_nick.lower())}'")
+            other = cur.fetchone()
+            if not other:
+                return respond(404, {'error': 'Такого жильца нет'})
+            data = json.dumps(payload, ensure_ascii=False) if payload is not None else None
+            cur.execute(
+                f"INSERT INTO {SCHEMA}.call_signals (sender_id, recipient_id, call_id, kind, payload) "
+                f"VALUES ({user['id']}, {other[0]}, '{esc(call_id)}', '{esc(kind)}', {sql_str(data)})"
+            )
+            cur.execute(f"UPDATE {SCHEMA}.users SET last_seen = NOW() WHERE id = {user['id']}")
+            return respond(200, {'ok': True})
+
+        if method == 'GET' and action == 'call_poll':
+            user = get_user_by_token(cur, token)
+            if not user:
+                return respond(401, {'error': 'Не авторизован'})
+            me = user['id']
+            cur.execute(
+                f"SELECT s.id, s.call_id, s.kind, s.payload, u.nick, u.color, u.avatar, u.avatar_url "
+                f"FROM {SCHEMA}.call_signals s JOIN {SCHEMA}.users u ON u.id = s.sender_id "
+                f"WHERE s.recipient_id = {me} AND s.consumed = FALSE "
+                f"AND s.created_at > NOW() - INTERVAL '2 minutes' ORDER BY s.id LIMIT 40"
+            )
+            rows = cur.fetchall()
+            if rows:
+                ids = ','.join(str(r[0]) for r in rows)
+                cur.execute(f"UPDATE {SCHEMA}.call_signals SET consumed = TRUE WHERE id IN ({ids})")
+            cur.execute(f"UPDATE {SCHEMA}.users SET last_seen = NOW() WHERE id = {me}")
+            return respond(200, {'signals': [
+                {
+                    'id': r[0], 'callId': r[1], 'kind': r[2],
+                    'payload': json.loads(r[3]) if r[3] else None,
+                    'from': {'nick': r[4], 'color': r[5], 'avatar': r[6], 'avatarUrl': r[7]},
+                }
+                for r in rows
+            ]})
+
         if method == 'POST' and action == 'logout':
             if token:
                 cur.execute(f"UPDATE {SCHEMA}.sessions SET user_id = user_id WHERE token = '{esc(token)}'")

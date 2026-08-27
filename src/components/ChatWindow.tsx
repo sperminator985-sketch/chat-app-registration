@@ -6,6 +6,7 @@ import { api, ApiMessage } from '@/lib/api';
 import { toast } from '@/hooks/use-toast';
 import { nickColorClass, roomMessages, rooms, onlineUsers as demoUsers } from '@/data/chat';
 import { useDm } from '@/hooks/use-dm';
+import { useCall } from '@/hooks/use-call';
 import Avatar from '@/components/Avatar';
 
 type ChatWindowProps = {
@@ -24,6 +25,7 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
   const [sending, setSending] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const { unreadBy: unread, openDm } = useDm();
+  const { startCall } = useCall();
   const feedRef = useRef<HTMLDivElement>(null);
 
   const load = useCallback(async () => {
@@ -211,7 +213,18 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
               {onlineList.map((u) => {
                 const isMe = Boolean(user && u.nick === user.nick);
                 return (
-                  <li key={u.nick} className={cn(isMe && 'bg-muted/60')}>
+                  <li key={u.nick} className={cn('relative', isMe && 'bg-muted/60')}>
+                    {!isMe && (
+                      <button
+                        type="button"
+                        onClick={() => startCall(u.nick)}
+                        title={`Видеозвонок: ${u.nick}`}
+                        aria-label={`Видеозвонок: ${u.nick}`}
+                        className="absolute bottom-3 right-3 z-10 flex h-7 w-7 items-center justify-center border-2 border-foreground/30 text-muted-foreground transition-colors hover:border-secondary hover:text-secondary"
+                      >
+                        <Icon name="Video" size={13} />
+                      </button>
+                    )}
                     <button
                       type="button"
                       onClick={() => openDm(u.nick)}
