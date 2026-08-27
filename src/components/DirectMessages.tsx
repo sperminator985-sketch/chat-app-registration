@@ -13,7 +13,7 @@ const DirectMessages = () => {
   const { user } = useAuth();
   const { dmNick: nick, closeDm: onClose, refresh } = useDm();
   const [messages, setMessages] = useState<ApiMessage[]>([]);
-  const [peer, setPeer] = useState<{ nick: string; color: NickColor; status: string; avatar?: number } | null>(null);
+  const [peer, setPeer] = useState<{ nick: string; color: NickColor; status: string; avatar?: number; avatarUrl?: string | null } | null>(null);
   const [draft, setDraft] = useState('');
   const [sending, setSending] = useState(false);
   const [loaded, setLoaded] = useState(false);
@@ -71,7 +71,7 @@ const DirectMessages = () => {
     <Dialog open={Boolean(nick)} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-w-[560px] border-2 border-foreground/40 bg-background p-0">
         <div className="flex items-center gap-3 border-b-2 border-foreground/35 px-5 py-4">
-          {peer ? <Avatar avatar={peer.avatar} color={peer.color} size={34} /> : <Icon name="Mail" size={18} className="text-secondary" />}
+          {peer ? <Avatar avatar={peer.avatar} avatarUrl={peer.avatarUrl} color={peer.color} size={34} /> : <Icon name="Mail" size={18} className="text-secondary" />}
           <div>
             <p className="font-display text-lg font-extrabold uppercase leading-none tracking-[-0.02em]">
               Личка с{' '}
@@ -101,7 +101,7 @@ const DirectMessages = () => {
                 )}
               >
                 <p className="flex items-center gap-2">
-                  <Avatar avatar={m.avatar} color={m.color} size={18} />
+                  <Avatar avatar={m.avatar} avatarUrl={m.avatarUrl} color={m.color} size={18} />
                   <span className={cn('font-semibold', nickColorClass[m.color])}>{m.nick}</span>
                   <span className="font-mono text-[0.72rem] text-muted-foreground">{m.time}</span>
                 </p>

@@ -45,7 +45,7 @@ const DialogsList = () => {
                   onClick={() => openDm(d.nick)}
                   className="flex w-full items-center gap-3 px-5 py-3.5 text-left transition-colors hover:bg-muted/50"
                 >
-                  <Avatar avatar={d.avatar} color={d.color} size={26} />
+                  <Avatar avatar={d.avatar} avatarUrl={d.avatarUrl} color={d.color} size={26} />
                   <span className={cn('font-semibold', nickColorClass[d.color])}>{d.nick}</span>
                   {d.unread > 0 && (
                     <span className="ml-auto border-2 border-secondary bg-secondary px-1.5 font-mono text-[0.72rem] font-bold text-secondary-foreground">

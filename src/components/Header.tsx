@@ -99,7 +99,7 @@ const Header = ({ onProfile }: HeaderProps) => {
                 onClick={onProfile}
                 className="flex items-center gap-2 border-2 border-foreground/40 px-4 py-2 text-[0.8rem] font-semibold uppercase tracking-[0.12em] transition-colors hover:border-secondary"
               >
-                <Avatar avatar={user.avatar} color={user.color} size={20} />
+                <Avatar avatar={user.avatar} avatarUrl={user.avatarUrl} color={user.color} size={20} />
                 <span className={nickColorClass[user.color]}>{user.nick}</span>
               </button>
             </>

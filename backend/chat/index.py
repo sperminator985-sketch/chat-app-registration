@@ -1,10 +1,11 @@
+import base64
 import json
 import os
 import re
 import hashlib
 import secrets
-from datetime import datetime
 
+import boto3
 import psycopg2
 
 SCHEMA = 't_p16512527_chat_app_registratio'
@@ -43,14 +44,19 @@ def user_row(row) -> dict:
     return {
         'id': row[0], 'nick': row[1], 'color': row[2], 'status': row[3],
         'room': row[4], 'since': row[5].strftime('%Y'), 'avatar': row[6],
+        'avatarUrl': row[7] if len(row) > 7 else None,
     }
+
+
+def sql_str(value):
+    return 'NULL' if value is None else f"'{esc(value)}'"
 
 
 def get_user_by_token(cur, token: str):
     if not token:
         return None
     cur.execute(
-        f"SELECT u.id, u.nick, u.color, u.status, u.room, u.created_at, u.avatar FROM {SCHEMA}.sessions s "
+        f"SELECT u.id, u.nick, u.color, u.status, u.room, u.created_at, u.avatar, u.avatar_url FROM {SCHEMA}.sessions s "
         f"JOIN {SCHEMA}.users u ON u.id = s.user_id WHERE s.token = '{esc(token)}'"
     )
     row = cur.fetchone()
@@ -84,19 +90,25 @@ def handler(event: dict, context) -> dict:
             if room not in ROOMS:
                 return respond(400, {'error': 'Неизвестная комната'})
             cur.execute(
-                f"SELECT id, nick, color, text, created_at, avatar FROM {SCHEMA}.messages "
+                f"SELECT id, nick, color, text, created_at, avatar, avatar_url FROM {SCHEMA}.messages "
                 f"WHERE room = '{esc(room)}' ORDER BY id DESC LIMIT 60"
             )
             rows = cur.fetchall()[::-1]
             messages = [
-                {'id': r[0], 'nick': r[1], 'color': r[2], 'text': r[3], 'time': r[4].strftime('%H:%M'), 'avatar': r[5]}
+                {
+                    'id': r[0], 'nick': r[1], 'color': r[2], 'text': r[3],
+                    'time': r[4].strftime('%H:%M'), 'avatar': r[5], 'avatarUrl': r[6],
+                }
                 for r in rows
             ]
             cur.execute(
-                f"SELECT nick, color, status, avatar FROM {SCHEMA}.users "
+                f"SELECT nick, color, status, avatar, avatar_url FROM {SCHEMA}.users "
                 f"WHERE last_seen > NOW() - INTERVAL '5 minutes' ORDER BY last_seen DESC LIMIT 40"
             )
-            online = [{'nick': r[0], 'color': r[1], 'status': r[2], 'avatar': r[3]} for r in cur.fetchall()]
+            online = [
+                {'nick': r[0], 'color': r[1], 'status': r[2], 'avatar': r[3], 'avatarUrl': r[4]}
+                for r in cur.fetchall()
+            ]
             cur.execute(
                 f"SELECT room, COUNT(*) FROM {SCHEMA}.users "
                 f"WHERE last_seen > NOW() - INTERVAL '5 minutes' GROUP BY room"
@@ -144,7 +156,7 @@ def handler(event: dict, context) -> dict:
             cur.execute(
                 f"INSERT INTO {SCHEMA}.users (nick, nick_lower, password_hash, color, status, room, avatar) "
                 f"VALUES ('{esc(nick)}', '{esc(nick.lower())}', '{esc(pwd)}', {color}, 'только заселился', '{esc(room)}', {avatar}) "
-                f"RETURNING id, nick, color, status, room, created_at, avatar"
+                f"RETURNING id, nick, color, status, room, created_at, avatar, avatar_url"
             )
             user = user_row(cur.fetchone())
             new_token = secrets.token_hex(24)
@@ -155,11 +167,11 @@ def handler(event: dict, context) -> dict:
             nick = (body.get('nick') or '').strip()
             password = body.get('password') or ''
             cur.execute(
-                f"SELECT id, nick, color, status, room, created_at, avatar, password_hash FROM {SCHEMA}.users "
+                f"SELECT id, nick, color, status, room, created_at, avatar, avatar_url, password_hash FROM {SCHEMA}.users "
                 f"WHERE nick_lower = '{esc(nick.lower())}'"
             )
             row = cur.fetchone()
-            if not row or not check_password(password, row[7]):
+            if not row or not check_password(password, row[8]):
                 return respond(401, {'error': 'Ник или пароль не подходят'})
             user = user_row(row)
             new_token = secrets.token_hex(24)
@@ -178,15 +190,16 @@ def handler(event: dict, context) -> dict:
             if room not in ROOMS:
                 return respond(400, {'error': 'Неизвестная комната'})
             cur.execute(
-                f"INSERT INTO {SCHEMA}.messages (room, user_id, nick, color, text, avatar) "
-                f"VALUES ('{esc(room)}', {user['id']}, '{esc(user['nick'])}', {user['color']}, '{esc(text)}', {user['avatar']}) "
+                f"INSERT INTO {SCHEMA}.messages (room, user_id, nick, color, text, avatar, avatar_url) "
+                f"VALUES ('{esc(room)}', {user['id']}, '{esc(user['nick'])}', {user['color']}, '{esc(text)}', "
+                f"{user['avatar']}, {sql_str(user['avatarUrl'])}) "
                 f"RETURNING id, created_at"
             )
             mid, created = cur.fetchone()
             cur.execute(f"UPDATE {SCHEMA}.users SET last_seen = NOW(), room = '{esc(room)}' WHERE id = {user['id']}")
             return respond(200, {'message': {
                 'id': mid, 'nick': user['nick'], 'color': user['color'], 'text': text,
-                'time': created.strftime('%H:%M'), 'avatar': user['avatar'],
+                'time': created.strftime('%H:%M'), 'avatar': user['avatar'], 'avatarUrl': user['avatarUrl'],
             }})
 
         if method == 'POST' and action == 'profile':
@@ -200,9 +213,37 @@ def handler(event: dict, context) -> dict:
             avatar = int(body.get('avatar') or user['avatar'])
             if avatar < 1 or avatar > 12:
                 avatar = user['avatar']
+
+            avatar_url = user['avatarUrl']
+            image = body.get('image')
+            if body.get('removeImage'):
+                avatar_url = None
+            elif image:
+                header, _, payload = image.partition(',')
+                raw = base64.b64decode(payload or header)
+                if len(raw) > 2 * 1024 * 1024:
+                    return respond(400, {'error': 'Картинка тяжелее 2 МБ'})
+                ext = 'png'
+                if 'jpeg' in header or 'jpg' in header:
+                    ext = 'jpg'
+                elif 'webp' in header:
+                    ext = 'webp'
+                elif 'gif' in header:
+                    ext = 'gif'
+                key = f"avatars/{user['id']}-{secrets.token_hex(6)}.{ext}"
+                s3 = boto3.client(
+                    's3',
+                    endpoint_url='https://bucket.poehali.dev',
+                    aws_access_key_id=os.environ['AWS_ACCESS_KEY_ID'],
+                    aws_secret_access_key=os.environ['AWS_SECRET_ACCESS_KEY'],
+                )
+                s3.put_object(Bucket='files', Key=key, Body=raw, ContentType=f'image/{ext}')
+                avatar_url = f"https://cdn.poehali.dev/projects/{os.environ['AWS_ACCESS_KEY_ID']}/bucket/{key}"
+
             cur.execute(
-                f"UPDATE {SCHEMA}.users SET status = '{esc(status)}', color = {color}, avatar = {avatar}, last_seen = NOW() "
-                f"WHERE id = {user['id']} RETURNING id, nick, color, status, room, created_at, avatar"
+                f"UPDATE {SCHEMA}.users SET status = '{esc(status)}', color = {color}, avatar = {avatar}, "
+                f"avatar_url = {sql_str(avatar_url)}, last_seen = NOW() "
+                f"WHERE id = {user['id']} RETURNING id, nick, color, status, room, created_at, avatar, avatar_url"
             )
             return respond(200, {'user': user_row(cur.fetchone())})
 
@@ -213,13 +254,16 @@ def handler(event: dict, context) -> dict:
             me = user['id']
             cur.execute(
                 f"SELECT u.nick, u.color, MAX(d.id) AS last_id, "
-                f"SUM(CASE WHEN d.recipient_id = {me} AND d.read_at IS NULL THEN 1 ELSE 0 END) AS unread, u.avatar "
+                f"SUM(CASE WHEN d.recipient_id = {me} AND d.read_at IS NULL THEN 1 ELSE 0 END) AS unread, u.avatar, u.avatar_url "
                 f"FROM {SCHEMA}.direct_messages d "
                 f"JOIN {SCHEMA}.users u ON u.id = CASE WHEN d.sender_id = {me} THEN d.recipient_id ELSE d.sender_id END "
                 f"WHERE d.sender_id = {me} OR d.recipient_id = {me} "
-                f"GROUP BY u.nick, u.color, u.avatar ORDER BY last_id DESC LIMIT 30"
+                f"GROUP BY u.nick, u.color, u.avatar, u.avatar_url ORDER BY last_id DESC LIMIT 30"
             )
-            dialogs = [{'nick': r[0], 'color': r[1], 'unread': int(r[3] or 0), 'avatar': r[4]} for r in cur.fetchall()]
+            dialogs = [
+                {'nick': r[0], 'color': r[1], 'unread': int(r[3] or 0), 'avatar': r[4], 'avatarUrl': r[5]}
+                for r in cur.fetchall()
+            ]
             total_unread = sum(d['unread'] for d in dialogs)
             return respond(200, {'dialogs': dialogs, 'unread': total_unread})
 
@@ -229,7 +273,7 @@ def handler(event: dict, context) -> dict:
                 return respond(401, {'error': 'Не авторизован'})
             with_nick = (params.get('nick') or '').strip()
             cur.execute(
-                f"SELECT id, nick, color, status, avatar FROM {SCHEMA}.users "
+                f"SELECT id, nick, color, status, avatar, avatar_url FROM {SCHEMA}.users "
                 f"WHERE nick_lower = '{esc(with_nick.lower())}'"
             )
             other = cur.fetchone()
@@ -237,7 +281,8 @@ def handler(event: dict, context) -> dict:
                 return respond(404, {'error': 'Такого жильца нет'})
             me = user['id']
             cur.execute(
-                f"SELECT id, sender_nick, sender_color, text, created_at, sender_avatar FROM {SCHEMA}.direct_messages "
+                f"SELECT id, sender_nick, sender_color, text, created_at, sender_avatar, sender_avatar_url "
+                f"FROM {SCHEMA}.direct_messages "
                 f"WHERE (sender_id = {me} AND recipient_id = {other[0]}) "
                 f"OR (sender_id = {other[0]} AND recipient_id = {me}) ORDER BY id DESC LIMIT 80"
             )
@@ -248,9 +293,15 @@ def handler(event: dict, context) -> dict:
             )
             cur.execute(f"UPDATE {SCHEMA}.users SET last_seen = NOW() WHERE id = {me}")
             return respond(200, {
-                'peer': {'nick': other[1], 'color': other[2], 'status': other[3], 'avatar': other[4]},
+                'peer': {
+                    'nick': other[1], 'color': other[2], 'status': other[3],
+                    'avatar': other[4], 'avatarUrl': other[5],
+                },
                 'messages': [
-                    {'id': r[0], 'nick': r[1], 'color': r[2], 'text': r[3], 'time': r[4].strftime('%H:%M'), 'avatar': r[5]}
+                    {
+                        'id': r[0], 'nick': r[1], 'color': r[2], 'text': r[3],
+                        'time': r[4].strftime('%H:%M'), 'avatar': r[5], 'avatarUrl': r[6],
+                    }
                     for r in rows
                 ],
             })
@@ -270,15 +321,17 @@ def handler(event: dict, context) -> dict:
             if other[0] == user['id']:
                 return respond(400, {'error': 'Самому себе писать скучно'})
             cur.execute(
-                f"INSERT INTO {SCHEMA}.direct_messages (sender_id, recipient_id, sender_nick, sender_color, text, sender_avatar) "
-                f"VALUES ({user['id']}, {other[0]}, '{esc(user['nick'])}', {user['color']}, '{esc(text)}', {user['avatar']}) "
+                f"INSERT INTO {SCHEMA}.direct_messages "
+                f"(sender_id, recipient_id, sender_nick, sender_color, text, sender_avatar, sender_avatar_url) "
+                f"VALUES ({user['id']}, {other[0]}, '{esc(user['nick'])}', {user['color']}, '{esc(text)}', "
+                f"{user['avatar']}, {sql_str(user['avatarUrl'])}) "
                 f"RETURNING id, created_at"
             )
             mid, created = cur.fetchone()
             cur.execute(f"UPDATE {SCHEMA}.users SET last_seen = NOW() WHERE id = {user['id']}")
             return respond(200, {'message': {
                 'id': mid, 'nick': user['nick'], 'color': user['color'], 'text': text,
-                'time': created.strftime('%H:%M'), 'avatar': user['avatar'],
+                'time': created.strftime('%H:%M'), 'avatar': user['avatar'], 'avatarUrl': user['avatarUrl'],
             }})
 
         if method == 'POST' and action == 'logout':

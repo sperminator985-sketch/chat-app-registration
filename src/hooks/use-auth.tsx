@@ -15,7 +15,7 @@ type AuthState = {
   register: (body: { nick: string; password: string; color: number; room: string; avatar: number }) => Promise<void>;
   login: (body: { nick: string; password: string }) => Promise<void>;
   signOut: () => void;
-  saveProfile: (body: { status: string; color: number; avatar: number }) => Promise<void>;
+  saveProfile: (body: { status: string; color: number; avatar: number; image?: string; removeImage?: boolean }) => Promise<void>;
 };
 
 const AuthContext = createContext<AuthState | null>(null);
@@ -69,7 +69,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setUser(null);
   }, []);
 
-  const saveProfile = useCallback(async (body: { status: string; color: number; avatar: number }) => {
+  const saveProfile = useCallback(async (body: { status: string; color: number; avatar: number; image?: string; removeImage?: boolean }) => {
     const res = await api.profile(body);
     setUser(res.user);
   }, []);

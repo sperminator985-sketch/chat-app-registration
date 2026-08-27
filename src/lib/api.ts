@@ -11,6 +11,7 @@ export type ApiUser = {
   room: string;
   since: string;
   avatar: number;
+  avatarUrl?: string | null;
 };
 
 export type ApiMessage = {
@@ -20,11 +21,12 @@ export type ApiMessage = {
   text: string;
   time: string;
   avatar?: number;
+  avatarUrl?: string | null;
 };
 
 export type FeedResponse = {
   messages: ApiMessage[];
-  online: { nick: string; color: NickColor; status: string; avatar?: number }[];
+  online: { nick: string; color: NickColor; status: string; avatar?: number; avatarUrl?: string | null }[];
   roomCounts: Record<string, number>;
   totalUsers: number;
   dayMessages: number;
@@ -59,16 +61,19 @@ export const api = {
     request<{ user: ApiUser; token: string }>('login', { method: 'POST', body }),
   send: (body: { text: string; room: string }) =>
     request<{ message: ApiMessage }>('send', { method: 'POST', body }),
-  profile: (body: { status: string; color: number; avatar: number }) =>
+  profile: (body: { status: string; color: number; avatar: number; image?: string; removeImage?: boolean }) =>
     request<{ user: ApiUser }>('profile', { method: 'POST', body }),
   logout: () => request<{ ok: boolean }>('logout', { method: 'POST' }),
   dialogs: () =>
     request<{
-      dialogs: { nick: string; color: NickColor; unread: number; avatar?: number }[];
+      dialogs: { nick: string; color: NickColor; unread: number; avatar?: number; avatarUrl?: string | null }[];
       unread: number;
     }>('dialogs'),
   dm: (nick: string) =>
-    request<{ peer: { nick: string; color: NickColor; status: string; avatar?: number }; messages: ApiMessage[] }>('dm', {
+    request<{
+      peer: { nick: string; color: NickColor; status: string; avatar?: number; avatarUrl?: string | null };
+      messages: ApiMessage[];
+    }>('dm', {
       query: `&nick=${encodeURIComponent(nick)}`,
     }),
   dmSend: (body: { nick: string; text: string }) =>
