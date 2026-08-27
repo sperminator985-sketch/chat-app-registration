@@ -27,10 +27,10 @@ const Hero = () => {
         />
 
         <div
-          className="mt-3 flex animate-rise flex-col items-start gap-6 md:flex-row md:items-start md:justify-between md:gap-9"
+          className="mt-3 flex animate-rise flex-col items-center gap-6 md:flex-row md:items-start md:justify-between md:gap-9"
           style={{ animationDelay: '.18s' }}
         >
-          <h1 className="font-extrabold uppercase tracking-[-0.035em]">
+          <h1 className="text-center font-extrabold uppercase tracking-[-0.035em] md:text-left">
             <span className="block whitespace-nowrap text-[clamp(1.6rem,4.6vw,4.4rem)] leading-[.92] tracking-[-0.03em] text-foreground text-stroke-plate">
               ТОМСК НА СВЯЗИ
             </span>
