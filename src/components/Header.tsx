@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import Icon from '@/components/ui/icon';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/use-auth';
-import { nickColorClass, onlineUsers } from '@/data/chat';
+import { nickColorClass } from '@/data/chat';
 import { useDm } from '@/hooks/use-dm';
 import { useWeather, formatTemp, degreeWord } from '@/hooks/use-weather';
 import { useLiveStats } from '@/hooks/use-live-stats';
@@ -24,7 +24,6 @@ const Header = ({ onProfile }: HeaderProps) => {
   const { unread, openList } = useDm();
   const temp = useWeather();
   const live = useLiveStats();
-  const onlineFallback = onlineUsers.length;
   const links = user ? [] : guestLinks;
 
   const mailButton = (extra?: string) => (
@@ -108,7 +107,7 @@ const Header = ({ onProfile }: HeaderProps) => {
           Сейчас в чате{' '}
           <span className="flex items-center gap-1.5 text-[1.05rem] font-bold text-secondary">
             <span className="h-2 w-2 animate-pulse bg-secondary" />
-            {live ? live.online : onlineFallback}
+            {live ? live.online : '—'}
           </span>
         </span>
 
@@ -175,7 +174,7 @@ const Header = ({ onProfile }: HeaderProps) => {
               Сейчас в чате
               <span className="ml-auto flex items-center gap-1.5 font-mono text-[1.05rem] font-bold leading-none text-secondary">
                 <span className="h-2 w-2 animate-pulse bg-secondary" />
-                {live ? live.online : onlineFallback}
+                {live ? live.online : '—'}
               </span>
             </span>
             {links.map((l) => (
