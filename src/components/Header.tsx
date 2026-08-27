@@ -102,6 +102,17 @@ const Header = ({ onProfile }: HeaderProps) => {
           </span>
         )}
 
+        {live && (
+          <span className="hidden items-center gap-2 border-2 border-foreground/30 px-3 py-1.5 text-[0.76rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground lg:flex">
+            <Icon name="Lightbulb" size={14} className="text-secondary" />
+            Сейчас в чате{' '}
+            <span className="flex items-center gap-1.5 text-[1.05rem] font-bold text-secondary">
+              <span className="h-2 w-2 animate-pulse bg-secondary" />
+              {live.online}
+            </span>
+          </span>
+        )}
+
         <nav className="hidden items-center gap-7 md:flex">
           {links.map((l) => (
             <a key={l.href} href={l.href} onClick={go(l.href)} className="nav-link">
