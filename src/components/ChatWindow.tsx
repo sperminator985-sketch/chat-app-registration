@@ -87,14 +87,14 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
       <div className="mx-auto flex w-full max-w-[1400px] flex-1 flex-col px-3 py-4 md:px-6 md:py-6">
         <div className="grid flex-1 gap-px border-2 border-foreground/35 bg-foreground/25 lg:grid-cols-[1fr_280px]">
           <div className="flex min-h-0 flex-col bg-background">
-            <div className="flex flex-wrap items-center justify-between gap-3 border-b-2 border-foreground/35 px-5 py-4">
+            <div className="flex flex-wrap items-center gap-3 border-b-2 border-foreground/35 px-5 py-4">
               <div className="flex items-center gap-3">
                 <Icon name={room.icon} size={20} className="text-secondary" />
                 <span className="font-display text-lg font-extrabold uppercase tracking-[-0.02em]">
                   Этаж {room.floor} · {room.title}
                 </span>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="mx-auto flex items-center gap-2">
                 {rooms.map((r) => (
                   <button
                     key={r.id}
@@ -110,15 +110,15 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
                     {r.floor}
                   </button>
                 ))}
-                <button
-                  onClick={signOut}
-                  title="Выйти из общаги"
-                  className="ml-2 flex items-center gap-1.5 border-2 border-foreground/35 px-2.5 py-1 text-[0.72rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground transition-colors hover:border-primary hover:text-primary"
-                >
-                  <Icon name="LogOut" size={14} />
-                  <span className="hidden sm:inline">Выйти</span>
-                </button>
               </div>
+              <button
+                onClick={signOut}
+                title="Выйти из общаги"
+                className="flex shrink-0 items-center gap-1.5 border-2 border-foreground/35 px-2.5 py-1 text-[0.72rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground transition-colors hover:border-primary hover:text-primary"
+              >
+                <Icon name="LogOut" size={14} />
+                <span className="hidden sm:inline">Выйти</span>
+              </button>
             </div>
 
             <div
