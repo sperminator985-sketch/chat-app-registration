@@ -16,6 +16,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit;
 }
 
+const TZ_OFFSET = 7 * 3600; // Томск, UTC+7
+
+function tomskTs(?string $utc = null): int
+{
+    $ts = $utc === null ? time() : strtotime($utc . ' UTC');
+    return $ts + TZ_OFFSET;
+}
+
+function fmtTime(?string $utc = null): string
+{
+    $ts = tomskTs($utc);
+    $today = (int) floor(tomskTs() / 86400);
+    $day = (int) floor($ts / 86400);
+    $diff = $today - $day;
+    if ($diff <= 0) {
+        return gmdate('H:i', $ts);
+    }
+    if ($diff === 1) {
+        return 'вчера ' . gmdate('H:i', $ts);
+    }
+    if (gmdate('Y', $ts) === gmdate('Y', tomskTs())) {
+        return gmdate('d.m H:i', $ts);
+    }
+    return gmdate('d.m.Y H:i', $ts);
+}
+
 const ROOMS = ['kuhnya', 'kurilka', 'baraholka', 'ucheba', 'tomsk', 'znakomstva', 'flirt', 'sex', 'noch'];
 const ONLINE_SEC = 45;
 const OWNER_NICK = 'админ';
@@ -71,7 +97,7 @@ function shapeUser(array $r): array
         'color' => (int) $r['color'],
         'status' => $r['status'],
         'room' => $r['room'],
-        'since' => date('Y', strtotime($r['created_at'])),
+        'since' => gmdate('d.m.Y', tomskTs($r['created_at'])),
         'avatar' => (int) $r['avatar'],
         'avatarUrl' => $r['avatar_url'],
         'isAdmin' => (bool) ($r['is_admin'] ?? false),
@@ -116,7 +142,7 @@ function shapeMessage(array $r): array
         'nick' => array_key_exists('nick', $r) ? $r['nick'] : ($r['sender_nick'] ?? ''),
         'color' => (int) (array_key_exists('color', $r) ? $r['color'] : ($r['sender_color'] ?? 1)),
         'text' => $r['text'],
-        'time' => date('H:i', strtotime($r['created_at'] . ' UTC')),
+        'time' => fmtTime($r['created_at']),
         'avatar' => (int) (array_key_exists('avatar', $r) ? $r['avatar'] : ($r['sender_avatar'] ?? 1)),
         'avatarUrl' => array_key_exists('avatar_url', $r) ? $r['avatar_url'] : ($r['sender_avatar_url'] ?? null),
     ];
@@ -311,7 +337,7 @@ try {
             'nick' => $user['nick'],
             'color' => $user['color'],
             'text' => $text,
-            'time' => gmdate('H:i'),
+            'time' => fmtTime(),
             'avatar' => $user['avatar'],
             'avatarUrl' => $user['avatarUrl'],
         ]]);
@@ -478,7 +504,7 @@ try {
             'nick' => $user['nick'],
             'color' => $user['color'],
             'text' => $text,
-            'time' => gmdate('H:i'),
+            'time' => fmtTime(),
             'avatar' => $user['avatar'],
             'avatarUrl' => $user['avatarUrl'],
         ]]);
@@ -570,7 +596,7 @@ try {
                     'color' => (int) $r['color'],
                     'status' => $r['status'],
                     'room' => $r['room'],
-                    'since' => date('d.m.Y', strtotime($r['created_at'])),
+                    'since' => gmdate('d.m.Y', tomskTs($r['created_at'])),
                     'avatar' => (int) $r['avatar'],
                     'avatarUrl' => $r['avatar_url'],
                     'isAdmin' => (bool) $r['is_admin'],
@@ -600,7 +626,7 @@ try {
                     'nick' => $r['nick'],
                     'color' => (int) $r['color'],
                     'text' => $r['text'],
-                    'time' => date('d.m H:i', strtotime($r['created_at'] . ' UTC')),
+                    'time' => fmtTime($r['created_at']),
                     'userId' => (int) $r['user_id'],
                 ];
             }, $rows)]);
