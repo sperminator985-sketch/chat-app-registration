@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { AuthProvider } from '@/hooks/use-auth';
+import { AuthProvider, useAuth } from '@/hooks/use-auth';
 import { DmProvider } from '@/hooks/use-dm';
 import { CallProvider } from '@/hooks/use-call';
 import CallWindow from '@/components/CallWindow';
@@ -20,10 +20,18 @@ import { rooms } from '@/data/chat';
 const PageBody = () => {
   const [activeRoom, setActiveRoom] = useState(rooms[1].id);
   const [profileOpen, setProfileOpen] = useState(false);
+  const { user, openAuth } = useAuth();
 
   const pickRoom = (id: string) => {
     setActiveRoom(id);
-    document.querySelector('#chat')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (!user) {
+      openAuth('register');
+      return;
+    }
+    setTimeout(
+      () => document.querySelector('#chat')?.scrollIntoView({ behavior: 'smooth', block: 'start' }),
+      50,
+    );
   };
 
   return (

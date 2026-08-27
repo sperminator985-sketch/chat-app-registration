@@ -81,15 +81,17 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
   const showDemo = loaded && messages.length === 0;
   const onlineList: OnlineItem[] = online.length ? online : demoUsers;
 
+  if (!user) return null;
+
   return (
-    <section id="chat" className="flex flex-col justify-center bg-card md:min-h-screen">
-      <div className="mx-auto w-full max-w-[1400px] px-5 py-16 md:px-10 md:py-20">
-        <h2 className="text-center text-[clamp(2rem,6vw,3.4rem)] font-extrabold leading-[0.95] tracking-[-0.035em]">
+    <section id="chat" className="flex min-h-screen flex-col bg-card">
+      <div className="mx-auto flex w-full max-w-[1400px] flex-1 flex-col px-5 py-10 md:px-10 md:py-12">
+        <h2 className="text-center text-[clamp(1.6rem,4.5vw,2.6rem)] font-extrabold leading-[0.95] tracking-[-0.035em]">
           Окно переписки
         </h2>
 
-        <div className="mt-10 grid gap-px border-2 border-foreground/35 bg-foreground/25 lg:grid-cols-[1fr_280px]">
-          <div className="flex min-h-[400px] flex-col bg-background md:min-h-[540px]">
+        <div className="mt-6 grid flex-1 gap-px border-2 border-foreground/35 bg-foreground/25 lg:grid-cols-[1fr_280px]">
+          <div className="flex min-h-[400px] flex-col bg-background">
             <div className="flex flex-wrap items-center justify-between gap-3 border-b-2 border-foreground/35 px-5 py-4">
               <div className="flex items-center gap-3">
                 <Icon name={room.icon} size={20} className="text-secondary" />
@@ -118,8 +120,7 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
 
             <div
               ref={feedRef}
-              className="scrollbar-brut flex-1 space-y-3 overflow-y-auto px-5 py-5"
-              style={{ maxHeight: 420 }}
+              className="scrollbar-brut min-h-0 flex-1 space-y-3 overflow-y-auto px-5 py-5"
             >
               {room.id === 'sex' && (
                 <p className="flex items-start gap-2 border-2 border-primary bg-primary/10 px-3 py-2 text-[0.88rem] leading-[1.4] text-foreground">
@@ -206,14 +207,14 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
             </form>
           </div>
 
-          <aside className="bg-background">
+          <aside className="flex min-h-0 flex-col bg-background">
             <div className="border-b-2 border-foreground/35 px-4 py-4">
               <h3 className="text-[0.8rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
                 Кто в чате · {onlineList.length}
               </h3>
               <p className="mt-1 text-[0.8rem] text-muted-foreground/80">Кликни по нику — откроется личка</p>
             </div>
-            <ul className="scrollbar-brut divide-y divide-foreground/15 overflow-y-auto" style={{ maxHeight: 460 }}>
+            <ul className="scrollbar-brut min-h-0 flex-1 divide-y divide-foreground/15 overflow-y-auto">
               {onlineList.map((u) => {
                 const isMe = Boolean(user && u.nick === user.nick);
                 return (
