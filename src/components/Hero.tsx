@@ -22,6 +22,11 @@ const Hero = () => {
         </div>
 
         <div
+          className="animate-rise h-[3px] w-full bg-foreground md:max-w-[calc(100%-460px)]"
+          style={{ animationDelay: '.12s' }}
+        />
+
+        <div
           className="mt-1.5 flex animate-rise flex-col items-start gap-6 md:flex-row md:items-end md:justify-between md:gap-9"
           style={{ animationDelay: '.18s' }}
         >
