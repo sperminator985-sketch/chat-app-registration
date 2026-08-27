@@ -2,11 +2,13 @@ import { Dialog, DialogContent } from '@/components/ui/dialog';
 import Icon from '@/components/ui/icon';
 import { cn } from '@/lib/utils';
 import { useDm } from '@/hooks/use-dm';
+import { useCall } from '@/hooks/use-call';
 import { nickColorClass } from '@/data/chat';
 import Avatar from '@/components/Avatar';
 
 const DialogsList = () => {
   const { listOpen, closeList, dialogs, openDm, soundOn, toggleSound } = useDm();
+  const { startCall } = useCall();
 
   return (
     <Dialog open={listOpen} onOpenChange={(open) => !open && closeList()}>
@@ -47,20 +49,44 @@ const DialogsList = () => {
         ) : (
           <ul className="scrollbar-brut divide-y divide-foreground/15 overflow-y-auto" style={{ maxHeight: 380 }}>
             {dialogs.map((d) => (
-              <li key={d.nick}>
+              <li key={d.nick} className="relative">
                 <button
                   type="button"
                   onClick={() => openDm(d.nick)}
-                  className="flex w-full items-center gap-3 px-5 py-3.5 text-left transition-colors hover:bg-muted/50"
+                  className="flex w-full items-center gap-3 py-3.5 pl-5 pr-16 text-left transition-colors hover:bg-muted/50"
                 >
-                  <Avatar avatar={d.avatar} avatarUrl={d.avatarUrl} color={d.color} size={26} />
-                  <span className={cn('font-semibold', nickColorClass[d.color])}>{d.nick}</span>
+                  <span className="relative shrink-0">
+                    <Avatar avatar={d.avatar} avatarUrl={d.avatarUrl} color={d.color} size={26} />
+                    <span
+                      className={cn(
+                        'absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 border-2 border-background',
+                        d.online ? 'bg-secondary' : 'bg-muted-foreground/50',
+                      )}
+                    />
+                  </span>
+                  <span className="min-w-0">
+                    <span className={cn('block truncate font-semibold', nickColorClass[d.color])}>{d.nick}</span>
+                    <span className="block font-mono text-[0.7rem] uppercase tracking-[0.08em] text-muted-foreground">
+                      {d.online ? 'в сети' : 'свет погашен'}
+                    </span>
+                  </span>
                   {d.unread > 0 && (
-                    <span className="ml-auto border-2 border-secondary bg-secondary px-1.5 font-mono text-[0.72rem] font-bold text-secondary-foreground">
+                    <span className="ml-auto shrink-0 border-2 border-secondary bg-secondary px-1.5 font-mono text-[0.72rem] font-bold text-secondary-foreground">
                       {d.unread}
                     </span>
                   )}
                 </button>
+                {d.online && (
+                  <button
+                    type="button"
+                    onClick={() => startCall(d.nick)}
+                    title={`Видеозвонок: ${d.nick}`}
+                    aria-label={`Видеозвонок: ${d.nick}`}
+                    className="absolute right-4 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center border-2 border-foreground/30 text-muted-foreground transition-colors hover:border-secondary hover:text-secondary"
+                  >
+                    <Icon name="Video" size={14} />
+                  </button>
+                )}
               </li>
             ))}
           </ul>

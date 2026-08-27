@@ -66,7 +66,7 @@ export const api = {
   logout: () => request<{ ok: boolean }>('logout', { method: 'POST' }),
   dialogs: () =>
     request<{
-      dialogs: { nick: string; color: NickColor; unread: number; avatar?: number; avatarUrl?: string | null }[];
+      dialogs: { nick: string; color: NickColor; unread: number; avatar?: number; avatarUrl?: string | null; online?: boolean }[];
       unread: number;
     }>('dialogs'),
   dm: (nick: string) =>

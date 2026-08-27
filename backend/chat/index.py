@@ -254,14 +254,16 @@ def handler(event: dict, context) -> dict:
             me = user['id']
             cur.execute(
                 f"SELECT u.nick, u.color, MAX(d.id) AS last_id, "
-                f"SUM(CASE WHEN d.recipient_id = {me} AND d.read_at IS NULL THEN 1 ELSE 0 END) AS unread, u.avatar, u.avatar_url "
+                f"SUM(CASE WHEN d.recipient_id = {me} AND d.read_at IS NULL THEN 1 ELSE 0 END) AS unread, u.avatar, u.avatar_url, "
+                f"BOOL_OR(u.last_seen > NOW() - INTERVAL '5 minutes') AS online "
                 f"FROM {SCHEMA}.direct_messages d "
                 f"JOIN {SCHEMA}.users u ON u.id = CASE WHEN d.sender_id = {me} THEN d.recipient_id ELSE d.sender_id END "
                 f"WHERE d.sender_id = {me} OR d.recipient_id = {me} "
                 f"GROUP BY u.nick, u.color, u.avatar, u.avatar_url ORDER BY last_id DESC LIMIT 30"
             )
             dialogs = [
-                {'nick': r[0], 'color': r[1], 'unread': int(r[3] or 0), 'avatar': r[4], 'avatarUrl': r[5]}
+                {'nick': r[0], 'color': r[1], 'unread': int(r[3] or 0), 'avatar': r[4], 'avatarUrl': r[5],
+                 'online': bool(r[6])}
                 for r in cur.fetchall()
             ]
             total_unread = sum(d['unread'] for d in dialogs)
