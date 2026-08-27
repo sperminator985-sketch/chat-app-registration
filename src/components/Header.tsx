@@ -8,10 +8,9 @@ import { useWeather, formatTemp, degreeWord } from '@/hooks/use-weather';
 import { useLiveStats } from '@/hooks/use-live-stats';
 import Avatar from '@/components/Avatar';
 
-const allLinks = [
-  { href: '#etazhi', label: 'Этажи', auth: false },
-  { href: '#chat', label: 'Чат', auth: true },
-  { href: '#pravila', label: 'Правила', auth: false },
+const guestLinks = [
+  { href: '#etazhi', label: 'Этажи' },
+  { href: '#pravila', label: 'Правила' },
 ];
 
 type HeaderProps = {
@@ -25,7 +24,7 @@ const Header = ({ onProfile }: HeaderProps) => {
   const { unread, openList } = useDm();
   const temp = useWeather();
   const live = useLiveStats();
-  const links = allLinks.filter((l) => !l.auth || user);
+  const links = user ? [] : guestLinks;
 
   const mailButton = (extra?: string) => (
     <button

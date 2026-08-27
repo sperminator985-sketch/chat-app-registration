@@ -84,14 +84,10 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
   if (!user) return null;
 
   return (
-    <section id="chat" className="flex min-h-screen flex-col bg-card">
-      <div className="mx-auto flex w-full max-w-[1400px] flex-1 flex-col px-5 py-10 md:px-10 md:py-12">
-        <h2 className="text-center text-[clamp(1.6rem,4.5vw,2.6rem)] font-extrabold leading-[0.95] tracking-[-0.035em]">
-          Окно переписки
-        </h2>
-
-        <div className="mt-6 grid flex-1 gap-px border-2 border-foreground/35 bg-foreground/25 lg:grid-cols-[1fr_280px]">
-          <div className="flex min-h-[400px] flex-col bg-background">
+    <section id="chat" className="flex h-[calc(100vh-4.5rem)] flex-col bg-card">
+      <div className="mx-auto flex w-full max-w-[1400px] flex-1 flex-col px-3 py-4 md:px-6 md:py-6">
+        <div className="grid flex-1 gap-px border-2 border-foreground/35 bg-foreground/25 lg:grid-cols-[1fr_280px]">
+          <div className="flex min-h-0 flex-col bg-background">
             <div className="flex flex-wrap items-center justify-between gap-3 border-b-2 border-foreground/35 px-5 py-4">
               <div className="flex items-center gap-3">
                 <Icon name={room.icon} size={20} className="text-secondary" />

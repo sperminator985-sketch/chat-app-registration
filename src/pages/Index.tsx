@@ -38,17 +38,22 @@ const PageBody = () => {
     <div className="min-h-screen bg-background text-foreground">
       <Header onProfile={() => setProfileOpen(true)} />
       <main>
-        <div className="flex min-h-[calc(100vh-4.5rem)] flex-col">
-          <div className="flex flex-1 items-center">
-            <Hero />
-          </div>
-          <Ticker />
-        </div>
-        <Rooms activeRoom={activeRoom} onPick={pickRoom} />
-        <ChatWindow activeRoom={activeRoom} onPick={setActiveRoom} />
-        <Rules />
+        {user ? (
+          <ChatWindow activeRoom={activeRoom} onPick={setActiveRoom} />
+        ) : (
+          <>
+            <div className="flex min-h-[calc(100vh-4.5rem)] flex-col">
+              <div className="flex flex-1 items-center">
+                <Hero />
+              </div>
+              <Ticker />
+            </div>
+            <Rooms activeRoom={activeRoom} onPick={pickRoom} />
+            <Rules />
+          </>
+        )}
       </main>
-      <Footer />
+      {!user && <Footer />}
       <AuthDialog />
       <WelcomeDialog />
       <DialogsList />
