@@ -10,7 +10,7 @@ const Hero = () => {
         <div className="flex animate-rise flex-col items-start gap-6 md:flex-row md:items-end md:justify-between md:gap-7">
           <h1 className="font-extrabold uppercase tracking-[-0.035em]">
             <span className="block text-[clamp(2.2rem,7.4vw,6.4rem)] leading-[.92] text-foreground">
-              ЧАТ<b className="font-extrabold text-primary">,</b> А НЕ
+              ЧАТ<b className="font-extrabold text-primary"> —</b>
             </span>
           </h1>
           <Facade className="w-full max-w-[436px]" />
@@ -22,7 +22,7 @@ const Hero = () => {
         >
           <h1 className="font-extrabold uppercase">
             <span className="block whitespace-nowrap text-[clamp(1.6rem,6.1vw,5.4rem)] leading-[.9] tracking-[-0.045em]">
-              СОСЕДИ&nbsp;ЗА&nbsp;СТЕНОЙ
+              ОБЩАГА
             </span>
           </h1>
         </div>
