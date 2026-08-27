@@ -83,7 +83,7 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
   if (!user) return null;
 
   return (
-    <section id="chat" className="flex min-h-[calc(100vh-4.5rem)] flex-col bg-card lg:h-[calc(100vh-4.5rem)] lg:min-h-0">
+    <section id="chat" className="flex min-h-[calc(100vh-var(--top-offset,4.5rem))] flex-col bg-card lg:h-[calc(100vh-var(--top-offset,4.5rem))] lg:min-h-0">
       <div className="mx-auto flex w-full max-w-[1400px] flex-1 flex-col px-3 py-4 md:px-6 md:py-6">
         <div className="grid flex-1 gap-px border-2 border-foreground/35 bg-foreground/25 lg:grid-cols-[1fr_280px]">
           <div className="flex min-h-0 flex-col bg-background">
