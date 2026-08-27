@@ -14,7 +14,7 @@ const Rules = () => (
         <h2 className="text-[clamp(2rem,6vw,3.4rem)] font-extrabold leading-[0.95] tracking-[-0.035em]">
           Правила <span className="text-primary">общаги</span>
         </h2>
-        <p className="mt-4 whitespace-nowrap text-[clamp(0.7rem,1.35vw,1.02rem)] leading-[1.45] text-muted-foreground">
+        <p className="mt-4 md:whitespace-nowrap text-[clamp(0.82rem,1.35vw,1.02rem)] leading-[1.45] text-muted-foreground">
           Их немного, и они простые. Нарушишь — вахтёрша Зина напомнит, второй раз напоминать не будет.
         </p>
 
