@@ -2,6 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import { api } from '@/lib/api';
 import { useAuth } from '@/hooks/use-auth';
 import { toast } from '@/hooks/use-toast';
+import { ToastAction } from '@/components/ui/toast';
 import { playKnock } from '@/lib/notify-sound';
 import type { NickColor } from '@/data/chat';
 
@@ -33,6 +34,7 @@ export const DmProvider = ({ children }: { children: ReactNode }) => {
   const seenRef = useRef<Record<string, number> | null>(null);
   const soundRef = useRef(soundOn);
   const openNickRef = useRef<string | null>(null);
+  const openDmRef = useRef<(nick: string) => void>(() => undefined);
 
   useEffect(() => {
     soundRef.current = soundOn;
@@ -75,8 +77,13 @@ export const DmProvider = ({ children }: { children: ReactNode }) => {
               title: `Стук в дверь: ${first.nick}`,
               description:
                 fresh.length > 1
-                  ? `Новые записки ещё от ${fresh.length - 1} соседей. Открой конверт в шапке.`
-                  : 'Новая записка в личке. Открой конверт в шапке.',
+                  ? `Новые записки ещё от ${fresh.length - 1} соседей`
+                  : 'Новая записка в личке',
+              action: (
+                <ToastAction altText="Открыть переписку" onClick={() => openDmRef.current(first.nick)}>
+                  Открыть
+                </ToastAction>
+              ),
             });
           }
         }
@@ -106,6 +113,10 @@ export const DmProvider = ({ children }: { children: ReactNode }) => {
     },
     [user, openAuth],
   );
+
+  useEffect(() => {
+    openDmRef.current = openDm;
+  }, [openDm]);
 
   const closeDm = useCallback(() => setDmNick(null), []);
   const openList = useCallback(() => {
