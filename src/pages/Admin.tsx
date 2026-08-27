@@ -28,6 +28,7 @@ const AdminPanel = () => {
   const [messages, setMessages] = useState<AdminMessage[]>([]);
   const [room, setRoom] = useState('');
   const [busy, setBusy] = useState(false);
+  const [search, setSearch] = useState('');
   const [denied, setDenied] = useState(false);
 
   const loadUsers = useCallback(async () => {
@@ -98,6 +99,14 @@ const AdminPanel = () => {
     }
   };
 
+  const needle = search.trim().toLowerCase();
+  const shownUsers = needle
+    ? users.filter((u) => u.nick.toLowerCase().includes(needle) || u.status.toLowerCase().includes(needle))
+    : users;
+  const shownMessages = needle
+    ? messages.filter((m) => m.nick.toLowerCase().includes(needle) || m.text.toLowerCase().includes(needle))
+    : messages;
+
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background text-muted-foreground">
@@ -158,13 +167,37 @@ const AdminPanel = () => {
       </header>
 
       <main className="mx-auto max-w-[1200px] px-4 py-6 md:px-8 md:py-8">
+        <div className="relative mb-5">
+          <Icon
+            name="Search"
+            size={16}
+            className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+          />
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder={tab === 'users' ? 'Поиск по нику или статусу' : 'Поиск по нику или тексту'}
+            className="w-full border-2 border-foreground/35 bg-card py-2.5 pl-9 pr-9 text-[0.95rem] outline-none transition-colors placeholder:text-muted-foreground/70 focus:border-secondary"
+          />
+          {search && (
+            <button
+              onClick={() => setSearch('')}
+              aria-label="Очистить"
+              className="absolute right-2 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center text-muted-foreground transition-colors hover:text-primary"
+            >
+              <Icon name="X" size={15} />
+            </button>
+          )}
+        </div>
         {tab === 'users' ? (
           <>
             <p className="mb-4 text-[0.78rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
-              Всего жильцов: {users.length} · выселено: {users.filter((u) => u.banned).length}
+              {needle
+                ? `Найдено: ${shownUsers.length} из ${users.length}`
+                : `Всего жильцов: ${users.length} · выселено: ${users.filter((u) => u.banned).length}`}
             </p>
             <div className="grid gap-px bg-foreground/25 md:grid-cols-2">
-              {users.map((u) => (
+              {shownUsers.map((u) => (
                 <div
                   key={u.id}
                   className={cn(
@@ -246,10 +279,12 @@ const AdminPanel = () => {
             </div>
 
             <div className="divide-y-2 divide-foreground/20 border-2 border-foreground/35 bg-card">
-              {messages.length === 0 && (
-                <p className="px-4 py-6 text-center text-muted-foreground">Сообщений нет</p>
+              {shownMessages.length === 0 && (
+                <p className="px-4 py-6 text-center text-muted-foreground">
+                  {needle ? 'Ничего не нашлось' : 'Сообщений нет'}
+                </p>
               )}
-              {messages.map((m) => (
+              {shownMessages.map((m) => (
                 <div key={m.id} className="flex items-start gap-3 px-4 py-3">
                   <div className="min-w-0 flex-1">
                     <p className="flex flex-wrap items-baseline gap-x-2">
