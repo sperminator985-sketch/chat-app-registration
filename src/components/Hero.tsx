@@ -8,23 +8,17 @@ const Hero = () => {
     <section id="top" className="mx-auto w-full max-w-[1400px] overflow-hidden px-5 py-6 md:px-10 md:py-8">
       <div className="flex flex-col justify-center gap-2.5">
         <div className="flex animate-rise flex-col items-start gap-6 md:flex-row md:items-end md:justify-between md:gap-7">
-          <h1 className="font-extrabold uppercase tracking-[-0.035em]">
-            <span className="block text-[clamp(2.2rem,7.4vw,6.4rem)] leading-[.92] text-foreground">
+          <h1 className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-2 font-extrabold uppercase tracking-[-0.035em] sm:flex-nowrap">
+            <span className="whitespace-nowrap text-[clamp(1.7rem,4.6vw,4.4rem)] leading-[.92] text-foreground">
               ЧАТ<b className="font-extrabold text-primary"> —</b>
+            </span>
+            <span className="plate inline-block w-fit max-w-full origin-left -rotate-[1.1deg] px-4 pb-3 pt-1.5">
+              <span className="block whitespace-nowrap text-[clamp(1.5rem,4.2vw,4rem)] leading-[.9] tracking-[-0.045em]">
+                ОБЩАГА
+              </span>
             </span>
           </h1>
           <Facade className="w-full max-w-[436px]" />
-        </div>
-
-        <div
-          className="plate inline-block w-fit max-w-full origin-left -rotate-[1.1deg] animate-rise px-5 pb-4 pt-2"
-          style={{ animationDelay: '.09s' }}
-        >
-          <h1 className="font-extrabold uppercase">
-            <span className="block whitespace-nowrap text-[clamp(1.6rem,6.1vw,5.4rem)] leading-[.9] tracking-[-0.045em]">
-              ОБЩАГА
-            </span>
-          </h1>
         </div>
 
         <div
