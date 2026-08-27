@@ -226,14 +226,23 @@ const AuthDialog = () => {
                 </select>
               </div>
 
-              <label className="flex cursor-pointer items-start gap-3 text-[0.95rem] leading-[1.4]">
+              <label
+                className={cn(
+                  'flex cursor-pointer items-start gap-3 border-2 px-3 py-2.5 text-[0.95rem] leading-[1.4] transition-colors',
+                  agree
+                    ? 'border-secondary bg-secondary/10'
+                    : errors.agree
+                      ? 'animate-pulse border-primary bg-primary/10'
+                      : 'border-foreground/30 hover:border-secondary',
+                )}
+              >
                 <input
                   type="checkbox"
                   checked={agree}
                   onChange={(e) => setAgree(e.target.checked)}
-                  className="mt-1 h-4 w-4 accent-[hsl(var(--secondary))]"
+                  className="mt-0.5 h-4 w-4 accent-[hsl(var(--secondary))]"
                 />
-                <span className={cn(errors.agree ? 'text-primary' : 'text-muted-foreground')}>
+                <span className={cn(agree ? 'text-foreground' : errors.agree ? 'text-primary' : 'text-muted-foreground')}>
                   Правила общаги прочитал. Обещаю соблюдать их как воинский устав.
                 </span>
               </label>
