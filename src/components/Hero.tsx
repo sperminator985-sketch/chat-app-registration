@@ -31,7 +31,7 @@ const Hero = () => {
           style={{ animationDelay: '.18s' }}
         >
           <h1 className="font-extrabold uppercase tracking-[-0.035em]">
-            <span className="block text-[clamp(1.9rem,5.4vw,4.6rem)] leading-[.92] tracking-[-0.03em] text-foreground text-stroke-plate">
+            <span className="block whitespace-nowrap text-[clamp(1.3rem,3.4vw,3.2rem)] leading-[.92] tracking-[-0.03em] text-foreground text-stroke-plate">
               ТОМСК НА СВЯЗИ
             </span>
           </h1>
