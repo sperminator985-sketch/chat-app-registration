@@ -24,7 +24,9 @@ const Stats = () => {
           <span className="text-[0.62rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
             {s.label}
           </span>
-          <span className="font-mono text-[0.68rem] font-bold tracking-[0.04em] text-secondary">{s.value}</span>
+          <span className="font-mono text-[1.05rem] font-bold leading-none tracking-[0.02em] text-secondary">
+            {s.value}
+          </span>
         </div>
       ))}
     </div>
