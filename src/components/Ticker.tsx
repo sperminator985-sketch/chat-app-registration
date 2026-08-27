@@ -37,7 +37,7 @@ const Ticker = () => {
   const items = [liveLine, base[0], base[1], weatherLine, base[2], base[3], base[4], base[5]];
 
   return (
-    <div className="mt-[1cm] mb-[1cm] overflow-hidden border-y-2 border-foreground/35 bg-card py-3">
+    <div className="mb-4 mt-4 overflow-hidden border-y-2 border-foreground/35 bg-card py-2.5 md:mb-[1cm] md:mt-[1cm] md:py-3">
       <div className="flex w-max animate-marquee">
         {[0, 1].map((pass) => (
           <div key={pass} className="flex shrink-0">
