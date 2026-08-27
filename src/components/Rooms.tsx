@@ -32,9 +32,6 @@ const Rooms = ({ activeRoom, onPick }: RoomsProps) => {
         Девять этажей
         <span className="block text-primary">— выбирай свой</span>
       </h2>
-      <p className="max-w-[420px] text-[1.02rem] leading-[1.45] text-muted-foreground">
-        Каждая комната — отдельная лента сообщений. Заходи куда хочешь, сиди сразу на нескольких этажах, никто не выгонит.
-      </p>
     </div>
 
     <div className="mt-10 grid gap-px bg-foreground/25 sm:grid-cols-2 lg:grid-cols-3">
