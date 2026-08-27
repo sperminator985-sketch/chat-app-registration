@@ -7,13 +7,23 @@ export const useWeather = () => {
   const [temp, setTemp] = useState<number | null>(null);
 
   useEffect(() => {
-    fetch(WEATHER_URL)
-      .then((r) => r.json())
-      .then((d) => {
-        const t = d?.current?.temperature_2m;
-        setTemp(typeof t === 'number' ? Math.round(t) : null);
-      })
-      .catch(() => undefined);
+    let alive = true;
+    const load = () =>
+      fetch(WEATHER_URL)
+        .then((r) => r.json())
+        .then((d) => {
+          if (!alive) return;
+          const t = d?.current?.temperature_2m;
+          setTemp(typeof t === 'number' ? Math.round(t) : null);
+        })
+        .catch(() => undefined);
+
+    load();
+    const timer = window.setInterval(load, 900000);
+    return () => {
+      alive = false;
+      window.clearInterval(timer);
+    };
   }, []);
 
   return temp;

@@ -33,7 +33,7 @@ export const useLiveStats = () => {
     listeners.add(setData);
     if (cache) setData(cache);
     load();
-    if (timer === null) timer = window.setInterval(load, 30000);
+    if (timer === null) timer = window.setInterval(load, 15000);
     return () => {
       listeners.delete(setData);
       if (listeners.size === 0 && timer !== null) {

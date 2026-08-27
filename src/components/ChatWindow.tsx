@@ -44,7 +44,7 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
   useEffect(() => {
     setLoaded(false);
     load();
-    const timer = window.setInterval(load, 8000);
+    const timer = window.setInterval(load, 15000);
     return () => window.clearInterval(timer);
   }, [load]);
 
