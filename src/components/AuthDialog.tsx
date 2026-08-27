@@ -3,8 +3,7 @@ import { Dialog, DialogContent } from '@/components/ui/dialog';
 import Icon from '@/components/ui/icon';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/use-auth';
-import { AvatarId, NickColor, avatars, nickBgClass, nickColorClass, nickColors, rooms } from '@/data/chat';
-import Avatar from '@/components/Avatar';
+import { AvatarId, NickColor, nickBgClass, nickColorClass, nickColors, rooms } from '@/data/chat';
 import { toast } from '@/hooks/use-toast';
 
 type Errors = { nick?: string; pass?: string; pass2?: string; agree?: string };
@@ -181,36 +180,10 @@ const AuthDialog = () => {
                 </div>
                 <p className="mt-2 flex items-center gap-2 text-[0.9rem] text-muted-foreground">
                   Так тебя увидят соседи:
-                  <Avatar avatar={avatar} color={color} size={22} />
                   <span className={cn('font-semibold', nickColorClass[color])}>
                     &lt;{nick.trim() || 'твой_ник'}&gt;
                   </span>
                 </p>
-              </div>
-
-              <div>
-                <span className="mb-2 block text-[0.78rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                  Аватарка
-                </span>
-                <div className="flex flex-wrap gap-2">
-                  {avatars.map((a) => (
-                    <button
-                      key={a.id}
-                      type="button"
-                      onClick={() => setAvatar(a.id)}
-                      title={a.title}
-                      aria-label={a.title}
-                      className={cn(
-                        'flex h-9 w-9 items-center justify-center border-2 transition-colors',
-                        avatar === a.id
-                          ? 'border-secondary bg-secondary text-secondary-foreground'
-                          : 'border-foreground/30 text-muted-foreground hover:border-secondary hover:text-foreground',
-                      )}
-                    >
-                      <Icon name={a.icon} size={17} />
-                    </button>
-                  ))}
-                </div>
               </div>
 
               <div>
