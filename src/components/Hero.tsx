@@ -22,7 +22,7 @@ const Hero = () => {
         </div>
 
         <div
-          className="animate-rise h-[3px] w-full bg-foreground md:max-w-[calc(100%-460px)]"
+          className="animate-rise h-[3px] w-full bg-foreground"
           style={{ animationDelay: '.12s' }}
         />
 
