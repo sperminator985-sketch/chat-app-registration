@@ -8,6 +8,8 @@ type AuthState = {
   loading: boolean;
   authOpen: boolean;
   authTab: 'register' | 'login';
+  welcomeOpen: boolean;
+  closeWelcome: () => void;
   openAuth: (tab?: 'register' | 'login') => void;
   closeAuth: () => void;
   register: (body: { nick: string; password: string; color: number; room: string }) => Promise<void>;
@@ -23,6 +25,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
   const [authOpen, setAuthOpen] = useState(false);
   const [authTab, setAuthTab] = useState<'register' | 'login'>('register');
+  const [welcomeOpen, setWelcomeOpen] = useState(false);
 
   useEffect(() => {
     if (!getToken()) {
@@ -43,11 +46,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const closeAuth = useCallback(() => setAuthOpen(false), []);
 
+  const closeWelcome = useCallback(() => setWelcomeOpen(false), []);
+
   const register = useCallback(async (body: { nick: string; password: string; color: number; room: string }) => {
     const res = await api.register(body);
     setToken(res.token);
     setUser(res.user);
     setAuthOpen(false);
+    setWelcomeOpen(true);
   }, []);
 
   const login = useCallback(async (body: { nick: string; password: string }) => {
@@ -69,8 +75,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const value = useMemo(
-    () => ({ user, loading, authOpen, authTab, openAuth, closeAuth, register, login, signOut, saveProfile }),
-    [user, loading, authOpen, authTab, openAuth, closeAuth, register, login, signOut, saveProfile],
+    () => ({
+      user, loading, authOpen, authTab, welcomeOpen, closeWelcome,
+      openAuth, closeAuth, register, login, signOut, saveProfile,
+    }),
+    [user, loading, authOpen, authTab, welcomeOpen, closeWelcome, openAuth, closeAuth, register, login, signOut, saveProfile],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

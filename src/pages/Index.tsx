@@ -10,6 +10,7 @@ import Rules from '@/components/Rules';
 import CTA from '@/components/CTA';
 import Footer from '@/components/Footer';
 import AuthDialog from '@/components/AuthDialog';
+import WelcomeDialog from '@/components/WelcomeDialog';
 import ProfileDialog from '@/components/ProfileDialog';
 import { rooms } from '@/data/chat';
 
@@ -36,6 +37,7 @@ const PageBody = () => {
       </main>
       <Footer />
       <AuthDialog />
+      <WelcomeDialog />
       <ProfileDialog open={profileOpen} onOpenChange={setProfileOpen} />
     </div>
   );
