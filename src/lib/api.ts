@@ -36,18 +36,53 @@ export const getToken = () => localStorage.getItem(TOKEN_KEY) ?? '';
 export const setToken = (token: string) => localStorage.setItem(TOKEN_KEY, token);
 export const clearToken = () => localStorage.removeItem(TOKEN_KEY);
 
+let serverDown = false;
+const downListeners = new Set<(v: boolean) => void>();
+
+export const isServerDown = () => serverDown;
+export const onServerStatus = (fn: (v: boolean) => void) => {
+  downListeners.add(fn);
+  return () => downListeners.delete(fn);
+};
+const setServerDown = (v: boolean) => {
+  if (serverDown === v) return;
+  serverDown = v;
+  downListeners.forEach((fn) => fn(v));
+};
+
 const request = async <T>(action: string, options: { method?: string; body?: unknown; query?: string } = {}): Promise<T> => {
   const method = options.method ?? 'GET';
   const url = `${API_URL}?action=${action}${options.query ?? ''}`;
-  const res = await fetch(url, {
-    method,
-    headers: {
-      'Content-Type': 'application/json',
-      'X-Auth-Token': getToken(),
-    },
-    body: method === 'POST' ? JSON.stringify(options.body ?? {}) : undefined,
-  });
-  const data = await res.json();
+  let res: Response;
+  try {
+    res = await fetch(url, {
+      method,
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Auth-Token': getToken(),
+      },
+      body: method === 'POST' ? JSON.stringify(options.body ?? {}) : undefined,
+    });
+  } catch {
+    setServerDown(true);
+    throw new Error('Общага не отвечает — сервер временно недоступен');
+  }
+
+  const raw = await res.text();
+  let data: { error?: string } | null = null;
+  try {
+    data = JSON.parse(raw);
+  } catch {
+    setServerDown(true);
+    throw new Error('Общага не отвечает — сервер временно недоступен');
+  }
+
+  if (res.status >= 500 || res.status === 402 || res.status === 429) {
+    setServerDown(true);
+    throw new Error(data?.error || 'Общага не отвечает — сервер временно недоступен');
+  }
+
+  setServerDown(false);
   if (!res.ok) throw new Error(data?.error || 'Не получилось связаться с общагой');
   return data as T;
 };
