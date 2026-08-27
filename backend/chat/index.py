@@ -8,7 +8,7 @@ from datetime import datetime
 import psycopg2
 
 SCHEMA = 't_p16512527_chat_app_registratio'
-ROOMS = ['kuhnya', 'kurilka', 'baraholka', 'ucheba', 'tomsk', 'noch']
+ROOMS = ['kuhnya', 'kurilka', 'baraholka', 'ucheba', 'tomsk', 'flirt', 'noch']
 NICK_RE = re.compile(r'^[a-zA-Zа-яА-ЯёЁ0-9_]{3,18}$')
 
 CORS = {
@@ -196,6 +196,78 @@ def handler(event: dict, context) -> dict:
                 f"WHERE id = {user['id']} RETURNING id, nick, color, status, room, created_at"
             )
             return respond(200, {'user': user_row(cur.fetchone())})
+
+        if method == 'GET' and action == 'dialogs':
+            user = get_user_by_token(cur, token)
+            if not user:
+                return respond(401, {'error': 'Не авторизован'})
+            me = user['id']
+            cur.execute(
+                f"SELECT u.nick, u.color, MAX(d.id) AS last_id, "
+                f"SUM(CASE WHEN d.recipient_id = {me} AND d.read_at IS NULL THEN 1 ELSE 0 END) AS unread "
+                f"FROM {SCHEMA}.direct_messages d "
+                f"JOIN {SCHEMA}.users u ON u.id = CASE WHEN d.sender_id = {me} THEN d.recipient_id ELSE d.sender_id END "
+                f"WHERE d.sender_id = {me} OR d.recipient_id = {me} "
+                f"GROUP BY u.nick, u.color ORDER BY last_id DESC LIMIT 30"
+            )
+            dialogs = [{'nick': r[0], 'color': r[1], 'unread': int(r[3] or 0)} for r in cur.fetchall()]
+            total_unread = sum(d['unread'] for d in dialogs)
+            return respond(200, {'dialogs': dialogs, 'unread': total_unread})
+
+        if method == 'GET' and action == 'dm':
+            user = get_user_by_token(cur, token)
+            if not user:
+                return respond(401, {'error': 'Не авторизован'})
+            with_nick = (params.get('nick') or '').strip()
+            cur.execute(f"SELECT id, nick, color, status FROM {SCHEMA}.users WHERE nick_lower = '{esc(with_nick.lower())}'")
+            other = cur.fetchone()
+            if not other:
+                return respond(404, {'error': 'Такого жильца нет'})
+            me = user['id']
+            cur.execute(
+                f"SELECT id, sender_nick, sender_color, text, created_at FROM {SCHEMA}.direct_messages "
+                f"WHERE (sender_id = {me} AND recipient_id = {other[0]}) "
+                f"OR (sender_id = {other[0]} AND recipient_id = {me}) ORDER BY id DESC LIMIT 80"
+            )
+            rows = cur.fetchall()[::-1]
+            cur.execute(
+                f"UPDATE {SCHEMA}.direct_messages SET read_at = NOW() "
+                f"WHERE recipient_id = {me} AND sender_id = {other[0]} AND read_at IS NULL"
+            )
+            cur.execute(f"UPDATE {SCHEMA}.users SET last_seen = NOW() WHERE id = {me}")
+            return respond(200, {
+                'peer': {'nick': other[1], 'color': other[2], 'status': other[3]},
+                'messages': [
+                    {'id': r[0], 'nick': r[1], 'color': r[2], 'text': r[3], 'time': r[4].strftime('%H:%M')}
+                    for r in rows
+                ],
+            })
+
+        if method == 'POST' and action == 'dm_send':
+            user = get_user_by_token(cur, token)
+            if not user:
+                return respond(401, {'error': 'Сначала займи ник'})
+            to_nick = (body.get('nick') or '').strip()
+            text = (body.get('text') or '').strip()[:500]
+            if not text:
+                return respond(400, {'error': 'Пустое сообщение'})
+            cur.execute(f"SELECT id FROM {SCHEMA}.users WHERE nick_lower = '{esc(to_nick.lower())}'")
+            other = cur.fetchone()
+            if not other:
+                return respond(404, {'error': 'Такого жильца нет'})
+            if other[0] == user['id']:
+                return respond(400, {'error': 'Самому себе писать скучно'})
+            cur.execute(
+                f"INSERT INTO {SCHEMA}.direct_messages (sender_id, recipient_id, sender_nick, sender_color, text) "
+                f"VALUES ({user['id']}, {other[0]}, '{esc(user['nick'])}', {user['color']}, '{esc(text)}') "
+                f"RETURNING id, created_at"
+            )
+            mid, created = cur.fetchone()
+            cur.execute(f"UPDATE {SCHEMA}.users SET last_seen = NOW() WHERE id = {user['id']}")
+            return respond(200, {'message': {
+                'id': mid, 'nick': user['nick'], 'color': user['color'], 'text': text,
+                'time': created.strftime('%H:%M'),
+            }})
 
         if method == 'POST' and action == 'logout':
             if token:

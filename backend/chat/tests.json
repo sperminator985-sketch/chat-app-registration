@@ -7,6 +7,18 @@
       "expectedStatus": 200
     },
     {
+      "name": "Личка без авторизации",
+      "method": "GET",
+      "path": "/?action=dialogs",
+      "expectedStatus": 401
+    },
+    {
+      "name": "Этаж Флирт",
+      "method": "GET",
+      "path": "/?action=feed&room=flirt",
+      "expectedStatus": 200
+    },
+    {
       "name": "Неизвестное действие",
       "method": "GET",
       "path": "/?action=unknown",

@@ -60,4 +60,11 @@ export const api = {
   profile: (body: { status: string; color: number }) =>
     request<{ user: ApiUser }>('profile', { method: 'POST', body }),
   logout: () => request<{ ok: boolean }>('logout', { method: 'POST' }),
+  dialogs: () => request<{ dialogs: { nick: string; color: NickColor; unread: number }[]; unread: number }>('dialogs'),
+  dm: (nick: string) =>
+    request<{ peer: { nick: string; color: NickColor; status: string }; messages: ApiMessage[] }>('dm', {
+      query: `&nick=${encodeURIComponent(nick)}`,
+    }),
+  dmSend: (body: { nick: string; text: string }) =>
+    request<{ message: ApiMessage }>('dm_send', { method: 'POST', body }),
 };

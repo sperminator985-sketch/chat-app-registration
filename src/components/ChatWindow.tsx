@@ -5,6 +5,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { api, ApiMessage } from '@/lib/api';
 import { toast } from '@/hooks/use-toast';
 import { nickColorClass, roomMessages, rooms, onlineUsers as demoUsers } from '@/data/chat';
+import DirectMessages from '@/components/DirectMessages';
 
 type ChatWindowProps = {
   activeRoom: string;
@@ -21,6 +22,8 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
   const [draft, setDraft] = useState('');
   const [sending, setSending] = useState(false);
   const [loaded, setLoaded] = useState(false);
+  const [dmNick, setDmNick] = useState<string | null>(null);
+  const [unread, setUnread] = useState<Record<string, number>>({});
   const feedRef = useRef<HTMLDivElement>(null);
 
   const load = useCallback(async () => {
@@ -46,6 +49,41 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
     const el = feedRef.current;
     if (el) el.scrollTop = el.scrollHeight;
   }, [messages]);
+
+  useEffect(() => {
+    if (!user) {
+      setUnread({});
+      return;
+    }
+    const check = () =>
+      api
+        .dialogs()
+        .then((res) => {
+          const map: Record<string, number> = {};
+          res.dialogs.forEach((d) => {
+            if (d.unread > 0) map[d.nick] = d.unread;
+          });
+          setUnread(map);
+        })
+        .catch(() => undefined);
+    check();
+    const timer = window.setInterval(check, 6000);
+    return () => window.clearInterval(timer);
+  }, [user, dmNick]);
+
+  const openDm = (nick: string) => {
+    if (!user) {
+      openAuth('register');
+      return;
+    }
+    if (nick === user.nick) return;
+    setUnread((prev) => {
+      const next = { ...prev };
+      delete next[nick];
+      return next;
+    });
+    setDmNick(nick);
+  };
 
   const send = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -151,7 +189,14 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
                 <div key={m.id} className="animate-fade-in leading-[1.45]">
                   <p className="flex flex-wrap items-baseline gap-x-2">
                     <span className="font-mono text-[0.78rem] text-muted-foreground">[{m.time}]</span>
-                    <span className={cn('font-semibold', nickColorClass[m.color])}>&lt;{m.nick}&gt;</span>
+                    <button
+                      type="button"
+                      onClick={() => openDm(m.nick)}
+                      title={`Написать в личку: ${m.nick}`}
+                      className={cn('font-semibold hover:underline', nickColorClass[m.color])}
+                    >
+                      &lt;{m.nick}&gt;
+                    </button>
                     <span
                       className={cn(
                         'text-[1.02rem]',
@@ -190,30 +235,43 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
               <h3 className="text-[0.8rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
                 Кто в чате · {onlineList.length}
               </h3>
+              <p className="mt-1 text-[0.8rem] text-muted-foreground/80">Кликни по нику — откроется личка</p>
             </div>
             <ul className="scrollbar-brut divide-y divide-foreground/15 overflow-y-auto" style={{ maxHeight: 460 }}>
-              {onlineList.map((u) => (
-                <li
-                  key={u.nick}
-                  className={cn(
-                    'px-4 py-3 transition-colors hover:bg-muted/50',
-                    user && u.nick === user.nick && 'bg-muted/60',
-                  )}
-                >
-                  <div className="flex items-center gap-2">
-                    <span className="h-2 w-2 bg-nick-3" />
-                    <span className={cn('font-semibold', nickColorClass[u.color as 1])}>{u.nick}</span>
-                    {user && u.nick === user.nick && (
-                      <span className="ml-auto font-mono text-[0.7rem] uppercase text-secondary">это ты</span>
-                    )}
-                  </div>
-                  <p className="mt-1 pl-4 text-[0.88rem] text-muted-foreground">{u.status}</p>
-                </li>
-              ))}
+              {onlineList.map((u) => {
+                const isMe = Boolean(user && u.nick === user.nick);
+                return (
+                  <li key={u.nick} className={cn(isMe && 'bg-muted/60')}>
+                    <button
+                      type="button"
+                      onClick={() => openDm(u.nick)}
+                      disabled={isMe}
+                      className="w-full px-4 py-3 text-left transition-colors hover:bg-muted/50 disabled:cursor-default disabled:hover:bg-transparent"
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className="h-2 w-2 bg-nick-3" />
+                        <span className={cn('font-semibold', nickColorClass[u.color as 1])}>{u.nick}</span>
+                        {isMe ? (
+                          <span className="ml-auto font-mono text-[0.7rem] uppercase text-secondary">это ты</span>
+                        ) : unread[u.nick] ? (
+                          <span className="ml-auto border-2 border-secondary bg-secondary px-1.5 font-mono text-[0.7rem] font-bold text-secondary-foreground">
+                            {unread[u.nick]}
+                          </span>
+                        ) : (
+                          <Icon name="Mail" size={13} className="ml-auto text-muted-foreground/60" />
+                        )}
+                      </div>
+                      <p className="mt-1 pl-4 text-[0.88rem] text-muted-foreground">{u.status}</p>
+                    </button>
+                  </li>
+                );
+              })}
             </ul>
           </aside>
         </div>
       </div>
+
+      <DirectMessages nick={dmNick} onClose={() => setDmNick(null)} />
     </section>
   );
 };

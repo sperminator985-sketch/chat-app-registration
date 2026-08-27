@@ -1,0 +1,132 @@
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
+import Icon from '@/components/ui/icon';
+import { cn } from '@/lib/utils';
+import { toast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/use-auth';
+import { api, ApiMessage } from '@/lib/api';
+import { nickColorClass, NickColor } from '@/data/chat';
+
+type DirectMessagesProps = {
+  nick: string | null;
+  onClose: () => void;
+};
+
+const DirectMessages = ({ nick, onClose }: DirectMessagesProps) => {
+  const { user } = useAuth();
+  const [messages, setMessages] = useState<ApiMessage[]>([]);
+  const [peer, setPeer] = useState<{ nick: string; color: NickColor; status: string } | null>(null);
+  const [draft, setDraft] = useState('');
+  const [sending, setSending] = useState(false);
+  const [loaded, setLoaded] = useState(false);
+  const feedRef = useRef<HTMLDivElement>(null);
+
+  const load = useCallback(async () => {
+    if (!nick) return;
+    try {
+      const data = await api.dm(nick);
+      setPeer(data.peer);
+      setMessages(data.messages);
+    } catch {
+      /* повторим на следующем опросе */
+    } finally {
+      setLoaded(true);
+    }
+  }, [nick]);
+
+  useEffect(() => {
+    if (!nick) return;
+    setLoaded(false);
+    setMessages([]);
+    load();
+    const timer = window.setInterval(load, 4000);
+    return () => window.clearInterval(timer);
+  }, [nick, load]);
+
+  useEffect(() => {
+    const el = feedRef.current;
+    if (el) el.scrollTop = el.scrollHeight;
+  }, [messages]);
+
+  const send = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const text = draft.trim();
+    if (!text || !nick || sending) return;
+    setSending(true);
+    try {
+      const res = await api.dmSend({ nick, text });
+      setMessages((prev) => [...prev, res.message]);
+      setDraft('');
+    } catch (err) {
+      toast({
+        title: 'Записка не дошла',
+        description: err instanceof Error ? err.message : 'Попробуй ещё раз',
+        variant: 'destructive',
+      });
+    } finally {
+      setSending(false);
+    }
+  };
+
+  return (
+    <Dialog open={Boolean(nick)} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="max-w-[560px] border-2 border-foreground/40 bg-background p-0">
+        <div className="flex items-center gap-3 border-b-2 border-foreground/35 px-5 py-4">
+          <Icon name="Mail" size={18} className="text-secondary" />
+          <div>
+            <p className="font-display text-lg font-extrabold uppercase leading-none tracking-[-0.02em]">
+              Личка с{' '}
+              <span className={cn(peer ? nickColorClass[peer.color] : 'text-foreground')}>{nick}</span>
+            </p>
+            {peer && <p className="mt-1 text-[0.85rem] text-muted-foreground">{peer.status}</p>}
+          </div>
+        </div>
+
+        <div ref={feedRef} className="scrollbar-brut space-y-2 overflow-y-auto px-5 py-4" style={{ height: 320 }}>
+          {!loaded && <p className="font-mono text-[0.85rem] text-muted-foreground">открываем переписку…</p>}
+          {loaded && messages.length === 0 && (
+            <p className="border-l-2 border-secondary bg-muted/60 px-3 py-2 font-mono text-[0.82rem] uppercase tracking-[0.08em] text-muted-foreground">
+              записок ещё не было. напиши первым
+            </p>
+          )}
+          {messages.map((m) => {
+            const mine = user && m.nick === user.nick;
+            return (
+              <div
+                key={m.id}
+                className={cn(
+                  'max-w-[85%] border-2 px-3 py-2 leading-[1.45]',
+                  mine
+                    ? 'ml-auto border-secondary bg-secondary/15'
+                    : 'border-foreground/25 bg-muted/50',
+                )}
+              >
+                <p className="flex items-baseline gap-2">
+                  <span className={cn('font-semibold', nickColorClass[m.color])}>{m.nick}</span>
+                  <span className="font-mono text-[0.72rem] text-muted-foreground">{m.time}</span>
+                </p>
+                <p className="mt-1 text-[1rem] text-foreground/90">{m.text}</p>
+              </div>
+            );
+          })}
+        </div>
+
+        <form onSubmit={send} className="flex gap-2 border-t-2 border-foreground/35 px-5 py-4">
+          <input
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            maxLength={480}
+            placeholder="Записка соседу…"
+            className="flex-1 border-2 border-foreground/35 bg-input px-3 py-2 text-[1rem] outline-none focus:border-secondary placeholder:text-muted-foreground/70"
+          />
+          <button type="submit" disabled={sending} className="btn-brut shrink-0 disabled:opacity-60">
+            <Icon name="Send" size={16} />
+            {sending ? '…' : 'Послать'}
+          </button>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+export default DirectMessages;
