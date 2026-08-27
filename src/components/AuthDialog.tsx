@@ -240,7 +240,12 @@ const AuthDialog = () => {
             </>
           )}
 
-          <button type="submit" disabled={busy} className="btn-brut w-full disabled:opacity-60">
+          <button
+            type="submit"
+            disabled={busy || (isRegister && !agree)}
+            title={isRegister && !agree ? 'Сначала прими правила общаги' : undefined}
+            className="btn-brut w-full disabled:cursor-not-allowed disabled:opacity-50"
+          >
             {busy ? 'Секунду…' : isRegister ? 'Занять комнату' : 'Войти'}
           </button>
         </form>
