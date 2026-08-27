@@ -3,6 +3,7 @@ import Icon from '@/components/ui/icon';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/use-auth';
 import { nickColorClass, rooms } from '@/data/chat';
+import Avatar from '@/components/Avatar';
 
 const points = [
   { icon: 'UserCheck', text: 'Ник теперь твой навсегда — по нему тебя узнают на всех этажах.' },
@@ -25,7 +26,8 @@ const WelcomeDialog = () => {
           <p className="font-mono text-[0.74rem] font-semibold uppercase tracking-[0.18em] opacity-80">
             Комната {room.floor} · {room.title}
           </p>
-          <p className="mt-2 font-display text-[1.7rem] font-extrabold leading-none tracking-[-0.03em]">
+          <p className="mt-2 flex items-center gap-3 font-display text-[1.7rem] font-extrabold leading-none tracking-[-0.03em]">
+            <Avatar avatar={user.avatar} color={user.color} size={38} />
             Заселили, <span className={cn(nickColorClass[user.color], 'drop-shadow-[1px_1px_0_rgba(0,0,0,0.35)]')}>{user.nick}</span>
           </p>
           <p className="mt-2 text-[0.95rem] leading-[1.4] opacity-90">

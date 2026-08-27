@@ -6,13 +6,14 @@ import { api, ApiMessage } from '@/lib/api';
 import { toast } from '@/hooks/use-toast';
 import { nickColorClass, roomMessages, rooms, onlineUsers as demoUsers } from '@/data/chat';
 import { useDm } from '@/hooks/use-dm';
+import Avatar from '@/components/Avatar';
 
 type ChatWindowProps = {
   activeRoom: string;
   onPick: (id: string) => void;
 };
 
-type OnlineItem = { nick: string; color: number; status: string };
+type OnlineItem = { nick: string; color: number; status: string; avatar?: number };
 
 const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
   const { user, openAuth } = useAuth();
@@ -154,8 +155,9 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
 
               {messages.map((m) => (
                 <div key={m.id} className="animate-fade-in leading-[1.45]">
-                  <p className="flex flex-wrap items-baseline gap-x-2">
+                  <p className="flex flex-wrap items-center gap-x-2">
                     <span className="font-mono text-[0.78rem] text-muted-foreground">[{m.time}]</span>
+                    <Avatar avatar={m.avatar} color={m.color} size={20} />
                     <button
                       type="button"
                       onClick={() => openDm(m.nick)}
@@ -179,6 +181,7 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
 
             <form onSubmit={send} className="flex flex-col gap-3 border-t-2 border-foreground/35 px-5 py-4 sm:flex-row">
               <div className="flex flex-1 items-center gap-2 border-2 border-foreground/35 bg-input px-3 py-2 focus-within:border-secondary">
+                {user && <Avatar avatar={user.avatar} color={user.color} size={20} />}
                 <span className={cn('font-semibold', user ? nickColorClass[user.color] : 'text-muted-foreground')}>
                   &lt;{user ? user.nick : 'гость'}&gt;
                 </span>
@@ -216,7 +219,7 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
                       className="w-full px-4 py-3 text-left transition-colors hover:bg-muted/50 disabled:cursor-default disabled:hover:bg-transparent"
                     >
                       <div className="flex items-center gap-2">
-                        <span className="h-2 w-2 bg-nick-3" />
+                        <Avatar avatar={u.avatar} color={u.color as 1} size={24} />
                         <span className={cn('font-semibold', nickColorClass[u.color as 1])}>{u.nick}</span>
                         {isMe ? (
                           <span className="ml-auto font-mono text-[0.7rem] uppercase text-secondary">это ты</span>
@@ -228,7 +231,7 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
                           <Icon name="Mail" size={13} className="ml-auto text-muted-foreground/60" />
                         )}
                       </div>
-                      <p className="mt-1 pl-4 text-[0.88rem] text-muted-foreground">{u.status}</p>
+                      <p className="mt-1 pl-8 text-[0.88rem] text-muted-foreground">{u.status}</p>
                     </button>
                   </li>
                 );

@@ -3,6 +3,7 @@ import Icon from '@/components/ui/icon';
 import { cn } from '@/lib/utils';
 import { useDm } from '@/hooks/use-dm';
 import { nickColorClass } from '@/data/chat';
+import Avatar from '@/components/Avatar';
 
 const DialogsList = () => {
   const { listOpen, closeList, dialogs, openDm, soundOn, toggleSound } = useDm();
@@ -44,7 +45,7 @@ const DialogsList = () => {
                   onClick={() => openDm(d.nick)}
                   className="flex w-full items-center gap-3 px-5 py-3.5 text-left transition-colors hover:bg-muted/50"
                 >
-                  <Icon name="MessageSquare" size={16} className="shrink-0 text-muted-foreground" />
+                  <Avatar avatar={d.avatar} color={d.color} size={26} />
                   <span className={cn('font-semibold', nickColorClass[d.color])}>{d.nick}</span>
                   {d.unread > 0 && (
                     <span className="ml-auto border-2 border-secondary bg-secondary px-1.5 font-mono text-[0.72rem] font-bold text-secondary-foreground">

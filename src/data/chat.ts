@@ -24,6 +24,26 @@ export const nickBgClass: Record<NickColor, string> = {
 
 export const nickColors: NickColor[] = [1, 2, 3, 4, 5, 6, 7, 8];
 
+export type AvatarId = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12;
+
+export const avatars: { id: AvatarId; icon: string; title: string }[] = [
+  { id: 1, icon: 'Smile', title: 'Смайл' },
+  { id: 2, icon: 'Ghost', title: 'Привидение' },
+  { id: 3, icon: 'CookingPot', title: 'Кастрюля' },
+  { id: 4, icon: 'Cat', title: 'Кот' },
+  { id: 5, icon: 'Radio', title: 'Радио' },
+  { id: 6, icon: 'Gamepad2', title: 'Джойстик' },
+  { id: 7, icon: 'Coffee', title: 'Кружка' },
+  { id: 8, icon: 'Skull', title: 'Череп' },
+  { id: 9, icon: 'Rocket', title: 'Ракета' },
+  { id: 10, icon: 'Music', title: 'Нота' },
+  { id: 11, icon: 'BookOpen', title: 'Конспект' },
+  { id: 12, icon: 'Moon', title: 'Луна' },
+];
+
+export const avatarIcon = (id?: number) =>
+  avatars.find((a) => a.id === id)?.icon ?? 'Smile';
+
 export type Room = {
   id: string;
   floor: string;

@@ -3,7 +3,8 @@ import { Dialog, DialogContent } from '@/components/ui/dialog';
 import Icon from '@/components/ui/icon';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/use-auth';
-import { NickColor, nickBgClass, nickColorClass, nickColors, rooms } from '@/data/chat';
+import { AvatarId, NickColor, avatars, nickBgClass, nickColorClass, nickColors, rooms } from '@/data/chat';
+import Avatar from '@/components/Avatar';
 import { toast } from '@/hooks/use-toast';
 
 type ProfileDialogProps = {
@@ -15,11 +16,13 @@ const ProfileDialog = ({ open, onOpenChange }: ProfileDialogProps) => {
   const { user, saveProfile, signOut } = useAuth();
   const [status, setStatus] = useState('');
   const [color, setColor] = useState<NickColor>(1);
+  const [avatar, setAvatar] = useState<AvatarId>(1);
 
   useEffect(() => {
     if (user && open) {
       setStatus(user.status);
       setColor(user.color);
+      setAvatar((user.avatar ?? 1) as AvatarId);
     }
   }, [user, open]);
 
@@ -29,8 +32,8 @@ const ProfileDialog = ({ open, onOpenChange }: ProfileDialogProps) => {
 
   const save = async () => {
     try {
-      await saveProfile({ status: status.trim() || 'молча наблюдает', color });
-      toast({ title: 'Профиль обновлён', description: 'Соседи уже видят новый цвет.' });
+      await saveProfile({ status: status.trim() || 'молча наблюдает', color, avatar });
+      toast({ title: 'Профиль обновлён', description: 'Соседи уже видят новую аватарку.' });
       onOpenChange(false);
     } catch (err) {
       toast({
@@ -44,9 +47,14 @@ const ProfileDialog = ({ open, onOpenChange }: ProfileDialogProps) => {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-[520px] border-2 border-foreground/40 bg-card p-0 text-card-foreground">
-        <div className="border-b-2 border-foreground/35 px-6 py-5">
-          <p className="text-[0.78rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Профиль жильца</p>
-          <h3 className={cn('mt-1 font-display text-2xl font-extrabold', nickColorClass[color])}>{user.nick}</h3>
+        <div className="flex items-center gap-4 border-b-2 border-foreground/35 px-6 py-5">
+          <Avatar avatar={avatar} color={color} size={46} />
+          <div>
+            <p className="text-[0.78rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+              Профиль жильца
+            </p>
+            <h3 className={cn('mt-1 font-display text-2xl font-extrabold', nickColorClass[color])}>{user.nick}</h3>
+          </div>
         </div>
 
         <div className="space-y-5 px-6 pb-6 pt-5">
@@ -93,6 +101,31 @@ const ProfileDialog = ({ open, onOpenChange }: ProfileDialogProps) => {
                     color === c ? 'scale-110 border-foreground' : 'border-transparent hover:scale-105',
                   )}
                 />
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <span className="mb-2 block text-[0.78rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+              Аватарка
+            </span>
+            <div className="flex flex-wrap gap-2">
+              {avatars.map((a) => (
+                <button
+                  key={a.id}
+                  type="button"
+                  onClick={() => setAvatar(a.id)}
+                  title={a.title}
+                  aria-label={a.title}
+                  className={cn(
+                    'flex h-9 w-9 items-center justify-center border-2 transition-colors',
+                    avatar === a.id
+                      ? 'border-secondary bg-secondary text-secondary-foreground'
+                      : 'border-foreground/30 text-muted-foreground hover:border-secondary hover:text-foreground',
+                  )}
+                >
+                  <Icon name={a.icon} size={17} />
+                </button>
               ))}
             </div>
           </div>

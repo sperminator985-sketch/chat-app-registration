@@ -5,7 +5,7 @@ import { toast } from '@/hooks/use-toast';
 import { playKnock } from '@/lib/notify-sound';
 import type { NickColor } from '@/data/chat';
 
-export type Dialog = { nick: string; color: NickColor; unread: number };
+export type Dialog = { nick: string; color: NickColor; unread: number; avatar?: number };
 
 type DmState = {
   dialogs: Dialog[];

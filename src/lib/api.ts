@@ -10,6 +10,7 @@ export type ApiUser = {
   status: string;
   room: string;
   since: string;
+  avatar: number;
 };
 
 export type ApiMessage = {
@@ -18,11 +19,12 @@ export type ApiMessage = {
   color: NickColor;
   text: string;
   time: string;
+  avatar?: number;
 };
 
 export type FeedResponse = {
   messages: ApiMessage[];
-  online: { nick: string; color: NickColor; status: string }[];
+  online: { nick: string; color: NickColor; status: string; avatar?: number }[];
   roomCounts: Record<string, number>;
   totalUsers: number;
   dayMessages: number;
@@ -51,18 +53,22 @@ const request = async <T>(action: string, options: { method?: string; body?: unk
 export const api = {
   feed: (room: string) => request<FeedResponse>('feed', { query: `&room=${room}` }),
   me: () => request<{ user: ApiUser }>('me'),
-  register: (body: { nick: string; password: string; color: number; room: string }) =>
+  register: (body: { nick: string; password: string; color: number; room: string; avatar: number }) =>
     request<{ user: ApiUser; token: string }>('register', { method: 'POST', body }),
   login: (body: { nick: string; password: string }) =>
     request<{ user: ApiUser; token: string }>('login', { method: 'POST', body }),
   send: (body: { text: string; room: string }) =>
     request<{ message: ApiMessage }>('send', { method: 'POST', body }),
-  profile: (body: { status: string; color: number }) =>
+  profile: (body: { status: string; color: number; avatar: number }) =>
     request<{ user: ApiUser }>('profile', { method: 'POST', body }),
   logout: () => request<{ ok: boolean }>('logout', { method: 'POST' }),
-  dialogs: () => request<{ dialogs: { nick: string; color: NickColor; unread: number }[]; unread: number }>('dialogs'),
+  dialogs: () =>
+    request<{
+      dialogs: { nick: string; color: NickColor; unread: number; avatar?: number }[];
+      unread: number;
+    }>('dialogs'),
   dm: (nick: string) =>
-    request<{ peer: { nick: string; color: NickColor; status: string }; messages: ApiMessage[] }>('dm', {
+    request<{ peer: { nick: string; color: NickColor; status: string; avatar?: number }; messages: ApiMessage[] }>('dm', {
       query: `&nick=${encodeURIComponent(nick)}`,
     }),
   dmSend: (body: { nick: string; text: string }) =>
