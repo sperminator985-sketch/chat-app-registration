@@ -67,6 +67,19 @@ export const getToken = () => localStorage.getItem(TOKEN_KEY) ?? '';
 export const setToken = (token: string) => localStorage.setItem(TOKEN_KEY, token);
 export const clearToken = () => localStorage.removeItem(TOKEN_KEY);
 
+let banned: string | null = null;
+const banListeners = new Set<(v: string | null) => void>();
+
+export const getBanned = () => banned;
+export const onBanned = (fn: (v: string | null) => void) => {
+  banListeners.add(fn);
+  return () => banListeners.delete(fn);
+};
+export const clearBanned = () => {
+  banned = null;
+  banListeners.forEach((fn) => fn(null));
+};
+
 let serverDown = false;
 const downListeners = new Set<(v: boolean) => void>();
 
@@ -114,6 +127,10 @@ const request = async <T>(action: string, options: { method?: string; body?: unk
   }
 
   setServerDown(false);
+  if (res.status === 403 && data?.error && data.error.startsWith('Ты выселен')) {
+    banned = data.error;
+    banListeners.forEach((fn) => fn(banned));
+  }
   if (!res.ok) throw new Error(data?.error || 'Не получилось связаться с общагой');
   return data as T;
 };

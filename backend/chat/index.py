@@ -58,11 +58,16 @@ def get_user_by_token(cur, token: str):
     if not token:
         return None
     cur.execute(
-        f"SELECT u.id, u.nick, u.color, u.status, u.room, u.created_at, u.avatar, u.avatar_url, u.is_admin FROM {SCHEMA}.sessions s "
+        f"SELECT u.id, u.nick, u.color, u.status, u.room, u.created_at, u.avatar, u.avatar_url, u.is_admin, "
+        f"u.banned_at, u.ban_reason FROM {SCHEMA}.sessions s "
         f"JOIN {SCHEMA}.users u ON u.id = s.user_id WHERE s.token = '{esc(token)}'"
     )
     row = cur.fetchone()
-    return user_row(row) if row else None
+    if not row:
+        return None
+    if row[9] is not None:
+        return {'banned': True, 'reason': row[10] or 'нарушение правил'}
+    return user_row(row)
 
 
 def handler(event: dict, context) -> dict:
@@ -130,6 +135,8 @@ def handler(event: dict, context) -> dict:
 
         if method == 'GET' and action == 'me':
             user = get_user_by_token(cur, token)
+            if user and user.get('banned'):
+                return respond(403, {'error': f"Ты выселен из общаги: {user['reason']}"})
             if not user:
                 return respond(401, {'error': 'Не авторизован'})
             cur.execute(f"UPDATE {SCHEMA}.users SET last_seen = NOW() WHERE id = {user['id']}")
@@ -187,6 +194,8 @@ def handler(event: dict, context) -> dict:
 
         if method == 'POST' and action == 'send':
             user = get_user_by_token(cur, token)
+            if user and user.get('banned'):
+                return respond(403, {'error': f"Ты выселен из общаги: {user['reason']}"})
             if not user:
                 return respond(401, {'error': 'Сначала займи ник'})
             text = (body.get('text') or '').strip()[:500]
@@ -210,6 +219,8 @@ def handler(event: dict, context) -> dict:
 
         if method == 'POST' and action == 'profile':
             user = get_user_by_token(cur, token)
+            if user and user.get('banned'):
+                return respond(403, {'error': f"Ты выселен из общаги: {user['reason']}"})
             if not user:
                 return respond(401, {'error': 'Не авторизован'})
             status = (body.get('status') or '').strip()[:64] or 'молча наблюдает'
@@ -255,6 +266,8 @@ def handler(event: dict, context) -> dict:
 
         if method == 'GET' and action == 'dialogs':
             user = get_user_by_token(cur, token)
+            if user and user.get('banned'):
+                return respond(403, {'error': f"Ты выселен из общаги: {user['reason']}"})
             if not user:
                 return respond(401, {'error': 'Не авторизован'})
             me = user['id']
@@ -278,6 +291,8 @@ def handler(event: dict, context) -> dict:
 
         if method == 'GET' and action == 'dm':
             user = get_user_by_token(cur, token)
+            if user and user.get('banned'):
+                return respond(403, {'error': f"Ты выселен из общаги: {user['reason']}"})
             if not user:
                 return respond(401, {'error': 'Не авторизован'})
             with_nick = (params.get('nick') or '').strip()
@@ -320,6 +335,8 @@ def handler(event: dict, context) -> dict:
 
         if method == 'POST' and action == 'dm_send':
             user = get_user_by_token(cur, token)
+            if user and user.get('banned'):
+                return respond(403, {'error': f"Ты выселен из общаги: {user['reason']}"})
             if not user:
                 return respond(401, {'error': 'Сначала займи ник'})
             to_nick = (body.get('nick') or '').strip()
@@ -348,6 +365,8 @@ def handler(event: dict, context) -> dict:
 
         if method == 'POST' and action == 'call_signal':
             user = get_user_by_token(cur, token)
+            if user and user.get('banned'):
+                return respond(403, {'error': f"Ты выселен из общаги: {user['reason']}"})
             if not user:
                 return respond(401, {'error': 'Не авторизован'})
             to_nick = (body.get('nick') or '').strip()
@@ -370,6 +389,8 @@ def handler(event: dict, context) -> dict:
 
         if method == 'GET' and action == 'call_poll':
             user = get_user_by_token(cur, token)
+            if user and user.get('banned'):
+                return respond(403, {'error': f"Ты выселен из общаги: {user['reason']}"})
             if not user:
                 return respond(401, {'error': 'Не авторизован'})
             me = user['id']
@@ -405,6 +426,8 @@ def handler(event: dict, context) -> dict:
 
         if action in ('admin_users', 'admin_messages', 'admin_ban', 'admin_hide'):
             user = get_user_by_token(cur, token)
+            if user and user.get('banned'):
+                return respond(403, {'error': f"Ты выселен из общаги: {user['reason']}"})
             if not user:
                 return respond(401, {'error': 'Не авторизован'})
             cur.execute(f"SELECT is_admin FROM {SCHEMA}.users WHERE id = {user['id']}")

@@ -58,11 +58,12 @@ const AuthDialog = () => {
       setPass('');
       setPass2('');
     } catch (err) {
-      toast({
-        title: 'Вахтёрша не пустила',
-        description: err instanceof Error ? err.message : 'Попробуй ещё раз',
-        variant: 'destructive',
-      });
+      const text = err instanceof Error ? err.message : 'Попробуй ещё раз';
+      if (text.startsWith('Ты выселен')) {
+        closeAuth();
+      } else {
+        toast({ title: 'Вахтёрша не пустила', description: text, variant: 'destructive' });
+      }
     } finally {
       setBusy(false);
     }

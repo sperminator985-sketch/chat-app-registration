@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, ReactNode } from 'react';
-import { api, clearToken, getToken, setToken, ApiUser } from '@/lib/api';
+import { onBanned, api, clearToken, getToken, setToken, ApiUser } from '@/lib/api';
 
 export type Account = ApiUser;
 
@@ -68,6 +68,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     clearToken();
     setUser(null);
   }, []);
+
+  useEffect(() =>
+    onBanned((msg) => {
+      if (!msg) return;
+      clearToken();
+      setUser(null);
+    }),
+  []);
 
   const saveProfile = useCallback(async (body: { status: string; color: number; avatar: number; image?: string; removeImage?: boolean }) => {
     const res = await api.profile(body);

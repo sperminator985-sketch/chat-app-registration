@@ -5,6 +5,7 @@ import { CallProvider } from '@/hooks/use-call';
 import CallWindow from '@/components/CallWindow';
 import Header from '@/components/Header';
 import ServerDownBanner from '@/components/ServerDownBanner';
+import BannedDialog from '@/components/BannedDialog';
 import Hero from '@/components/Hero';
 import Ticker from '@/components/Ticker';
 import Rooms from '@/components/Rooms';
@@ -59,6 +60,7 @@ const PageBody = () => {
       </main>
       {!user && <Footer />}
       <AuthDialog />
+      <BannedDialog />
       <WelcomeDialog />
       <DialogsList />
       <DirectMessages />
