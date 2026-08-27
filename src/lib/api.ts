@@ -1,5 +1,8 @@
 import type { NickColor } from '@/data/chat';
 
+// Адрес сервера чата.
+// Чтобы переехать на свой хостинг, впишите сюда ссылку на api.php,
+// например: 'https://ваш-домен.ru/chat/api.php'
 const API_URL = 'https://functions.poehali.dev/fe6fe52c-45f4-43ff-babc-0bcb6058bd32';
 const TOKEN_KEY = 'obshaga_token';
 

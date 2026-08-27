@@ -1,0 +1,9 @@
+# Запрещаем скачивать файл с паролями от базы
+<Files "config.php">
+    Require all denied
+</Files>
+
+# Запрещаем выполнять что-либо внутри папки с картинками
+<Directory "uploads">
+    php_flag engine off
+</Directory>
