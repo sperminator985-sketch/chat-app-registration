@@ -74,7 +74,7 @@ const Header = ({ onProfile }: HeaderProps) => {
   return (
     <header
       className={cn(
-        'sticky top-0 z-50 transition-colors duration-300',
+        'transition-colors duration-300',
         scrolled ? 'bg-background/95 backdrop-blur-sm' : 'bg-transparent',
       )}
     >

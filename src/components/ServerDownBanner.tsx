@@ -34,7 +34,7 @@ const ServerDownBanner = () => {
   if (!down) return null;
 
   return (
-    <div className="sticky top-0 z-[60] border-b-2 border-foreground/35 bg-primary px-5 py-3 text-primary-foreground">
+    <div className="border-b-2 border-foreground/35 bg-primary px-5 py-3 text-primary-foreground">
       <div className="mx-auto flex max-w-[1400px] flex-wrap items-center gap-x-3 gap-y-2">
         <Icon name="TriangleAlert" size={18} className="shrink-0" />
         <p className="min-w-0 flex-1 text-[0.78rem] font-semibold uppercase tracking-[0.08em] md:text-[0.85rem]">

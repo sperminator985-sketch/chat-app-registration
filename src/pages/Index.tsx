@@ -37,8 +37,10 @@ const PageBody = () => {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <ServerDownBanner />
-      <Header onProfile={() => setProfileOpen(true)} />
+      <div className="sticky top-0 z-50">
+        <ServerDownBanner />
+        <Header onProfile={() => setProfileOpen(true)} />
+      </div>
       <main>
         {user ? (
           <ChatWindow activeRoom={activeRoom} onPick={setActiveRoom} />
