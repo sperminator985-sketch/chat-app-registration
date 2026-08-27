@@ -1,5 +1,6 @@
 import { stats } from '@/data/chat';
 import { useLiveStats } from '@/hooks/use-live-stats';
+import { plural } from '@/lib/plural';
 
 const Stats = () => {
   const live = useLiveStats();
@@ -7,8 +8,14 @@ const Stats = () => {
   const items = live
     ? [
         { value: String(live.online), label: 'сейчас в чате' },
-        { value: String(live.totalUsers), label: 'жильцов зарегистрировано' },
-        { value: String(live.dayMessages), label: 'сообщений за сутки' },
+        {
+          value: String(live.totalUsers),
+          label: `${plural(live.totalUsers, 'жилец зарегистрирован', 'жильца зарегистрировано', 'жильцов зарегистрировано')}`,
+        },
+        {
+          value: String(live.dayMessages),
+          label: `${plural(live.dayMessages, 'сообщение за сутки', 'сообщения за сутки', 'сообщений за сутки')}`,
+        },
         stats[1],
       ]
     : stats;

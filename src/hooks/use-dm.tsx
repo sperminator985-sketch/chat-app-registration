@@ -4,6 +4,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { toast } from '@/hooks/use-toast';
 import { ToastAction } from '@/components/ui/toast';
 import { playKnock } from '@/lib/notify-sound';
+import { plural } from '@/lib/plural';
 import type { NickColor } from '@/data/chat';
 
 export type Dialog = { nick: string; color: NickColor; unread: number; avatar?: number; avatarUrl?: string | null; online?: boolean; seenAgo?: number | null };
@@ -77,7 +78,7 @@ export const DmProvider = ({ children }: { children: ReactNode }) => {
               title: `Стук в дверь: ${first.nick}`,
               description:
                 fresh.length > 1
-                  ? `Новые записки ещё от ${fresh.length - 1} соседей`
+                  ? `Новые записки ещё от ${fresh.length - 1} ${plural(fresh.length - 1, 'соседа', 'соседей', 'соседей')}`
                   : 'Новая записка в личке',
               action: (
                 <ToastAction altText="Открыть переписку" onClick={() => openDmRef.current(first.nick)}>
