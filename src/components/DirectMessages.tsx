@@ -9,7 +9,6 @@ import { nickColorClass, NickColor } from '@/data/chat';
 import { lastSeenText } from '@/lib/last-seen';
 import { useDm } from '@/hooks/use-dm';
 import { useCall } from '@/hooks/use-call';
-import Avatar from '@/components/Avatar';
 import EmojiPicker from '@/components/EmojiPicker';
 
 const DirectMessages = () => {
@@ -75,7 +74,7 @@ const DirectMessages = () => {
     <Dialog open={Boolean(nick)} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-w-[560px] border-2 border-foreground/40 bg-background p-0">
         <div className="flex items-center gap-3 border-b-2 border-foreground/35 px-5 py-4">
-          {peer ? <Avatar avatar={peer.avatar} avatarUrl={peer.avatarUrl} color={peer.color} size={44} /> : <Icon name="Mail" size={18} className="text-secondary" />}
+          <Icon name="Mail" size={18} className="shrink-0 text-secondary" />
           <div>
             <p className="font-display text-lg font-extrabold uppercase leading-none tracking-[-0.02em]">
               Личка с{' '}
@@ -158,7 +157,6 @@ const DirectMessages = () => {
                 )}
               >
                 <p className="flex items-center gap-2">
-                  <Avatar avatar={m.avatar} avatarUrl={m.avatarUrl} color={m.color} size={36} />
                   <span className={cn('font-semibold', nickColorClass[m.color])}>{m.nick}</span>
                   <span className="font-mono text-[0.72rem] text-muted-foreground">{m.time}</span>
                 </p>

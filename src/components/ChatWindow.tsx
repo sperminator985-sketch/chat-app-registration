@@ -7,7 +7,6 @@ import { toast } from '@/hooks/use-toast';
 import { nickColorClass, roomMessages, rooms, onlineUsers as demoUsers } from '@/data/chat';
 import { useDm } from '@/hooks/use-dm';
 import { useCall } from '@/hooks/use-call';
-import Avatar from '@/components/Avatar';
 import EmojiPicker from '@/components/EmojiPicker';
 
 type ChatWindowProps = {
@@ -165,7 +164,6 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
                 <div key={m.id} className="animate-fade-in leading-[1.45]">
                   <p className="flex flex-wrap items-center gap-x-2">
                     <span className="font-mono text-[0.78rem] text-muted-foreground">[{m.time}]</span>
-                    <Avatar avatar={m.avatar} avatarUrl={m.avatarUrl} color={m.color} size={40} />
                     <button
                       type="button"
                       onClick={() => openDm(m.nick)}
@@ -189,7 +187,6 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
 
             <form onSubmit={send} className="flex flex-col gap-3 border-t-2 border-foreground/35 px-5 py-4 sm:flex-row">
               <div className="flex flex-1 items-center gap-2 border-2 border-foreground/35 bg-input px-3 py-2 focus-within:border-secondary">
-                {user && <Avatar avatar={user.avatar} avatarUrl={user.avatarUrl} color={user.color} size={40} />}
                 <span className={cn('font-semibold', user ? nickColorClass[user.color] : 'text-muted-foreground')}>
                   &lt;{user ? user.nick : 'гость'}&gt;
                 </span>
@@ -241,7 +238,6 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
                       className="w-full px-4 py-3 text-left transition-colors hover:bg-muted/50 disabled:cursor-default disabled:hover:bg-transparent"
                     >
                       <div className="flex items-center gap-2">
-                        <Avatar avatar={u.avatar} avatarUrl={u.avatarUrl} color={u.color as 1} size={48} />
                         <span className={cn('font-semibold', nickColorClass[u.color as 1])}>{u.nick}</span>
                         {isMe ? (
                           <span className="ml-auto font-mono text-[0.7rem] uppercase text-secondary">это ты</span>
@@ -253,7 +249,7 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
                           <Icon name="Mail" size={13} className="ml-auto text-muted-foreground/60" />
                         )}
                       </div>
-                      <p className="mt-1 pl-14 text-[0.88rem] text-muted-foreground">{u.status}</p>
+                      <p className="mt-1 text-[0.88rem] text-muted-foreground">{u.status}</p>
                     </button>
                   </li>
                 );

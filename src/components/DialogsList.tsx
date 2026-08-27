@@ -5,7 +5,6 @@ import { useDm } from '@/hooks/use-dm';
 import { useCall } from '@/hooks/use-call';
 import { nickColorClass } from '@/data/chat';
 import { lastSeenText } from '@/lib/last-seen';
-import Avatar from '@/components/Avatar';
 
 const DialogsList = () => {
   const { listOpen, closeList, dialogs, openDm, soundOn, toggleSound } = useDm();
@@ -56,15 +55,12 @@ const DialogsList = () => {
                   onClick={() => openDm(d.nick)}
                   className="flex w-full items-center gap-3 py-3.5 pl-5 pr-16 text-left transition-colors hover:bg-muted/50"
                 >
-                  <span className="relative shrink-0">
-                    <Avatar avatar={d.avatar} avatarUrl={d.avatarUrl} color={d.color} size={52} />
-                    <span
-                      className={cn(
-                        'absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 border-2 border-background',
-                        d.online ? 'bg-secondary' : 'bg-muted-foreground/50',
-                      )}
-                    />
-                  </span>
+                  <span
+                    className={cn(
+                      'h-2.5 w-2.5 shrink-0',
+                      d.online ? 'bg-secondary' : 'bg-muted-foreground/50',
+                    )}
+                  />
                   <span className="min-w-0">
                     <span className={cn('block truncate font-semibold', nickColorClass[d.color])}>{d.nick}</span>
                     <span className="block font-mono text-[0.7rem] uppercase tracking-[0.08em] text-muted-foreground">
