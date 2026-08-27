@@ -10,7 +10,7 @@ const DialogsList = () => {
 
   return (
     <Dialog open={listOpen} onOpenChange={(open) => !open && closeList()}>
-      <DialogContent className="max-w-[460px] border-2 border-foreground/40 bg-background p-0">
+      <DialogContent className="max-w-[460px] border-2 border-foreground/40 bg-background p-0 [&>button]:hidden">
         <div className="flex items-center gap-3 border-b-2 border-foreground/35 px-5 py-4">
           <Icon name="Mail" size={18} className="text-secondary" />
           <p className="font-display text-lg font-extrabold uppercase leading-none tracking-[-0.02em]">
@@ -29,6 +29,14 @@ const DialogsList = () => {
           >
             <Icon name={soundOn ? 'Volume2' : 'VolumeX'} size={14} />
             {soundOn ? 'Звук' : 'Тихо'}
+          </button>
+          <button
+            type="button"
+            onClick={closeList}
+            aria-label="Закрыть"
+            className="flex h-8 w-8 items-center justify-center border-2 border-foreground/30 text-muted-foreground transition-colors hover:border-primary hover:text-foreground"
+          >
+            <Icon name="X" size={16} />
           </button>
         </div>
 
