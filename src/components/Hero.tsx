@@ -8,7 +8,7 @@ const Hero = () => {
     <section id="top" className="mx-auto w-full max-w-[1400px] overflow-hidden px-5 py-6 md:px-10 md:py-8">
       <div className="flex flex-col justify-center gap-2.5">
         <div className="flex animate-rise flex-col items-start gap-6 md:flex-row md:items-start md:justify-between md:gap-7">
-          <h1 className="flex min-w-0 flex-wrap items-center gap-x-4 gap-y-2 font-extrabold uppercase tracking-[-0.035em] sm:flex-nowrap">
+          <h1 className="mt-[38px] flex min-w-0 flex-wrap items-center gap-x-4 gap-y-2 font-extrabold uppercase tracking-[-0.035em] sm:flex-nowrap">
             <span className="whitespace-nowrap text-[clamp(2rem,6vw,5.8rem)] leading-[.92] text-foreground">
               ЧАТ<b className="font-extrabold text-primary"> —</b>
             </span>
