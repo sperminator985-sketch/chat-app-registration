@@ -45,7 +45,7 @@ const Rooms = ({ activeRoom, onPick }: RoomsProps) => {
             onClick={() => onPick(room.id)}
             style={{ animationDelay: `${i * 60}ms` }}
             className={cn(
-              'group animate-fade-in relative flex flex-col items-start gap-3 p-6 text-left transition-colors duration-200',
+              'group animate-fade-in relative flex h-full flex-col items-start gap-3 p-6 text-left transition-colors duration-200',
               active
                 ? 'bg-secondary text-secondary-foreground'
                 : hot
@@ -76,13 +76,13 @@ const Rooms = ({ activeRoom, onPick }: RoomsProps) => {
             </div>
 
             <h3 className="font-display text-xl font-extrabold uppercase tracking-[-0.02em]">{room.title}</h3>
-            <p className={cn('text-[0.98rem] leading-[1.4]', active ? 'opacity-80' : 'text-muted-foreground')}>
+            <p className={cn('flex-1 text-[0.98rem] leading-[1.4]', active ? 'opacity-80' : 'text-muted-foreground')}>
               {room.about}
             </p>
 
             <span
               className={cn(
-                'mt-2 inline-flex items-center gap-2 text-[0.78rem] font-semibold uppercase tracking-[0.14em]',
+                'mt-auto inline-flex items-center gap-2 pt-2 text-[0.78rem] font-semibold uppercase tracking-[0.14em]',
                 active ? 'text-secondary-foreground' : 'text-secondary',
               )}
             >
