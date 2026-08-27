@@ -1,10 +1,9 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import Icon from '@/components/ui/icon';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/use-auth';
-import { AvatarId, NickColor, avatars, nickBgClass, nickColorClass, nickColors, rooms } from '@/data/chat';
-import Avatar from '@/components/Avatar';
+import { AvatarId, NickColor, nickBgClass, nickColorClass, nickColors, rooms } from '@/data/chat';
 import { toast } from '@/hooks/use-toast';
 
 type ProfileDialogProps = {
@@ -16,36 +15,14 @@ const ProfileDialog = ({ open, onOpenChange }: ProfileDialogProps) => {
   const { user, saveProfile, signOut } = useAuth();
   const [status, setStatus] = useState('');
   const [color, setColor] = useState<NickColor>(1);
-  const [avatar, setAvatar] = useState<AvatarId>(1);
-  const [image, setImage] = useState<string | null>(null);
-  const [removeImage, setRemoveImage] = useState(false);
   const [busy, setBusy] = useState(false);
-  const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (user && open) {
       setStatus(user.status);
       setColor(user.color);
-      setAvatar((user.avatar ?? 1) as AvatarId);
-      setImage(null);
-      setRemoveImage(false);
     }
   }, [user, open]);
-
-  const pickFile = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    if (file.size > 2 * 1024 * 1024) {
-      toast({ title: 'Слишком тяжёлая', description: 'Картинка должна быть меньше 2 МБ', variant: 'destructive' });
-      return;
-    }
-    const reader = new FileReader();
-    reader.onload = () => {
-      setImage(String(reader.result));
-      setRemoveImage(false);
-    };
-    reader.readAsDataURL(file);
-  };
 
   if (!user) return null;
 
@@ -58,11 +35,9 @@ const ProfileDialog = ({ open, onOpenChange }: ProfileDialogProps) => {
       await saveProfile({
         status: status.trim() || 'молча наблюдает',
         color,
-        avatar,
-        ...(image ? { image } : {}),
-        ...(removeImage ? { removeImage: true } : {}),
+        avatar: (user.avatar ?? 1) as AvatarId,
       });
-      toast({ title: 'Профиль обновлён', description: 'Соседи уже видят новую аватарку.' });
+      toast({ title: 'Профиль обновлён', description: 'Соседи уже видят изменения.' });
       onOpenChange(false);
     } catch (err) {
       toast({
@@ -75,13 +50,11 @@ const ProfileDialog = ({ open, onOpenChange }: ProfileDialogProps) => {
     }
   };
 
-  const shownUrl = removeImage ? null : (image ?? user.avatarUrl);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-[520px] border-2 border-foreground/40 bg-card p-0 text-card-foreground">
         <div className="flex items-center gap-4 border-b-2 border-foreground/35 px-6 py-5">
-          <Avatar avatar={avatar} avatarUrl={shownUrl} color={color} size={46} />
           <div>
             <p className="text-[0.78rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
               Профиль жильца
@@ -135,64 +108,6 @@ const ProfileDialog = ({ open, onOpenChange }: ProfileDialogProps) => {
                   )}
                 />
               ))}
-            </div>
-          </div>
-
-          <div>
-            <span className="mb-2 block text-[0.78rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-              Аватарка
-            </span>
-            <div className="flex flex-wrap gap-2">
-              {avatars.map((a) => (
-                <button
-                  key={a.id}
-                  type="button"
-                  onClick={() => setAvatar(a.id)}
-                  title={a.title}
-                  aria-label={a.title}
-                  className={cn(
-                    'flex h-9 w-9 items-center justify-center border-2 transition-colors',
-                    avatar === a.id
-                      ? 'border-secondary bg-secondary text-secondary-foreground'
-                      : 'border-foreground/30 text-muted-foreground hover:border-secondary hover:text-foreground',
-                  )}
-                >
-                  <Icon name={a.icon} size={17} />
-                </button>
-              ))}
-            </div>
-
-            <div className="mt-3 flex flex-wrap items-center gap-2">
-              <input
-                ref={fileRef}
-                type="file"
-                accept="image/png,image/jpeg,image/webp,image/gif"
-                onChange={pickFile}
-                className="hidden"
-              />
-              <button
-                type="button"
-                onClick={() => fileRef.current?.click()}
-                className="flex items-center gap-2 border-2 border-foreground/30 px-3 py-2 text-[0.82rem] font-semibold transition-colors hover:border-secondary hover:text-secondary"
-              >
-                <Icon name="Upload" size={15} />
-                Своя картинка
-              </button>
-              {shownUrl && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setImage(null);
-                    setRemoveImage(true);
-                    if (fileRef.current) fileRef.current.value = '';
-                  }}
-                  className="flex items-center gap-2 border-2 border-foreground/30 px-3 py-2 text-[0.82rem] font-semibold text-muted-foreground transition-colors hover:border-primary hover:text-primary"
-                >
-                  <Icon name="Trash2" size={15} />
-                  Убрать
-                </button>
-              )}
-              <span className="text-[0.8rem] text-muted-foreground">до 2 МБ, квадратная лучше</span>
             </div>
           </div>
 
