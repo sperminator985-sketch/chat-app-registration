@@ -6,6 +6,7 @@ import { ToastAction } from '@/components/ui/toast';
 import { playKnock } from '@/lib/notify-sound';
 import { plural } from '@/lib/plural';
 import type { NickColor } from '@/data/chat';
+import { usePolling } from '@/hooks/use-polling';
 
 export type Dialog = { nick: string; color: NickColor; unread: number; avatar?: number; avatarUrl?: string | null; online?: boolean; seenAgo?: number | null };
 
@@ -94,12 +95,7 @@ export const DmProvider = ({ children }: { children: ReactNode }) => {
       .catch(() => undefined);
   }, [user]);
 
-  useEffect(() => {
-    refresh();
-    if (!user) return;
-    const timer = window.setInterval(refresh, 15000);
-    return () => window.clearInterval(timer);
-  }, [user, refresh, dmNick]);
+  usePolling(refresh, 15000, Boolean(user));
 
   const openDm = useCallback(
     (nick: string) => {

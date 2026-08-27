@@ -19,10 +19,21 @@ export const useWeather = () => {
         .catch(() => undefined);
 
     load();
-    const timer = window.setInterval(load, 900000);
+    let timer = window.setInterval(load, 900000);
+    const onVisibility = () => {
+      if (document.visibilityState === 'hidden') {
+        window.clearInterval(timer);
+      } else {
+        load();
+        window.clearInterval(timer);
+        timer = window.setInterval(load, 900000);
+      }
+    };
+    document.addEventListener('visibilitychange', onVisibility);
     return () => {
       alive = false;
       window.clearInterval(timer);
+      document.removeEventListener('visibilitychange', onVisibility);
     };
   }, []);
 

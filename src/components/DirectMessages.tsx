@@ -10,6 +10,7 @@ import { lastSeenText } from '@/lib/last-seen';
 import { useDm } from '@/hooks/use-dm';
 import { useCall } from '@/hooks/use-call';
 import EmojiPicker from '@/components/EmojiPicker';
+import { usePolling } from '@/hooks/use-polling';
 
 const DirectMessages = () => {
   const { user } = useAuth();
@@ -39,10 +40,9 @@ const DirectMessages = () => {
     if (!nick) return;
     setLoaded(false);
     setMessages([]);
-    load();
-    const timer = window.setInterval(load, 8000);
-    return () => window.clearInterval(timer);
-  }, [nick, load]);
+  }, [nick]);
+
+  usePolling(load, 15000, Boolean(nick));
 
   useEffect(() => {
     const el = feedRef.current;

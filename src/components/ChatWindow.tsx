@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Icon from '@/components/ui/icon';
 import { cn } from '@/lib/utils';
+import { usePolling } from '@/hooks/use-polling';
 import { useAuth } from '@/hooks/use-auth';
 import { api, ApiMessage } from '@/lib/api';
 import { toast } from '@/hooks/use-toast';
@@ -43,10 +44,9 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
 
   useEffect(() => {
     setLoaded(false);
-    load();
-    const timer = window.setInterval(load, 15000);
-    return () => window.clearInterval(timer);
-  }, [load]);
+  }, [room.id]);
+
+  usePolling(load, 15000);
 
   useEffect(() => {
     const el = feedRef.current;

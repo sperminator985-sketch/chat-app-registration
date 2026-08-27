@@ -6,7 +6,12 @@ import { clearBanned, getBanned, onBanned } from '@/lib/api';
 const BannedDialog = () => {
   const [message, setMessage] = useState<string | null>(getBanned());
 
-  useEffect(() => onBanned(setMessage), []);
+  useEffect(() => {
+    const off = onBanned(setMessage);
+    return () => {
+      off();
+    };
+  }, []);
 
   const reason = message?.replace(/^Ты выселен из общаги:\s*/i, '').trim();
 

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { api } from '@/lib/api';
+import { isPageVisible } from '@/hooks/use-polling';
 
 export type LiveStats = {
   online: number;
@@ -12,8 +13,9 @@ let cache: LiveStats | null = null;
 let timer: number | null = null;
 const listeners = new Set<(v: LiveStats) => void>();
 
-const load = () =>
-  api
+const load = () => {
+  if (!isPageVisible()) return Promise.resolve();
+  return api
     .feed('kurilka')
     .then((res) => {
       cache = {
@@ -25,6 +27,7 @@ const load = () =>
       listeners.forEach((fn) => fn(cache as LiveStats));
     })
     .catch(() => undefined);
+};
 
 export const useLiveStats = () => {
   const [data, setData] = useState<LiveStats | null>(cache);
@@ -34,8 +37,13 @@ export const useLiveStats = () => {
     if (cache) setData(cache);
     load();
     if (timer === null) timer = window.setInterval(load, 15000);
+    const onVisibility = () => {
+      if (isPageVisible()) load();
+    };
+    document.addEventListener('visibilitychange', onVisibility);
     return () => {
       listeners.delete(setData);
+      document.removeEventListener('visibilitychange', onVisibility);
       if (listeners.size === 0 && timer !== null) {
         window.clearInterval(timer);
         timer = null;
