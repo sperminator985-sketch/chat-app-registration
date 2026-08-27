@@ -27,12 +27,10 @@ const Rooms = ({ activeRoom, onPick }: RoomsProps) => {
 
   return (
   <section id="etazhi" className="mx-auto max-w-[1400px] px-5 py-16 md:px-10 md:py-20">
-    <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-      <h2 className="text-[clamp(2rem,6vw,3.4rem)] font-extrabold leading-[0.95] tracking-[-0.035em]">
-        Девять этажей
-        <span className="block text-primary">— выбирай свой</span>
-      </h2>
-    </div>
+    <h2 className="text-center text-[clamp(2rem,6vw,3.4rem)] font-extrabold leading-[0.95] tracking-[-0.035em]">
+      Девять этажей
+      <span className="block text-primary">— выбирай свой</span>
+    </h2>
 
     <div className="mt-10 grid gap-px bg-foreground/25 sm:grid-cols-2 lg:grid-cols-3">
       {rooms.map((room, i) => {
