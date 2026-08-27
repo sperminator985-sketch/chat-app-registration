@@ -1,6 +1,7 @@
 export const lastSeenText = (seconds: number | null | undefined): string => {
   if (seconds === null || seconds === undefined) return 'давно не заходил';
-  if (seconds < 120) return 'в сети';
+  if (seconds < 45) return 'в сети';
+  if (seconds < 120) return 'был только что';
   const min = Math.floor(seconds / 60);
   if (min < 60) return `был ${min} мин назад`;
   const hours = Math.floor(min / 60);

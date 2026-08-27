@@ -7,7 +7,6 @@ import { nickColorClass } from '@/data/chat';
 import { useDm } from '@/hooks/use-dm';
 import { useWeather, formatTemp, degreeWord } from '@/hooks/use-weather';
 import { useLiveStats } from '@/hooks/use-live-stats';
-import Avatar from '@/components/Avatar';
 
 const guestLinks = [
   { href: '#etazhi', label: 'Этажи' },
@@ -134,7 +133,6 @@ const Header = ({ onProfile }: HeaderProps) => {
                 onClick={onProfile}
                 className="flex items-center gap-2 border-2 border-foreground/40 px-4 py-2 text-[0.8rem] font-semibold uppercase tracking-[0.12em] transition-colors hover:border-secondary"
               >
-                <Avatar avatar={user.avatar} avatarUrl={user.avatarUrl} color={user.color} size={28} />
                 <span className={nickColorClass[user.color]}>{user.nick}</span>
               </button>
             </>

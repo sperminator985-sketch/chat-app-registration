@@ -58,6 +58,14 @@ export type ApiMessage = {
 export type FeedResponse = {
   messages: ApiMessage[];
   online: { nick: string; color: NickColor; status: string; avatar?: number; avatarUrl?: string | null }[];
+  recent?: {
+    nick: string;
+    color: NickColor;
+    status: string;
+    avatar?: number;
+    avatarUrl?: string | null;
+    seenAgo: number | null;
+  }[];
   roomCounts: Record<string, number>;
   totalUsers: number;
   dayMessages: number;
