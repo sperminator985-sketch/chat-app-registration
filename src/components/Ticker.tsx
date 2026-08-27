@@ -24,7 +24,7 @@ const Ticker = () => {
 
   const weatherLine =
     temp === null
-      ? 'МИНУС 28, ОДЕНЬТЕСЬ'
+      ? 'ОДЕВАЙТЕСЬ ПО ПОГОДЕ'
       : temp <= 0
         ? `ЗА ОКНОМ ${formatTemp(temp)}, ОДЕНЬТЕСЬ КАК ЛЮДИ`
         : `ЗА ОКНОМ ${formatTemp(temp)} ГРАДУСОВ`;

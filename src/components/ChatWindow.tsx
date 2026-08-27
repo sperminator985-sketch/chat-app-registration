@@ -4,7 +4,7 @@ import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/use-auth';
 import { api, ApiMessage } from '@/lib/api';
 import { toast } from '@/hooks/use-toast';
-import { nickColorClass, roomMessages, rooms, onlineUsers as demoUsers } from '@/data/chat';
+import { nickColorClass, rooms } from '@/data/chat';
 import { useDm } from '@/hooks/use-dm';
 import { useCall } from '@/hooks/use-call';
 import EmojiPicker from '@/components/EmojiPicker';
@@ -77,9 +77,8 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
     }
   };
 
-  const demoFeed = roomMessages[room.id] ?? [];
-  const showDemo = loaded && messages.length === 0;
-  const onlineList: OnlineItem[] = online.length ? online : demoUsers;
+  const isEmpty = loaded && messages.length === 0;
+  const onlineList: OnlineItem[] = online;
 
   if (!user) return null;
 
@@ -153,27 +152,10 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
                 <p className="font-mono text-[0.85rem] text-muted-foreground">соединяемся с этажом…</p>
               )}
 
-              {showDemo && (
-                <>
-                  {demoFeed.map((m) => (
-                    <div key={`demo-${m.id}`} className="leading-[1.45] opacity-60">
-                      {m.system ? (
-                        <p className="border-l-2 border-secondary bg-muted/60 px-3 py-1.5 font-mono text-[0.82rem] uppercase tracking-[0.08em] text-muted-foreground">
-                          {m.text}
-                        </p>
-                      ) : (
-                        <p className="flex flex-wrap items-baseline gap-x-2">
-                          <span className="font-mono text-[0.78rem] text-muted-foreground">[{m.time}]</span>
-                          <span className={cn('font-semibold', nickColorClass[m.color])}>&lt;{m.nick}&gt;</span>
-                          <span className="text-[1.02rem] text-foreground/90">{m.text}</span>
-                        </p>
-                      )}
-                    </div>
-                  ))}
-                  <p className="border-l-2 border-secondary bg-muted/60 px-3 py-1.5 font-mono text-[0.82rem] uppercase tracking-[0.08em] text-muted-foreground">
-                    архив этажа. новые сообщения — ниже
-                  </p>
-                </>
+              {isEmpty && (
+                <p className="border-l-2 border-secondary bg-muted/60 px-3 py-1.5 font-mono text-[0.82rem] uppercase tracking-[0.08em] text-muted-foreground">
+                  на этаже пока тихо — напиши первым
+                </p>
               )}
 
               {messages.map((m) => (
@@ -232,6 +214,11 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
               <p className="mt-1 text-[0.8rem] text-muted-foreground/80">Кликни по нику — откроется личка</p>
             </div>
             <ul className="scrollbar-brut min-h-0 flex-1 divide-y divide-foreground/15 overflow-y-auto">
+              {onlineList.length === 0 && (
+                <li className="px-4 py-4 text-center text-[0.8rem] text-muted-foreground/80">
+                  Пока никого — ты первый
+                </li>
+              )}
               {onlineList.map((u) => {
                 const isMe = Boolean(user && u.nick === user.nick);
                 return (
