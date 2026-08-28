@@ -64,7 +64,7 @@ const PageBody = () => {
         ) : (
           <>
             <div className="flex min-h-[calc(100vh-var(--top-offset,4.5rem))] flex-col">
-              <div className="flex flex-1 items-center">
+              <div className="flex flex-1 items-start md:items-center">
                 <Hero />
               </div>
               <Ticker />
