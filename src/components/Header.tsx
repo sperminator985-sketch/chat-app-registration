@@ -71,7 +71,12 @@ const Header = ({ onProfile }: HeaderProps) => {
       const offset = parseFloat(
         getComputedStyle(document.documentElement).getPropertyValue('--top-offset') || '0',
       );
-      return Math.max(el.getBoundingClientRect().top + window.scrollY - (offset || 0), 0);
+      const maxTop = Math.max(
+        document.documentElement.scrollHeight - window.innerHeight,
+        0,
+      );
+      const wanted = el.getBoundingClientRect().top + window.scrollY - (offset || 0);
+      return Math.min(Math.max(wanted, 0), maxTop);
     };
 
     const scroll = (behavior: ScrollBehavior) => {
