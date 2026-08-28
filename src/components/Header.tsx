@@ -86,12 +86,14 @@ const Header = ({ onProfile }: HeaderProps) => {
     requestAnimationFrame(() =>
       requestAnimationFrame(() => {
         scroll('smooth');
-        window.setTimeout(() => {
-          const top = href === '#top' ? 0 : targetTop();
-          if (top !== null && Math.abs(window.scrollY - top) > 4) {
-            window.scrollTo({ top, behavior: 'auto' });
-          }
-        }, 600);
+        [350, 650, 950].forEach((delay) =>
+          window.setTimeout(() => {
+            const top = href === '#top' ? 0 : targetTop();
+            if (top !== null && Math.abs(window.scrollY - top) > 4) {
+              window.scrollTo({ top, behavior: 'auto' });
+            }
+          }, delay),
+        );
       }),
     );
   };
