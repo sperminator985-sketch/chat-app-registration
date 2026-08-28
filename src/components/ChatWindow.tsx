@@ -222,15 +222,20 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
 
             <form onSubmit={send} className="flex flex-col gap-3 border-t-2 border-foreground/35 px-5 py-4 sm:flex-row">
               <div className="flex flex-1 items-center gap-2 border-2 border-foreground/35 bg-input px-3 py-2 focus-within:border-secondary">
-                <span className={cn('font-semibold', user ? nickColorClass[user.color] : 'text-muted-foreground')}>
+                <span
+                  className={cn(
+                    'max-w-[38%] shrink-0 truncate text-[0.76rem] font-semibold sm:max-w-none sm:text-[1rem]',
+                    user ? nickColorClass[user.color] : 'text-muted-foreground',
+                  )}
+                >
                   &lt;{user ? user.nick : 'гость'}&gt;
                 </span>
                 <input
                   value={draft}
                   onChange={(e) => setDraft(e.target.value)}
                   maxLength={480}
-                  placeholder={user ? 'Напиши что-нибудь этажу…' : 'Займи ник, чтобы писать'}
-                  className="w-full bg-transparent text-[1.02rem] text-foreground outline-none placeholder:text-muted-foreground/70"
+                  placeholder={user ? 'Напиши что-нибудь…' : 'Займи ник, чтобы писать'}
+                  className="w-full min-w-0 bg-transparent text-[0.82rem] text-foreground outline-none placeholder:text-muted-foreground/70 sm:text-[1.02rem]"
                 />
               </div>
               <div className="flex shrink-0 items-center gap-3">
