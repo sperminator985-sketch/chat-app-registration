@@ -113,19 +113,31 @@ const Header = ({ onProfile }: HeaderProps) => {
       return Math.min(Math.max(wanted, 0), maxTop);
     };
 
-    const scroll = (behavior: ScrollBehavior) => {
-      if (href === '#top') {
-        window.scrollTo({ top: 0, behavior });
-        return;
-      }
-      const top = targetTop();
-      if (top !== null) window.scrollTo({ top, behavior });
+    const animate = () => {
+      const from = window.scrollY;
+      const first = href === '#top' ? 0 : targetTop();
+      if (first === null) return;
+      const duration = Math.min(900, Math.max(380, Math.abs(first - from) * 0.55));
+      const start = performance.now();
+      const ease = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+
+      const step = (now: number) => {
+        const t = Math.min(1, (now - start) / duration);
+        const target = href === '#top' ? 0 : (targetTop() ?? first);
+        window.scrollTo(0, from + (target - from) * ease(t));
+        if (t < 1) requestAnimationFrame(step);
+        else {
+          const final = href === '#top' ? 0 : targetTop();
+          if (final !== null) window.scrollTo(0, final);
+        }
+      };
+      requestAnimationFrame(step);
     };
 
     requestAnimationFrame(() =>
       requestAnimationFrame(() => {
-        scroll('smooth');
-        [700, 1000, 1400].forEach((delay) =>
+        animate();
+        [1000, 1500].forEach((delay) =>
           window.setTimeout(() => {
             const top = href === '#top' ? 0 : targetTop();
             if (top !== null && Math.abs(window.scrollY - top) > 4) {
