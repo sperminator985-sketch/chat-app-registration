@@ -157,10 +157,10 @@ const DirectMessages = () => {
                 )}
               >
                 <p className="flex items-center gap-2">
-                  <span className={cn('font-semibold', nickColorClass[m.color])}>{m.nick}</span>
-                  <span className="font-mono text-[0.72rem] text-muted-foreground">{m.time}</span>
+                  <span className={cn('text-[0.84rem] font-semibold sm:text-[1rem]', nickColorClass[m.color])}>{m.nick}</span>
+                  <span className="font-mono text-[0.64rem] text-muted-foreground sm:text-[0.72rem]">{m.time}</span>
                 </p>
-                <p className="mt-1 text-[1rem] text-foreground/90">{m.text}</p>
+                <p className="mt-1 text-[0.86rem] text-foreground/90 sm:text-[1rem]">{m.text}</p>
               </div>
             );
           })}
