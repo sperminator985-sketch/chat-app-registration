@@ -135,6 +135,35 @@ function touch_user(int $id, ?string $room = null): void
     }
 }
 
+function hasTypingColumns(): bool
+{
+    static $ok = null;
+    if ($ok !== null) {
+        return $ok;
+    }
+    try {
+        $found = (int) scalar(
+            "SELECT COUNT(*) FROM information_schema.COLUMNS
+             WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users'
+               AND COLUMN_NAME IN ('typing_at', 'typing_room')"
+        );
+        if ($found < 2) {
+            try {
+                db()->exec("ALTER TABLE users
+                    ADD COLUMN typing_at DATETIME NULL,
+                    ADD COLUMN typing_room VARCHAR(32) NULL");
+                $found = 2;
+            } catch (Throwable $e) {
+                // нет прав на ALTER — просто работаем без индикатора
+            }
+        }
+        $ok = $found >= 2;
+    } catch (Throwable $e) {
+        $ok = false;
+    }
+    return $ok;
+}
+
 function shapeMessage(array $r): array
 {
     return [
@@ -205,12 +234,14 @@ try {
         )->fetchAll());
 
         $typing = [];
-        foreach (q(
-            'SELECT nick, color FROM users
-             WHERE typing_room = ? AND typing_at > UTC_TIMESTAMP() - INTERVAL 6 SECOND LIMIT 5',
-            [$room]
-        )->fetchAll() as $r) {
-            $typing[] = ['nick' => $r['nick'], 'color' => (int) $r['color']];
+        if (hasTypingColumns()) {
+            foreach (q(
+                'SELECT nick, color FROM users
+                 WHERE typing_room = ? AND typing_at > UTC_TIMESTAMP() - INTERVAL 6 SECOND LIMIT 5',
+                [$room]
+            )->fetchAll() as $r) {
+                $typing[] = ['nick' => $r['nick'], 'color' => (int) $r['color']];
+            }
         }
 
         $counts = [];
@@ -245,11 +276,13 @@ try {
         if (!in_array($room, ROOMS, true)) {
             fail(400, 'Неизвестная комната');
         }
-        q(
-            'UPDATE users SET typing_at = UTC_TIMESTAMP(), typing_room = ?, last_seen = UTC_TIMESTAMP()
-             WHERE id = ?',
-            [$room, $user['id']]
-        );
+        if (hasTypingColumns()) {
+            q(
+                'UPDATE users SET typing_at = UTC_TIMESTAMP(), typing_room = ?, last_seen = UTC_TIMESTAMP()
+                 WHERE id = ?',
+                [$room, $user['id']]
+            );
+        }
         out(200, ['ok' => true]);
     }
 
@@ -360,7 +393,9 @@ try {
         );
         $id = (int) db()->lastInsertId();
         touch_user($user['id'], $room);
-        q('UPDATE users SET typing_at = NULL, typing_room = NULL WHERE id = ?', [$user['id']]);
+        if (hasTypingColumns()) {
+            q('UPDATE users SET typing_at = NULL, typing_room = NULL WHERE id = ?', [$user['id']]);
+        }
         out(200, ['message' => [
             'id' => $id,
             'nick' => $user['nick'],
