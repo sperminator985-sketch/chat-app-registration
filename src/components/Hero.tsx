@@ -8,7 +8,7 @@ const Hero = () => {
     <section id="top" className="mx-auto w-full max-w-[1400px] overflow-hidden px-5 pb-4 pt-3 md:px-10 md:py-8">
       <div className="flex flex-col justify-center gap-2.5">
         <div className="flex animate-rise flex-col items-center gap-6 md:flex-row md:items-start md:justify-between md:gap-7">
-          <h1 className="mt-2 flex min-w-0 md:mt-[38px] flex-nowrap items-center justify-center gap-x-2 font-extrabold uppercase tracking-[-0.035em] md:justify-start md:gap-x-4">
+          <h1 className="mt-0 flex min-w-0 md:mt-0 flex-nowrap items-center justify-center gap-x-2 font-extrabold uppercase tracking-[-0.035em] md:justify-start md:gap-x-4">
             <span className="whitespace-nowrap text-[clamp(1.5rem,7vw,2.6rem)] leading-[.92] text-foreground md:text-[clamp(2rem,6vw,5.8rem)]">
               ЧАТ<b className="font-extrabold text-primary"> —</b>
             </span>
@@ -20,6 +20,10 @@ const Hero = () => {
           </h1>
           <Facade className="w-full max-w-[436px]" />
         </div>
+
+        <p className="-mt-1 text-center font-display text-[0.72rem] font-semibold uppercase tracking-[0.34em] text-secondary md:text-left md:text-[0.9rem]">
+          the rebirth of a legend
+        </p>
 
         <div
           className="animate-rise h-[3px] w-full bg-foreground"
