@@ -73,7 +73,7 @@ const PageBody = () => {
               <Ticker />
             </div>
             <Rooms activeRoom={activeRoom} onPick={pickRoom} />
-            <div className="flex min-h-svh flex-col">
+            <div className="flex min-h-[calc(100svh-var(--top-offset,4.5rem))] flex-col">
               <Rules />
               <Footer />
             </div>
