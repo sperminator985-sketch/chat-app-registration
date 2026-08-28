@@ -156,6 +156,10 @@
     @apply border-primary text-foreground;
   }
 
+  .nav-link-active {
+    @apply border-primary text-foreground;
+  }
+
   .rule-top {
     @apply border-t-2 border-foreground/35;
   }

@@ -20,6 +20,7 @@ type HeaderProps = {
 const Header = ({ onProfile }: HeaderProps) => {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [active, setActive] = useState('');
   const { user, openAuth } = useAuth();
   const { unread, openList } = useDm();
   const temp = useWeather();
@@ -53,6 +54,33 @@ const Header = ({ onProfile }: HeaderProps) => {
     const base = 'Общага.Томск';
     document.title = unread > 0 ? `(${unread}) ${base}` : base;
   }, [unread]);
+
+  useEffect(() => {
+    if (user) {
+      setActive('');
+      return;
+    }
+    const onScroll = () => {
+      const offset =
+        parseFloat(
+          getComputedStyle(document.documentElement).getPropertyValue('--top-offset') || '0',
+        ) || 0;
+      const line = offset + 8;
+      let current = '';
+      guestLinks.forEach((l) => {
+        const el = document.querySelector(l.href);
+        if (el && el.getBoundingClientRect().top <= line) current = l.href;
+      });
+      setActive(current);
+    };
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll);
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('resize', onScroll);
+    };
+  }, [user]);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24);
@@ -151,7 +179,12 @@ const Header = ({ onProfile }: HeaderProps) => {
 
         <nav className="hidden items-center gap-7 md:flex">
           {links.map((l) => (
-            <a key={l.href} href={l.href} onClick={go(l.href)} className="nav-link">
+            <a
+              key={l.href}
+              href={l.href}
+              onClick={go(l.href)}
+              className={cn('nav-link', active === l.href && 'nav-link-active')}
+            >
               {l.label}
             </a>
           ))}
@@ -224,7 +257,12 @@ const Header = ({ onProfile }: HeaderProps) => {
               </span>
             </span>
             {links.map((l) => (
-              <a key={l.href} href={l.href} onClick={go(l.href)} className="nav-link">
+              <a
+              key={l.href}
+              href={l.href}
+              onClick={go(l.href)}
+              className={cn('nav-link', active === l.href && 'nav-link-active')}
+            >
                 {l.label}
               </a>
             ))}
