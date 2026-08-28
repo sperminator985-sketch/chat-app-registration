@@ -38,7 +38,7 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
   const [clearedAt, setClearedAt] = useState(0);
   const [typingUsers, setTypingUsers] = useState<{ nick: string; color: number }[]>([]);
   const [privateTo, setPrivateTo] = useState<string | null>(null);
-  const [privateMsgs, setPrivateMsgs] = useState<ApiMessage[]>([]);
+  const [privateMsgs, setPrivateMsgs] = useState<(ApiMessage & { peer: string; outgoing: boolean })[]>([]);
   const typingSentAt = useRef(0);
   const { unreadBy: unread } = useDm();
   const { startCall } = useCall();
@@ -52,18 +52,14 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
       setOnline(data.online);
       setRecent(data.recent ?? []);
       setTypingUsers(data.typing ?? []);
-      if (privateTo) {
-        const dm = await api.dm(privateTo);
-        setPrivateMsgs(dm.messages);
-      } else {
-        setPrivateMsgs([]);
-      }
+      const dm = await api.dmAll();
+      setPrivateMsgs(dm.messages);
     } catch {
       /* тихо: следующий опрос попробует снова */
     } finally {
       setLoaded(true);
     }
-  }, [room.id, privateTo]);
+  }, [room.id]);
 
   useEffect(() => {
     setLoaded(false);
@@ -110,7 +106,7 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
     try {
       if (privateTo) {
         const res = await api.dmSend({ nick: privateTo, text });
-        setPrivateMsgs((prev) => [...prev, res.message]);
+        setPrivateMsgs((prev) => [...prev, { ...res.message, peer: privateTo, outgoing: true }]);
         setDraft('');
         inputRef.current?.focus();
         return;
@@ -133,7 +129,7 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
   const visibleMessages = useMemo(() => {
     const openList = messages
       .filter((m) => m.id > clearedAt)
-      .map((m) => ({ ...m, key: `p-${m.id}`, private: false }));
+      .map((m) => ({ ...m, key: `p-${m.id}`, private: false, peer: '', outgoing: false }));
     const privList = privateMsgs.map((m) => ({ ...m, key: `d-${m.id}`, private: true }));
     const rank = (t: string) => {
       const match = /(\d{2}):(\d{2})$/.exec(t || '');
@@ -239,9 +235,13 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
                 >
                   <p className="flex flex-wrap items-center gap-x-2">
                     {m.private && (
-                      <span className="font-mono text-[0.6rem] uppercase tracking-[0.1em] text-sky-300 sm:text-[0.68rem]">
-                        лично
-                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setPrivateTo(m.peer)}
+                        className="font-mono text-[0.6rem] uppercase tracking-[0.1em] text-sky-300 hover:underline sm:text-[0.68rem]"
+                      >
+                        {m.outgoing ? `лично → ${m.peer}` : `лично от ${m.peer}`}
+                      </button>
                     )}
                     <span className="font-mono text-[0.66rem] text-muted-foreground sm:text-[0.78rem]">[{m.time}]</span>
                     <button

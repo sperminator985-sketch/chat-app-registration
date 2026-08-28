@@ -189,6 +189,8 @@ export const api = {
     }>('dm', {
       query: `&nick=${encodeURIComponent(nick)}`,
     }),
+  dmAll: () =>
+    request<{ messages: (ApiMessage & { peer: string; outgoing: boolean })[] }>('dm_all'),
   dmSend: (body: { nick: string; text: string }) =>
     request<{ message: ApiMessage }>('dm_send', { method: 'POST', body }),
   callSignal: (body: { nick: string; callId: string; kind: CallKind; payload?: unknown }) =>

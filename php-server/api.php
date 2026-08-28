@@ -476,6 +476,28 @@ try {
         ]);
     }
 
+    // --- Все личные сообщения пользователя (для общей ленты) ---
+    if ($method === 'GET' && $action === 'dm_all') {
+        $user = requireUser();
+        $me = $user['id'];
+        $rows = q(
+            'SELECT d.*, u.nick AS peer_nick
+             FROM direct_messages d
+             JOIN users u ON u.id = CASE WHEN d.sender_id = ? THEN d.recipient_id ELSE d.sender_id END
+             WHERE d.sender_id = ? OR d.recipient_id = ?
+             ORDER BY d.id DESC LIMIT 80',
+            [$me, $me, $me]
+        )->fetchAll();
+        $items = array_map(static function (array $r) use ($me): array {
+            $m = shapeMessage($r);
+            $m['peer'] = $r['peer_nick'];
+            $m['outgoing'] = ((int) $r['sender_id']) === $me;
+            return $m;
+        }, array_reverse($rows));
+        touch_user($me);
+        out(200, ['messages' => $items]);
+    }
+
     // --- Отправка личного сообщения ---
     if ($method === 'POST' && $action === 'dm_send') {
         $user = requireUser('Сначала займи ник');

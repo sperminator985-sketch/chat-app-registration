@@ -378,6 +378,28 @@ def handler(event: dict, context) -> dict:
                 ],
             })
 
+        if method == 'GET' and action == 'dm_all':
+            user = get_user_by_token(cur, token)
+            if not user:
+                return respond(401, {'error': 'Не авторизован'})
+            me = user['id']
+            cur.execute(
+                f"SELECT d.id, d.sender_nick, d.sender_color, d.text, d.created_at, "
+                f"d.sender_avatar, d.sender_avatar_url, d.sender_id, d.recipient_id, u.nick "
+                f"FROM {SCHEMA}.direct_messages d "
+                f"JOIN {SCHEMA}.users u ON u.id = CASE WHEN d.sender_id = {me} THEN d.recipient_id ELSE d.sender_id END "
+                f"WHERE d.sender_id = {me} OR d.recipient_id = {me} ORDER BY d.id DESC LIMIT 80"
+            )
+            rows = cur.fetchall()[::-1]
+            return respond(200, {'messages': [
+                {
+                    'id': r[0], 'nick': r[1], 'color': r[2], 'text': r[3],
+                    'time': fmt_time(r[4]), 'avatar': r[5], 'avatarUrl': r[6],
+                    'peer': r[9], 'outgoing': r[7] == me,
+                }
+                for r in rows
+            ]})
+
         if method == 'POST' and action == 'dm_send':
             user = get_user_by_token(cur, token)
             if user and user.get('banned'):
