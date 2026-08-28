@@ -38,6 +38,7 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
   const [clearedAt, setClearedAt] = useState(0);
   const [typingUsers, setTypingUsers] = useState<{ nick: string; color: number }[]>([]);
   const [privateTo, setPrivateTo] = useState<string | null>(null);
+  const [onlyPrivate, setOnlyPrivate] = useState(false);
   const [privateMsgs, setPrivateMsgs] = useState<(ApiMessage & { peer: string; outgoing: boolean })[]>([]);
   const typingSentAt = useRef(0);
   const { unreadBy: unread } = useDm();
@@ -137,8 +138,9 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
       const day = t.includes('вчера') ? -1 : 0;
       return day * 10000 + Number(match[1]) * 60 + Number(match[2]);
     };
-    return [...openList, ...privList].sort((a, b) => rank(a.time) - rank(b.time));
-  }, [messages, clearedAt, privateMsgs]);
+    const all = onlyPrivate ? privList : [...openList, ...privList];
+    return all.sort((a, b) => rank(a.time) - rank(b.time));
+  }, [messages, clearedAt, privateMsgs, onlyPrivate]);
   const isEmpty = loaded && visibleMessages.length === 0;
   const othersTyping = useMemo(
     () => typingUsers.filter((t) => !user || t.nick !== user.nick),
@@ -193,6 +195,19 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
                   {onlineList.length}
                 </button>
                 <button
+                  onClick={() => setOnlyPrivate((v) => !v)}
+                  title="Показывать только личные сообщения"
+                  className={cn(
+                    'flex items-center gap-1.5 border-2 px-2.5 py-1 text-[0.72rem] font-semibold uppercase tracking-[0.1em] transition-colors',
+                    onlyPrivate
+                      ? 'border-sky-400 bg-sky-400 text-background'
+                      : 'border-foreground/35 text-muted-foreground hover:border-sky-400 hover:text-sky-300',
+                  )}
+                >
+                  <Icon name="Lock" size={14} />
+                  <span className="hidden sm:inline">Личные</span>
+                </button>
+                <button
                   onClick={clearFeed}
                   title="Очистить поле сообщений"
                   className="flex items-center gap-1.5 border-2 border-foreground/35 px-2.5 py-1 text-[0.72rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground transition-colors hover:border-secondary hover:text-secondary"
@@ -221,7 +236,7 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
 
               {isEmpty && (
                 <p className="whitespace-nowrap border-l-2 border-secondary bg-muted/60 px-3 py-1.5 font-mono text-[0.66rem] uppercase tracking-[0.04em] text-muted-foreground sm:text-[0.82rem] sm:tracking-[0.08em]">
-                  на этаже пока тихо — напиши первым
+                  {onlyPrivate ? 'личных сообщений пока нет' : 'на этаже пока тихо — напиши первым'}
                 </p>
               )}
 
