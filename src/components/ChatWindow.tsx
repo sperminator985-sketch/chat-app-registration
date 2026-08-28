@@ -280,14 +280,14 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
             </form>
           </div>
 
-          <aside className={cn('min-h-0 flex-col bg-background lg:flex', whoOpen ? 'flex' : 'hidden')}>
-            <div className="border-b-2 border-foreground/35 px-4 py-4 text-center">
+          <aside className={cn('min-h-0 flex-col overflow-hidden bg-background lg:flex', whoOpen ? 'flex' : 'hidden')}>
+            <div className="shrink-0 border-b-2 border-foreground/35 px-4 py-4 text-center">
               <h3 className="text-[0.8rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
                 Кто в чате · {onlineList.length}
               </h3>
               <p className="mt-1 text-[0.8rem] text-muted-foreground/80">Кликни по нику — откроется личка</p>
             </div>
-            <ul className="scrollbar-brut min-h-0 flex-1 divide-y divide-foreground/15 overflow-y-auto">
+            <ul className="scrollbar-brut min-h-0 flex-1 divide-y divide-foreground/15 overflow-y-auto overscroll-contain">
               {onlineList.length === 0 && (
                 <li className="px-4 py-4 text-center text-[0.8rem] text-muted-foreground/80">
                   Пока никого — ты первый
