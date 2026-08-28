@@ -53,7 +53,7 @@ const DialogsList = () => {
                 <button
                   type="button"
                   onClick={() => openDm(d.nick)}
-                  className="flex w-full items-center gap-3 py-3.5 pl-5 pr-16 text-left transition-colors hover:bg-muted/50"
+                  className="flex w-full items-center gap-3 py-2 pl-5 pr-16 text-left transition-colors hover:bg-muted/50 sm:py-3.5"
                 >
                   <span
                     className={cn(
@@ -62,8 +62,8 @@ const DialogsList = () => {
                     )}
                   />
                   <span className="min-w-0">
-                    <span className={cn('block truncate font-semibold', nickColorClass[d.color])}>{d.nick}</span>
-                    <span className="block font-mono text-[0.7rem] uppercase tracking-[0.08em] text-muted-foreground">
+                    <span className={cn('block truncate text-[0.86rem] font-semibold sm:text-[1rem]', nickColorClass[d.color])}>{d.nick}</span>
+                    <span className="block font-mono text-[0.62rem] uppercase tracking-[0.06em] text-muted-foreground sm:text-[0.7rem]">
                       {d.online ? 'в сети' : lastSeenText(d.seenAgo)}
                     </span>
                   </span>
