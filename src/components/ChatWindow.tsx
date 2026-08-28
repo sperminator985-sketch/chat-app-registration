@@ -220,7 +220,7 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
               ))}
             </div>
 
-            <form onSubmit={send} className="flex flex-col gap-3 border-t-2 border-foreground/35 px-5 py-4 sm:flex-row">
+            <form onSubmit={send} className="flex flex-row items-center gap-2 border-t-2 border-foreground/35 px-3 py-3 sm:gap-3 sm:px-5 sm:py-4">
               <div className="flex flex-1 items-center gap-2 border-2 border-foreground/35 bg-input px-3 py-2 focus-within:border-secondary">
                 <span
                   className={cn(
@@ -238,11 +238,16 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
                   className="w-full min-w-0 bg-transparent text-[0.82rem] text-foreground outline-none placeholder:text-muted-foreground/70 sm:text-[1.02rem]"
                 />
               </div>
-              <div className="flex shrink-0 items-center gap-3">
+              <div className="flex shrink-0 items-center gap-2 sm:gap-3">
                 <EmojiPicker onPick={(e) => setDraft((prev) => (prev + e).slice(0, 480))} />
-                <button type="submit" disabled={sending} className="btn-brut flex-1 disabled:opacity-60 sm:flex-none">
+                <button
+                  type="submit"
+                  disabled={sending}
+                  aria-label="Отправить"
+                  className="btn-brut !px-3 disabled:opacity-60 sm:!px-5"
+                >
                   <Icon name="Send" size={16} />
-                  {sending ? 'Шлём…' : 'Отправить'}
+                  <span className="hidden sm:inline">{sending ? 'Шлём…' : 'Отправить'}</span>
                 </button>
               </div>
             </form>
