@@ -114,7 +114,7 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
             <div className="flex flex-wrap items-center gap-x-3 gap-y-2 border-b-2 border-foreground/35 px-4 py-3 md:px-5 md:py-4">
               <div className="flex min-w-0 items-center gap-2 md:gap-3">
                 <Icon name={room.icon} size={20} className="shrink-0 text-secondary" />
-                <span className="truncate font-display text-base font-extrabold uppercase tracking-[-0.02em] md:text-lg">
+                <span className="truncate font-display text-[0.82rem] font-extrabold uppercase tracking-[-0.02em] sm:text-base md:text-lg">
                   Этаж {room.floor} · {room.title}
                 </span>
               </div>
