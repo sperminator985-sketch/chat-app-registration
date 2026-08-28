@@ -234,14 +234,18 @@ try {
         )->fetchAll());
 
         $typing = [];
-        if (hasTypingColumns()) {
-            foreach (q(
-                'SELECT nick, color FROM users
-                 WHERE typing_room = ? AND typing_at > UTC_TIMESTAMP() - INTERVAL 6 SECOND LIMIT 5',
-                [$room]
-            )->fetchAll() as $r) {
-                $typing[] = ['nick' => $r['nick'], 'color' => (int) $r['color']];
+        try {
+            if (hasTypingColumns()) {
+                foreach (q(
+                    'SELECT nick, color FROM users
+                     WHERE typing_room = ? AND typing_at > UTC_TIMESTAMP() - INTERVAL 6 SECOND LIMIT 5',
+                    [$room]
+                )->fetchAll() as $r) {
+                    $typing[] = ['nick' => $r['nick'], 'color' => (int) $r['color']];
+                }
             }
+        } catch (Throwable $e) {
+            $typing = [];
         }
 
         $counts = [];
