@@ -10,7 +10,7 @@ import { rules } from '@/data/chat';
 const Rules = () => (
   <section
     id="pravila"
-    className="flex scroll-mt-[var(--top-offset,4.5rem)] flex-col justify-start bg-card md:min-h-screen"
+    className="flex scroll-mt-[var(--top-offset,4.5rem)] flex-col justify-start bg-card"
   >
     <div className="mx-auto grid w-full max-w-[1400px] gap-12 px-5 pb-16 pt-6 md:px-10 md:pb-20 md:pt-10 lg:grid-cols-[1fr_420px]">
       <div>
