@@ -98,19 +98,29 @@ const Header = ({ onProfile }: HeaderProps) => {
       if (!el) return null;
       const bar = document.getElementById('topbar');
       const offset = bar
-        ? bar.getBoundingClientRect().height
+        ? bar.getBoundingClientRect().bottom
         : parseFloat(
             getComputedStyle(document.documentElement).getPropertyValue('--top-offset') || '0',
           );
-      const maxTop = Math.max(
-        document.documentElement.scrollHeight - window.innerHeight,
-        0,
-      );
-      const gap = window.innerWidth < 768 ? 2 : -1;
-      const wanted = Math.floor(
-        el.getBoundingClientRect().top + window.scrollY - Math.ceil(offset || 0) + gap,
-      );
+      const maxTop = Math.max(document.documentElement.scrollHeight - window.innerHeight, 0);
+      const gap = window.innerWidth < 768 ? 2 : 0;
+      const wanted = el.getBoundingClientRect().top + window.scrollY - offset + gap;
       return Math.min(Math.max(wanted, 0), maxTop);
+    };
+
+    const align = () => {
+      if (href === '#top') {
+        window.scrollTo(0, 0);
+        return;
+      }
+      const el = document.querySelector(href);
+      const bar = document.getElementById('topbar');
+      if (!el || !bar) return;
+      for (let i = 0; i < 3; i += 1) {
+        const delta = el.getBoundingClientRect().top - bar.getBoundingClientRect().bottom;
+        if (Math.abs(delta) < 0.5) break;
+        window.scrollBy(0, delta);
+      }
     };
 
     const animate = () => {
@@ -126,10 +136,7 @@ const Header = ({ onProfile }: HeaderProps) => {
         const target = href === '#top' ? 0 : (targetTop() ?? first);
         window.scrollTo(0, from + (target - from) * ease(t));
         if (t < 1) requestAnimationFrame(step);
-        else {
-          const final = href === '#top' ? 0 : targetTop();
-          if (final !== null) window.scrollTo(0, final);
-        }
+        else requestAnimationFrame(align);
       };
       requestAnimationFrame(step);
     };
@@ -137,14 +144,7 @@ const Header = ({ onProfile }: HeaderProps) => {
     requestAnimationFrame(() =>
       requestAnimationFrame(() => {
         animate();
-        [1000, 1500].forEach((delay) =>
-          window.setTimeout(() => {
-            const top = href === '#top' ? 0 : targetTop();
-            if (top !== null && Math.abs(window.scrollY - top) > 4) {
-              window.scrollTo({ top, behavior: 'auto' });
-            }
-          }, delay),
-        );
+        [1000, 1500].forEach((delay) => window.setTimeout(align, delay));
       }),
     );
   };
