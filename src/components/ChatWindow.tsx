@@ -39,6 +39,7 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
   const { unreadBy: unread, openDm } = useDm();
   const { startCall } = useCall();
   const feedRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const load = useCallback(async () => {
     try {
@@ -99,6 +100,7 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
       const res = await api.send({ text, room: room.id });
       setMessages((prev) => [...prev, res.message]);
       setDraft('');
+      inputRef.current?.focus();
     } catch (err) {
       toast({
         title: 'Сообщение не ушло',
@@ -231,6 +233,7 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
                   &lt;{user ? user.nick : 'гость'}&gt;
                 </span>
                 <input
+                  ref={inputRef}
                   value={draft}
                   onChange={(e) => setDraft(e.target.value)}
                   maxLength={480}
