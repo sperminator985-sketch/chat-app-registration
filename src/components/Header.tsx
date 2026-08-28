@@ -103,8 +103,10 @@ const Header = ({ onProfile }: HeaderProps) => {
         document.documentElement.scrollHeight - window.innerHeight,
         0,
       );
-      const gap = window.innerWidth < 768 ? 2 : 0;
-      const wanted = el.getBoundingClientRect().top + window.scrollY - (offset || 0) + gap;
+      const gap = window.innerWidth < 768 ? 2 : -1;
+      const wanted = Math.floor(
+        el.getBoundingClientRect().top + window.scrollY - Math.ceil(offset || 0) + gap,
+      );
       return Math.min(Math.max(wanted, 0), maxTop);
     };
 
@@ -136,7 +138,7 @@ const Header = ({ onProfile }: HeaderProps) => {
     <header
       className={cn(
         'transition-colors duration-300',
-        scrolled ? 'bg-background/95 backdrop-blur-sm' : 'bg-transparent',
+        scrolled ? 'bg-background' : 'bg-transparent',
       )}
     >
       <div className="mx-auto flex max-w-[1400px] items-center justify-between gap-4 rule-bottom px-5 py-4 md:px-10">

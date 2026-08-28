@@ -29,7 +29,10 @@ const PageBody = () => {
     const el = topRef.current;
     if (!el) return;
     const apply = () =>
-      document.documentElement.style.setProperty('--top-offset', `${el.offsetHeight}px`);
+      document.documentElement.style.setProperty(
+        '--top-offset',
+        `${el.getBoundingClientRect().height}px`,
+      );
     apply();
     const ro = new ResizeObserver(apply);
     ro.observe(el);
@@ -70,7 +73,7 @@ const PageBody = () => {
               <Ticker />
             </div>
             <Rooms activeRoom={activeRoom} onPick={pickRoom} />
-            <div className="flex min-h-[calc(100svh-var(--top-offset,4.5rem))] flex-col">
+            <div className="flex min-h-svh flex-col">
               <Rules />
               <Footer />
             </div>
