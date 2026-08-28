@@ -63,7 +63,7 @@ const PageBody = () => {
           <ChatWindow activeRoom={activeRoom} onPick={setActiveRoom} />
         ) : (
           <>
-            <div className="flex min-h-[calc(100svh-var(--top-offset,4.5rem)-3.5rem)] flex-col md:min-h-[calc(100vh-var(--top-offset,4.5rem))]">
+            <div className="flex min-h-[calc(100svh-var(--top-offset,4.5rem))] flex-col md:min-h-[calc(100vh-var(--top-offset,4.5rem))]">
               <div className="flex flex-1 items-start md:items-center">
                 <Hero />
               </div>
