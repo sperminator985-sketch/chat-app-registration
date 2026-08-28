@@ -141,7 +141,7 @@ export default {
 				'scale-in': 'scale-in .2s ease-out both',
 				'slide-in-right': 'slide-in-right .3s ease-out both',
 				blink: 'blink 4.6s steps(1,end) infinite',
-				marquee: 'marquee 26s linear infinite',
+				marquee: 'marquee 34s linear infinite',
 				caret: 'caret 1s steps(1,end) infinite'
 			}
 		}
