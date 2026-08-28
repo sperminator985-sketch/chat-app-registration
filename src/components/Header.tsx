@@ -125,10 +125,7 @@ const Header = ({ onProfile }: HeaderProps) => {
     requestAnimationFrame(() =>
       requestAnimationFrame(() => {
         scroll('smooth');
-        if (document.fonts?.ready) {
-          document.fonts.ready.then(() => scroll('auto'));
-        }
-        [350, 650, 950, 1400].forEach((delay) =>
+        [700, 1000, 1400].forEach((delay) =>
           window.setTimeout(() => {
             const top = href === '#top' ? 0 : targetTop();
             if (top !== null && Math.abs(window.scrollY - top) > 4) {
