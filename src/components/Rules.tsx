@@ -8,8 +8,11 @@ import Facade from '@/components/Facade';
 import { rules } from '@/data/chat';
 
 const Rules = () => (
-  <section id="pravila" className="flex flex-col justify-center bg-card md:min-h-screen">
-    <div className="mx-auto grid w-full max-w-[1400px] gap-12 px-5 py-16 md:px-10 md:py-20 lg:grid-cols-[1fr_420px]">
+  <section
+    id="pravila"
+    className="flex scroll-mt-[var(--top-offset,4.5rem)] flex-col justify-start bg-card md:min-h-screen"
+  >
+    <div className="mx-auto grid w-full max-w-[1400px] gap-12 px-5 pb-16 pt-8 md:px-10 md:pb-20 md:pt-10 lg:grid-cols-[1fr_420px]">
       <div>
         <h2 className="text-[clamp(2rem,6vw,3.4rem)] font-extrabold leading-[0.95] tracking-[-0.035em]">
           Правила <span className="text-primary">общаги</span>
