@@ -35,6 +35,7 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
   const [sending, setSending] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const [whoOpen, setWhoOpen] = useState(false);
+  const [clearedAt, setClearedAt] = useState(0);
   const { unreadBy: unread, openDm } = useDm();
   const { startCall } = useCall();
   const feedRef = useRef<HTMLDivElement>(null);
@@ -54,7 +55,15 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
 
   useEffect(() => {
     setLoaded(false);
+    const saved = Number(localStorage.getItem(`chat-cleared-${room.id}`) || 0);
+    setClearedAt(saved);
   }, [room.id]);
+
+  const clearFeed = useCallback(() => {
+    const lastId = messages.length ? messages[messages.length - 1].id : 0;
+    localStorage.setItem(`chat-cleared-${room.id}`, String(lastId));
+    setClearedAt(lastId);
+  }, [messages, room.id]);
 
   usePolling(load, 15000);
 
@@ -101,7 +110,11 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
     }
   };
 
-  const isEmpty = loaded && messages.length === 0;
+  const visibleMessages = useMemo(
+    () => messages.filter((m) => m.id > clearedAt),
+    [messages, clearedAt],
+  );
+  const isEmpty = loaded && visibleMessages.length === 0;
   const onlineList: OnlineItem[] = online;
 
   if (!user) return null;
@@ -150,6 +163,14 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
                   {onlineList.length}
                 </button>
                 <button
+                  onClick={clearFeed}
+                  title="Очистить поле сообщений"
+                  className="flex items-center gap-1.5 border-2 border-foreground/35 px-2.5 py-1 text-[0.72rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground transition-colors hover:border-secondary hover:text-secondary"
+                >
+                  <Icon name="Eraser" size={14} />
+                  <span className="hidden sm:inline">Очистить</span>
+                </button>
+                <button
                   onClick={signOut}
                   title="Выйти из общаги"
                   className="hidden items-center gap-1.5 border-2 border-foreground/35 px-2.5 py-1 text-[0.72rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground transition-colors hover:border-primary hover:text-primary md:flex"
@@ -174,7 +195,7 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
                 </p>
               )}
 
-              {messages.map((m) => (
+              {visibleMessages.map((m) => (
                 <div key={m.id} className="animate-fade-in leading-[1.45]">
                   <p className="flex flex-wrap items-center gap-x-2">
                     <span className="font-mono text-[0.66rem] text-muted-foreground sm:text-[0.78rem]">[{m.time}]</span>
