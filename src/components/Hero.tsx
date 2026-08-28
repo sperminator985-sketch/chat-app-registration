@@ -21,7 +21,7 @@ const Hero = () => {
           <Facade className="w-full max-w-[436px]" />
         </div>
 
-        <p className="-mt-1 whitespace-nowrap text-center font-display text-[clamp(0.7rem,3.1vw,1.1rem)] font-semibold uppercase tracking-[0.34em] text-secondary md:text-left md:text-[clamp(0.95rem,2.42vw,2.1rem)]">
+        <p className="-mt-1 md:-mt-[1.5cm] whitespace-nowrap text-center font-display text-[clamp(0.7rem,3.1vw,1.1rem)] font-semibold uppercase tracking-[0.34em] text-secondary md:text-left md:text-[clamp(0.95rem,2.42vw,2.1rem)]">
           the rebirth of a legend
         </p>
 
