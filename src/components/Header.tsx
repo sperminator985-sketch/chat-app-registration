@@ -141,14 +141,14 @@ const Header = ({ onProfile }: HeaderProps) => {
     >
       <div className="mx-auto flex max-w-[1400px] items-center justify-between gap-4 rule-bottom px-5 py-4 md:px-10">
         {user ? (
-          <span className="font-display text-base font-extrabold tracking-[0.06em] text-foreground md:text-lg">
+          <span className="font-display text-base font-extrabold tracking-[0.06em] text-secondary md:text-lg">
             ЧАТ<span className="text-primary">—</span>ОБЩАГА
           </span>
         ) : (
           <a
             href="#top"
             onClick={go('#top')}
-            className="font-display text-base font-extrabold tracking-[0.06em] text-foreground md:text-lg"
+            className="font-display text-base font-extrabold tracking-[0.06em] text-secondary md:text-lg"
           >
             ЧАТ<span className="text-primary">—</span>ОБЩАГА
           </a>
