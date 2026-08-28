@@ -70,11 +70,13 @@ const PageBody = () => {
               <Ticker />
             </div>
             <Rooms activeRoom={activeRoom} onPick={pickRoom} />
-            <Rules />
+            <div className="flex min-h-[calc(100svh-var(--top-offset,4.5rem))] flex-col">
+              <Rules />
+              <Footer />
+            </div>
           </>
         )}
       </main>
-      {!user && <Footer />}
       <AuthDialog />
       <BannedDialog />
       <WelcomeDialog />
