@@ -177,18 +177,18 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
               {messages.map((m) => (
                 <div key={m.id} className="animate-fade-in leading-[1.45]">
                   <p className="flex flex-wrap items-center gap-x-2">
-                    <span className="font-mono text-[0.78rem] text-muted-foreground">[{m.time}]</span>
+                    <span className="font-mono text-[0.66rem] text-muted-foreground sm:text-[0.78rem]">[{m.time}]</span>
                     <button
                       type="button"
                       onClick={() => openDm(m.nick)}
                       title={`Написать в личку: ${m.nick}`}
-                      className={cn('font-semibold hover:underline', nickColorClass[m.color])}
+                      className={cn('text-[0.84rem] font-semibold hover:underline sm:text-[1rem]', nickColorClass[m.color])}
                     >
                       &lt;{m.nick}&gt;
                     </button>
                     <span
                       className={cn(
-                        'text-[1.02rem]',
+                        'text-[0.86rem] sm:text-[1.02rem]',
                         user && m.nick === user.nick ? 'text-foreground' : 'text-foreground/90',
                       )}
                     >
