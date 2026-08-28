@@ -169,7 +169,7 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
               )}
 
               {isEmpty && (
-                <p className="border-l-2 border-secondary bg-muted/60 px-3 py-1.5 font-mono text-[0.82rem] uppercase tracking-[0.08em] text-muted-foreground">
+                <p className="whitespace-nowrap border-l-2 border-secondary bg-muted/60 px-3 py-1.5 font-mono text-[0.66rem] uppercase tracking-[0.04em] text-muted-foreground sm:text-[0.82rem] sm:tracking-[0.08em]">
                   на этаже пока тихо — напиши первым
                 </p>
               )}
