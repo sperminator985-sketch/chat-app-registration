@@ -1,6 +1,9 @@
 import Facade from '@/components/Facade';
+import { useLiveStats } from '@/hooks/use-live-stats';
 
 const Hero = () => {
+  const live = useLiveStats();
+
   return (
     <section id="top" className="mx-auto w-full max-w-[1400px] overflow-hidden px-5 pb-4 pt-3 md:px-10 md:py-8">
       <div className="flex flex-col justify-center gap-2.5">
@@ -40,7 +43,12 @@ const Hero = () => {
           Ник, пароль — и&nbsp;ты внутри. Этажи, курилка, барахолка, «кто идёт за&nbsp;хлебом» — всё
           в&nbsp;одном чате.
         </span>
-        <span className="text-secondary">Свет горит на всех этажах</span>
+        <span className="flex items-center gap-2 text-secondary">
+          <span className="inline-block h-2 w-2 animate-pulse rounded-full bg-secondary" />
+          {live
+            ? `Сейчас в чате: ${live.online} · жильцов ${live.totalUsers}`
+            : 'Свет горит на всех этажах'}
+        </span>
       </div>
     </section>
   );
