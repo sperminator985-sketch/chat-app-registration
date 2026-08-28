@@ -1,9 +1,6 @@
 import Facade from '@/components/Facade';
-import { useAuth } from '@/hooks/use-auth';
 
 const Hero = () => {
-  const { openAuth } = useAuth();
-
   return (
     <section id="top" className="mx-auto w-full max-w-[1400px] overflow-hidden px-5 py-6 md:px-10 md:py-8">
       <div className="flex flex-col justify-center gap-2.5">
@@ -27,7 +24,7 @@ const Hero = () => {
         />
 
         <div
-          className="mt-3 flex animate-rise flex-col items-center gap-6 md:flex-row md:items-start md:justify-between md:gap-9"
+          className="mt-3 flex animate-rise flex-col items-center gap-6 md:flex-row md:items-start md:justify-center md:gap-9"
           style={{ animationDelay: '.18s' }}
         >
           <h1 className="text-center font-extrabold uppercase tracking-[-0.035em] md:text-left">
@@ -35,14 +32,6 @@ const Hero = () => {
               ТОМСК НА СВЯЗИ
             </span>
           </h1>
-
-          <div className="w-full max-w-[430px] pb-1.5">
-            <div className="flex justify-center md:justify-start">
-              <button className="btn-brut" onClick={() => openAuth('register')}>
-                Занять место в чате
-              </button>
-            </div>
-          </div>
         </div>
       </div>
 
