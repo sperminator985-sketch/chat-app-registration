@@ -47,18 +47,8 @@ const AuthDialog = () => {
     try {
       if (isRegister) {
         await register({ nick: nick.trim(), password: pass, color, room: chosen.id, avatar });
-        toast({
-          title: 'Комната твоя',
-          description: `Заселили на этаж ${chosen.floor} — ${chosen.title}. Ник ${nick.trim()} занят навсегда.`,
-          variant: 'success',
-        });
       } else {
         await login({ nick: nick.trim(), password: pass });
-        toast({
-          title: 'С возвращением',
-          description: `Свет в общаге горит, ${nick.trim()}.`,
-          variant: 'success',
-        });
       }
       setPass('');
       setPass2('');
