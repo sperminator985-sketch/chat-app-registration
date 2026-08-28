@@ -756,6 +756,52 @@ try {
         }
     }
 
+    // --- Новости Томска (обновляются раз в сутки) ---
+    if ($method === 'GET' && $action === 'news') {
+        $cacheFile = sys_get_temp_dir() . '/obshaga_news.json';
+        $fresh = is_readable($cacheFile) && (time() - (int) filemtime($cacheFile) < 86400);
+
+        if ($fresh) {
+            $cached = json_decode((string) file_get_contents($cacheFile), true);
+            if (is_array($cached) && $cached) {
+                out(200, ['news' => $cached]);
+            }
+        }
+
+        $items = [];
+        $ctx = stream_context_create(['http' => [
+            'timeout' => 4,
+            'header' => "User-Agent: ObshagaChat/1.0\r\n",
+        ]]);
+        $xml = @file_get_contents('https://news.vtomske.ru/rss', false, $ctx);
+        if ($xml !== false) {
+            $doc = @simplexml_load_string($xml);
+            if ($doc && isset($doc->channel->item)) {
+                foreach ($doc->channel->item as $item) {
+                    $title = trim(html_entity_decode((string) $item->title, ENT_QUOTES, 'UTF-8'));
+                    if ($title === '') {
+                        continue;
+                    }
+                    $items[] = mb_substr($title, 0, 120);
+                    if (count($items) >= 8) {
+                        break;
+                    }
+                }
+            }
+        }
+
+        if ($items) {
+            @file_put_contents($cacheFile, json_encode($items, JSON_UNESCAPED_UNICODE));
+        } elseif (is_readable($cacheFile)) {
+            $old = json_decode((string) file_get_contents($cacheFile), true);
+            if (is_array($old)) {
+                $items = $old;
+            }
+        }
+
+        out(200, ['news' => $items]);
+    }
+
     fail(400, 'Неизвестное действие');
 } catch (Throwable $e) {
     error_log('chat api: ' . $e->getMessage());
