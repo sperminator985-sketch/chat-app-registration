@@ -21,7 +21,7 @@ const Header = ({ onProfile }: HeaderProps) => {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [active, setActive] = useState('');
-  const { user, openAuth } = useAuth();
+  const { user, openAuth, signOut } = useAuth();
   const { unread, openList } = useDm();
   const temp = useWeather();
   const live = useLiveStats();
@@ -222,6 +222,16 @@ const Header = ({ onProfile }: HeaderProps) => {
 
         <div className="flex items-center gap-3 md:hidden">
           {user && mailButton()}
+          {user && (
+            <button
+              onClick={signOut}
+              aria-label="Выйти"
+              title="Выйти из общаги"
+              className="flex h-10 w-10 items-center justify-center border-2 border-foreground/40 text-foreground transition-colors hover:border-primary hover:text-primary"
+            >
+              <Icon name="LogOut" size={18} />
+            </button>
+          )}
           <button
             className="flex h-10 w-10 items-center justify-center border-2 border-foreground/40 text-foreground"
             onClick={() => setOpen((v) => !v)}
