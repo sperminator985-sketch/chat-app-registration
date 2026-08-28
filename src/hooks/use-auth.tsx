@@ -53,7 +53,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setToken(res.token);
     setUser(res.user);
     setAuthOpen(false);
-    setWelcomeOpen(true);
   }, []);
 
   const login = useCallback(async (body: { nick: string; password: string }) => {
