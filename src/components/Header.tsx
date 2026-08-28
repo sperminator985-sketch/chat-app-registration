@@ -96,9 +96,12 @@ const Header = ({ onProfile }: HeaderProps) => {
     const targetTop = () => {
       const el = document.querySelector(href);
       if (!el) return null;
-      const offset = parseFloat(
-        getComputedStyle(document.documentElement).getPropertyValue('--top-offset') || '0',
-      );
+      const bar = document.getElementById('topbar');
+      const offset = bar
+        ? bar.getBoundingClientRect().height
+        : parseFloat(
+            getComputedStyle(document.documentElement).getPropertyValue('--top-offset') || '0',
+          );
       const maxTop = Math.max(
         document.documentElement.scrollHeight - window.innerHeight,
         0,
@@ -122,7 +125,10 @@ const Header = ({ onProfile }: HeaderProps) => {
     requestAnimationFrame(() =>
       requestAnimationFrame(() => {
         scroll('smooth');
-        [350, 650, 950].forEach((delay) =>
+        if (document.fonts?.ready) {
+          document.fonts.ready.then(() => scroll('auto'));
+        }
+        [350, 650, 950, 1400].forEach((delay) =>
           window.setTimeout(() => {
             const top = href === '#top' ? 0 : targetTop();
             if (top !== null && Math.abs(window.scrollY - top) > 4) {
