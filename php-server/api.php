@@ -204,6 +204,15 @@ try {
             [ONLINE_SEC]
         )->fetchAll());
 
+        $typing = [];
+        foreach (q(
+            'SELECT nick, color FROM users
+             WHERE typing_room = ? AND typing_at > UTC_TIMESTAMP() - INTERVAL 6 SECOND LIMIT 5',
+            [$room]
+        )->fetchAll() as $r) {
+            $typing[] = ['nick' => $r['nick'], 'color' => (int) $r['color']];
+        }
+
         $counts = [];
         foreach (q(
             'SELECT room, COUNT(*) AS c FROM users
@@ -216,6 +225,7 @@ try {
         out(200, [
             'messages' => $messages,
             'online' => $online,
+            'typing' => $typing,
             'recent' => $recent,
             'roomCounts' => (object) $counts,
             'totalUsers' => (int) scalar('SELECT COUNT(*) FROM users'),
@@ -223,6 +233,24 @@ try {
                 'SELECT COUNT(*) FROM messages WHERE hidden_at IS NULL AND created_at > UTC_TIMESTAMP() - INTERVAL 24 HOUR'
             ),
         ]);
+    }
+
+    // --- Печатает сейчас ---
+    if ($method === 'POST' && $action === 'typing') {
+        $user = currentUser();
+        if (!$user) {
+            out(200, ['ok' => true]);
+        }
+        $room = (string) param('room', $user['room']);
+        if (!in_array($room, ROOMS, true)) {
+            fail(400, 'Неизвестная комната');
+        }
+        q(
+            'UPDATE users SET typing_at = UTC_TIMESTAMP(), typing_room = ?, last_seen = UTC_TIMESTAMP()
+             WHERE id = ?',
+            [$room, $user['id']]
+        );
+        out(200, ['ok' => true]);
     }
 
     // --- Кто я ---
@@ -332,6 +360,7 @@ try {
         );
         $id = (int) db()->lastInsertId();
         touch_user($user['id'], $room);
+        q('UPDATE users SET typing_at = NULL, typing_room = NULL WHERE id = ?', [$user['id']]);
         out(200, ['message' => [
             'id' => $id,
             'nick' => $user['nick'],

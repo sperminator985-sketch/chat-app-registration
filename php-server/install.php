@@ -26,6 +26,8 @@ $sql[] = "CREATE TABLE IF NOT EXISTS users (
     ban_reason VARCHAR(200) NULL,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     last_seen DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    typing_at DATETIME NULL,
+    typing_room VARCHAR(32) NULL,
     INDEX idx_last_seen (last_seen),
     INDEX idx_room (room)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci";
