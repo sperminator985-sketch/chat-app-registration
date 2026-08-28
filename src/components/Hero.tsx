@@ -50,7 +50,11 @@ const Hero = () => {
         </div>
       </div>
 
-      <div className="mt-10 flex flex-col gap-2 rule-top pt-3 text-[0.78rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground sm:flex-row sm:items-center sm:justify-end">
+      <div className="mt-10 flex flex-col gap-2 rule-top pt-3 text-[0.78rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
+        <span className="normal-case tracking-normal">
+          Ник, пароль — и&nbsp;ты внутри. Этажи, курилка, барахолка, «кто идёт за&nbsp;хлебом» — всё
+          в&nbsp;одном чате.
+        </span>
         <span className="text-secondary">Свет горит на всех этажах</span>
       </div>
     </section>
