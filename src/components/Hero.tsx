@@ -37,11 +37,7 @@ const Hero = () => {
           </h1>
 
           <div className="w-full max-w-[430px] pb-1.5">
-            <p className="text-[1.06rem] font-normal leading-[1.45] text-foreground">
-              Ник, пароль — и&nbsp;ты внутри. Этажи, курилка, барахолка, «кто идёт за&nbsp;хлебом» —{' '}
-              <em className="not-italic text-secondary">всё в&nbsp;одном чате</em>.
-            </p>
-            <div className="mt-4 flex justify-center md:justify-start">
+            <div className="flex justify-center md:justify-start">
               <button className="btn-brut" onClick={() => openAuth('register')}>
                 Занять место в чате
               </button>
