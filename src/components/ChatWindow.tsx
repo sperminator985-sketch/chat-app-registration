@@ -36,6 +36,8 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
   const [loaded, setLoaded] = useState(false);
   const [whoOpen, setWhoOpen] = useState(false);
   const [clearedAt, setClearedAt] = useState(0);
+  const [typingUsers, setTypingUsers] = useState<{ nick: string; color: number }[]>([]);
+  const typingSentAt = useRef(0);
   const { unreadBy: unread, openDm } = useDm();
   const { startCall } = useCall();
   const feedRef = useRef<HTMLDivElement>(null);
@@ -47,6 +49,7 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
       setMessages(data.messages);
       setOnline(data.online);
       setRecent(data.recent ?? []);
+      setTypingUsers(data.typing ?? []);
     } catch {
       /* тихо: следующий опрос попробует снова */
     } finally {
@@ -66,7 +69,7 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
     setClearedAt(lastId);
   }, [messages, room.id]);
 
-  usePolling(load, 15000);
+  usePolling(load, 5000);
 
   useEffect(() => {
     const onHide = () => {
@@ -117,6 +120,11 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
     [messages, clearedAt],
   );
   const isEmpty = loaded && visibleMessages.length === 0;
+  const othersTyping = useMemo(
+    () => typingUsers.filter((t) => !user || t.nick !== user.nick),
+    [typingUsers, user],
+  );
+
   const onlineList: OnlineItem[] = online;
 
   if (!user) return null;
@@ -222,6 +230,15 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
               ))}
             </div>
 
+            {othersTyping.length > 0 && (
+              <div className="border-t-2 border-foreground/20 px-4 py-1.5 font-mono text-[0.66rem] uppercase tracking-[0.06em] text-secondary sm:px-5 sm:text-[0.72rem]">
+                <span className="animate-pulse">
+                  {othersTyping.map((t) => t.nick).join(', ')}{' '}
+                  {othersTyping.length > 1 ? 'печатают…' : 'печатает…'}
+                </span>
+              </div>
+            )}
+
             <form onSubmit={send} className="flex flex-row items-center gap-2 border-t-2 border-foreground/35 px-3 py-3 sm:gap-3 sm:px-5 sm:py-4">
               <div className="flex flex-1 items-center gap-2 border-2 border-foreground/35 bg-input px-3 py-2 focus-within:border-secondary">
                 <span
@@ -235,7 +252,14 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
                 <input
                   ref={inputRef}
                   value={draft}
-                  onChange={(e) => setDraft(e.target.value)}
+                  onChange={(e) => {
+                    setDraft(e.target.value);
+                    const now = Date.now();
+                    if (user && e.target.value && now - typingSentAt.current > 4000) {
+                      typingSentAt.current = now;
+                      api.typing(room.id).catch(() => undefined);
+                    }
+                  }}
                   maxLength={480}
                   placeholder={user ? 'Напиши что-нибудь…' : 'Займи ник, чтобы писать'}
                   className="w-full min-w-0 bg-transparent text-[0.82rem] text-foreground outline-none placeholder:text-muted-foreground/70 sm:text-[1.02rem]"

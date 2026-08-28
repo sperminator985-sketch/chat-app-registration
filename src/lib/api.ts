@@ -57,6 +57,7 @@ export type ApiMessage = {
 
 export type FeedResponse = {
   messages: ApiMessage[];
+  typing?: { nick: string; color: NickColor }[];
   online: { nick: string; color: NickColor; status: string; avatar?: number; avatarUrl?: string | null }[];
   recent?: {
     nick: string;
@@ -164,6 +165,7 @@ export const api = {
     request<{ user: ApiUser; token: string }>('register', { method: 'POST', body }),
   login: (body: { nick: string; password: string }) =>
     request<{ user: ApiUser; token: string }>('login', { method: 'POST', body }),
+  typing: (room: string) => request<{ ok: boolean }>('typing', { method: 'POST', body: { room } }),
   send: (body: { text: string; room: string }) =>
     request<{ message: ApiMessage }>('send', { method: 'POST', body }),
   profile: (body: { status: string; color: number; avatar: number; image?: string; removeImage?: boolean }) =>

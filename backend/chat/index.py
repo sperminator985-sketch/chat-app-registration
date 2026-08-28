@@ -140,6 +140,11 @@ def handler(event: dict, context) -> dict:
                 for r in cur.fetchall()
             ]
             cur.execute(
+                f"SELECT nick, color FROM {SCHEMA}.users "
+                f"WHERE typing_room = '{esc(room)}' AND typing_at > NOW() - INTERVAL '6 seconds' LIMIT 5"
+            )
+            typing = [{'nick': r[0], 'color': r[1]} for r in cur.fetchall()]
+            cur.execute(
                 f"SELECT room, COUNT(*) FROM {SCHEMA}.users "
                 f"WHERE last_seen > NOW() - INTERVAL '2 minutes' GROUP BY room"
             )
@@ -151,6 +156,7 @@ def handler(event: dict, context) -> dict:
             return respond(200, {
                 'messages': messages,
                 'online': online,
+                'typing': typing,
                 'roomCounts': counts,
                 'totalUsers': total_users,
                 'dayMessages': day_messages,
@@ -234,11 +240,27 @@ def handler(event: dict, context) -> dict:
                 f"RETURNING id, created_at"
             )
             mid, created = cur.fetchone()
-            cur.execute(f"UPDATE {SCHEMA}.users SET last_seen = NOW(), room = '{esc(room)}' WHERE id = {user['id']}")
+            cur.execute(
+                f"UPDATE {SCHEMA}.users SET last_seen = NOW(), room = '{esc(room)}', "
+                f"typing_at = NULL, typing_room = NULL WHERE id = {user['id']}"
+            )
             return respond(200, {'message': {
                 'id': mid, 'nick': user['nick'], 'color': user['color'], 'text': text,
                 'time': fmt_time(created), 'avatar': user['avatar'], 'avatarUrl': user['avatarUrl'],
             }})
+
+        if method == 'POST' and action == 'typing':
+            user = get_user_by_token(cur, token)
+            if not user:
+                return respond(200, {'ok': True})
+            room = body.get('room') or user['room']
+            if room not in ROOMS:
+                return respond(400, {'error': 'Неизвестная комната'})
+            cur.execute(
+                f"UPDATE {SCHEMA}.users SET typing_at = NOW(), typing_room = '{esc(room)}', "
+                f"last_seen = NOW() WHERE id = {user['id']}"
+            )
+            return respond(200, {'ok': True})
 
         if method == 'POST' and action == 'profile':
             user = get_user_by_token(cur, token)
