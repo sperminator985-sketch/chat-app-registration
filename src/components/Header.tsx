@@ -51,7 +51,7 @@ const Header = ({ onProfile }: HeaderProps) => {
   );
 
   useEffect(() => {
-    const base = 'Общага.Томск';
+    const base = 'ЧАТ-ОБЩАГА';
     document.title = unread > 0 ? `(${unread}) ${base}` : base;
   }, [unread]);
 
@@ -142,7 +142,7 @@ const Header = ({ onProfile }: HeaderProps) => {
       <div className="mx-auto flex max-w-[1400px] items-center justify-between gap-4 rule-bottom px-5 py-4 md:px-10">
         {user ? (
           <span className="font-display text-base font-extrabold tracking-[0.06em] text-foreground md:text-lg">
-            ОБЩАГА<span className="text-secondary">.</span>ТОМСК
+            ЧАТ<span className="text-primary">—</span>ОБЩАГА
           </span>
         ) : (
           <a
@@ -150,7 +150,7 @@ const Header = ({ onProfile }: HeaderProps) => {
             onClick={go('#top')}
             className="font-display text-base font-extrabold tracking-[0.06em] text-foreground md:text-lg"
           >
-            ОБЩАГА<span className="text-secondary">.</span>ТОМСК
+            ЧАТ<span className="text-primary">—</span>ОБЩАГА
           </a>
         )}
 
