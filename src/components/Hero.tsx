@@ -36,7 +36,7 @@ const Hero = () => {
       </div>
 
       <div className="mt-10 flex flex-col gap-2 rule-top pt-3 text-[0.78rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
-        <span className="text-[1.02rem] font-normal normal-case leading-[1.45] tracking-normal text-foreground md:text-[1.15rem]">
+        <span className="hidden text-[1.02rem] font-normal normal-case leading-[1.45] tracking-normal text-foreground sm:inline md:text-[1.15rem]">
           Ник, пароль — и&nbsp;ты внутри. Этажи, курилка, барахолка, «кто идёт за&nbsp;хлебом» — всё
           в&nbsp;одном чате.
         </span>
