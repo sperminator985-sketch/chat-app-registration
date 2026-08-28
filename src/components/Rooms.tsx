@@ -28,7 +28,7 @@ const Rooms = ({ activeRoom, onPick }: RoomsProps) => {
   return (
   <section
     id="etazhi"
-    className="mx-auto flex max-w-[1400px] scroll-mt-[var(--top-offset,4.5rem)] flex-col justify-start px-5 pb-16 pt-3 md:min-h-screen md:px-10 md:pb-20 md:pt-10"
+    className="mx-auto flex max-w-[1400px] scroll-mt-[var(--top-offset,4.5rem)] flex-col justify-start px-5 pb-16 pt-6 md:min-h-screen md:px-10 md:pb-20 md:pt-10"
   >
     <h2 className="text-center text-[clamp(1.15rem,3.6vw,3.4rem)] font-extrabold leading-[0.95] tracking-[-0.035em] sm:whitespace-nowrap">
       Девять этажей <span className="text-primary">— выбирай свой</span>

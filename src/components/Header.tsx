@@ -103,7 +103,7 @@ const Header = ({ onProfile }: HeaderProps) => {
         document.documentElement.scrollHeight - window.innerHeight,
         0,
       );
-      const gap = window.innerWidth < 768 ? 20 : 0;
+      const gap = window.innerWidth < 768 ? 2 : 0;
       const wanted = el.getBoundingClientRect().top + window.scrollY - (offset || 0) + gap;
       return Math.min(Math.max(wanted, 0), maxTop);
     };
