@@ -50,8 +50,7 @@ const Hero = () => {
         </div>
       </div>
 
-      <div className="mt-10 flex flex-col gap-2 rule-top pt-3 text-[0.78rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
-        <span>Регистрация — 40 секунд</span>
+      <div className="mt-10 flex flex-col gap-2 rule-top pt-3 text-[0.78rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground sm:flex-row sm:items-center sm:justify-end">
         <span className="text-secondary">Свет горит на всех этажах</span>
       </div>
     </section>
