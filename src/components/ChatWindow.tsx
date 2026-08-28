@@ -36,6 +36,7 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
   const [loaded, setLoaded] = useState(false);
   const [whoOpen, setWhoOpen] = useState(false);
   const [clearedAt, setClearedAt] = useState(0);
+  const [clearedDm, setClearedDm] = useState(0);
   const [typingUsers, setTypingUsers] = useState<{ nick: string; color: number }[]>([]);
   const [privateTo, setPrivateTo] = useState<string | null>(null);
   const [onlyPrivate, setOnlyPrivate] = useState(false);
@@ -66,13 +67,18 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
     setLoaded(false);
     const saved = Number(localStorage.getItem(`chat-cleared-${room.id}`) || 0);
     setClearedAt(saved);
+    setClearedDm(Number(localStorage.getItem('chat-cleared-dm') || 0));
   }, [room.id]);
 
   const clearFeed = useCallback(() => {
     const lastId = messages.length ? messages[messages.length - 1].id : 0;
     localStorage.setItem(`chat-cleared-${room.id}`, String(lastId));
     setClearedAt(lastId);
-  }, [messages, room.id]);
+
+    const lastDm = privateMsgs.reduce((max, m) => (m.id > max ? m.id : max), 0);
+    localStorage.setItem('chat-cleared-dm', String(lastDm));
+    setClearedDm(lastDm);
+  }, [messages, privateMsgs, room.id]);
 
   usePolling(load, 5000);
 
@@ -131,7 +137,9 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
     const openList = messages
       .filter((m) => m.id > clearedAt)
       .map((m) => ({ ...m, key: `p-${m.id}`, private: false, peer: '', outgoing: false }));
-    const privList = privateMsgs.map((m) => ({ ...m, key: `d-${m.id}`, private: true }));
+    const privList = privateMsgs
+      .filter((m) => m.id > clearedDm)
+      .map((m) => ({ ...m, key: `d-${m.id}`, private: true }));
     const rank = (t: string) => {
       const match = /(\d{2}):(\d{2})$/.exec(t || '');
       if (!match) return 0;
@@ -140,7 +148,7 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
     };
     const all = onlyPrivate ? privList : [...openList, ...privList];
     return all.sort((a, b) => rank(a.time) - rank(b.time));
-  }, [messages, clearedAt, privateMsgs, onlyPrivate]);
+  }, [messages, clearedAt, privateMsgs, clearedDm, onlyPrivate]);
   const isEmpty = loaded && visibleMessages.length === 0;
   const othersTyping = useMemo(
     () => typingUsers.filter((t) => !user || t.nick !== user.nick),
