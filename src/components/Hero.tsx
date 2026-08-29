@@ -26,7 +26,7 @@ const Hero = () => {
         </p>
 
         <div
-          className="animate-rise h-[3px] w-full bg-foreground md:mt-[3cm]"
+          className="animate-rise h-[3px] w-full bg-foreground md:mt-[1.85cm]"
           style={{ animationDelay: '.12s' }}
         />
 
