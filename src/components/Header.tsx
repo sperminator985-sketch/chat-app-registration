@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Icon from '@/components/ui/icon';
+import Wordmark from '@/components/Wordmark';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/use-auth';
 import { nickColorClass } from '@/data/chat';
@@ -158,16 +159,18 @@ const Header = ({ onProfile }: HeaderProps) => {
     >
       <div className="mx-auto flex max-w-[1400px] items-center justify-between gap-4 rule-bottom px-5 py-4 md:px-10">
         {user ? (
-          <span className="font-display text-base font-extrabold tracking-[0.06em] text-secondary md:text-lg">
-            ЧАТ<span className="text-primary">—</span>ОБЩАГА
-          </span>
+          <>
+            <Wordmark className="md:hidden" />
+            <span className="hidden font-display text-base font-extrabold tracking-[0.06em] text-secondary md:inline-flex md:text-lg">
+              ЧАТ<span className="text-primary">—</span>ОБЩАГА
+            </span>
+          </>
         ) : (
-          <a
-            href="#top"
-            onClick={go('#top')}
-            className="font-display text-base font-extrabold tracking-[0.06em] text-secondary md:text-lg"
-          >
-            ЧАТ<span className="text-primary">—</span>ОБЩАГА
+          <a href="#top" onClick={go('#top')} className="min-w-0">
+            <Wordmark className="md:hidden" />
+            <span className="hidden font-display text-base font-extrabold tracking-[0.06em] text-secondary md:inline-flex md:text-lg">
+              ЧАТ<span className="text-primary">—</span>ОБЩАГА
+            </span>
           </a>
         )}
 
