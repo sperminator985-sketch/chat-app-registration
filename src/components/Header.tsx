@@ -157,7 +157,7 @@ const Header = ({ onProfile }: HeaderProps) => {
         scrolled ? 'bg-background' : 'bg-transparent',
       )}
     >
-      <div className="mx-auto flex max-w-[1400px] items-center justify-between gap-4 rule-bottom px-5 py-4 md:px-10">
+      <div className="mx-auto flex max-w-[1400px] items-center justify-between gap-2 rule-bottom px-5 py-4 md:gap-4 md:px-10">
         {user ? (
           <>
             <Wordmark className="md:hidden" />
@@ -240,7 +240,7 @@ const Header = ({ onProfile }: HeaderProps) => {
           )}
         </nav>
 
-        <div className="flex items-center gap-3 md:hidden">
+        <div className="flex shrink-0 items-center gap-2.5 md:hidden">
           {user && mailButton()}
           {user && (
             <button

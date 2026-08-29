@@ -11,11 +11,11 @@ const Wordmark = ({ className }: WordmarkProps) => (
       className,
     )}
   >
-    <span className="whitespace-nowrap text-[clamp(1.5rem,7vw,2.6rem)] leading-[.92] text-foreground">
+    <span className="whitespace-nowrap text-[clamp(1.05rem,4.6vw,1.6rem)] leading-[.92] text-foreground">
       ЧАТ<b className="font-extrabold text-primary"> —</b>
     </span>
-    <span className="plate inline-block w-fit max-w-full origin-center -rotate-[1.1deg] px-3 pb-3 pt-1.5">
-      <span className="block whitespace-nowrap text-[clamp(1.35rem,6.4vw,2.4rem)] leading-[.9] tracking-[-0.045em]">
+    <span className="plate inline-block w-fit max-w-full origin-center -rotate-[1.1deg] px-2 pb-2 pt-1">
+      <span className="block whitespace-nowrap text-[clamp(0.95rem,4.2vw,1.45rem)] leading-[.9] tracking-[-0.045em]">
         ОБЩАГА
       </span>
     </span>
