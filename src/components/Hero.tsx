@@ -5,9 +5,9 @@ const Hero = () => {
   const live = useLiveStats();
 
   return (
-    <section id="top" className="mx-auto w-full max-w-[1400px] overflow-hidden px-5 pb-4 pt-3 md:px-10 md:py-8">
+    <section id="top" className="mx-auto w-full max-w-[1400px] overflow-x-clip px-5 pb-4 pt-3 md:px-10 md:py-8">
       <div className="flex flex-col justify-center gap-2.5">
-        <div className="flex animate-rise flex-col items-center gap-6 md:flex-row md:items-start md:justify-between md:gap-7">
+        <div className="relative z-10 flex animate-rise flex-col items-center gap-6 md:flex-row md:items-start md:justify-between md:gap-7">
           <h1 className="mt-0 flex min-w-0 md:mt-[2cm] flex-nowrap items-center justify-center gap-x-2 font-extrabold uppercase tracking-[-0.035em] md:justify-start md:gap-x-4">
             <span className="whitespace-nowrap text-[clamp(1.5rem,7vw,2.6rem)] leading-[.92] text-foreground md:text-[clamp(2rem,6vw,5.8rem)]">
               ЧАТ<b className="font-extrabold text-primary"> —</b>
@@ -18,7 +18,7 @@ const Hero = () => {
               </span>
             </span>
           </h1>
-          <Facade className="w-full max-w-[436px] md:-mt-[2.4cm]" rows={9} cellAspect="1/0.68" />
+          <Facade className="w-full max-w-[436px] md:-mt-[1.9cm]" rows={9} cellAspect="1/0.68" />
         </div>
 
         <p className="-mt-1 md:-mt-[1.1cm] whitespace-nowrap text-center font-display text-[clamp(0.7rem,3.1vw,1.1rem)] font-semibold uppercase tracking-[0.34em] text-secondary md:text-left md:text-[clamp(0.95rem,2.42vw,2.1rem)]">
