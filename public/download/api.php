@@ -771,6 +771,29 @@ try {
             out(200, ['ok' => true]);
         }
 
+        if ($method === 'POST' && $action === 'admin_delete') {
+            $target = (int) param('id', 0);
+            if (!$target) {
+                fail(400, 'Не указан жилец');
+            }
+            if ($target === $user['id']) {
+                fail(400, 'Себя удалять нельзя');
+            }
+            $t = one('SELECT is_admin FROM users WHERE id = ?', [$target]);
+            if (!$t) {
+                fail(404, 'Такого жильца нет');
+            }
+            if ($t['is_admin']) {
+                fail(400, 'Нельзя удалять владельца');
+            }
+            q('DELETE FROM sessions WHERE user_id = ?', [$target]);
+            q('DELETE FROM messages WHERE user_id = ?', [$target]);
+            q('DELETE FROM direct_messages WHERE sender_id = ? OR recipient_id = ?', [$target, $target]);
+            q('DELETE FROM call_signals WHERE sender_id = ? OR recipient_id = ?', [$target, $target]);
+            q('DELETE FROM users WHERE id = ?', [$target]);
+            out(200, ['ok' => true]);
+        }
+
         if ($method === 'POST' && $action === 'admin_ban') {
             $target = (int) param('id', 0);
             $ban = (bool) param('ban', false);

@@ -182,6 +182,8 @@ export const api = {
   adminHide: (id: number) => request<{ ok: boolean }>('admin_hide', { method: 'POST', body: { id } }),
   adminBan: (body: { id: number; ban: boolean; reason?: string }) =>
     request<{ ok: boolean }>('admin_ban', { method: 'POST', body }),
+  adminDelete: (id: number) =>
+    request<{ ok: boolean }>('admin_delete', { method: 'POST', body: { id } }),
   dialogs: () =>
     request<{
       dialogs: { nick: string; color: NickColor; unread: number; avatar?: number; avatarUrl?: string | null; online?: boolean; seenAgo?: number | null }[];

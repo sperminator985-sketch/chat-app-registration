@@ -100,6 +100,29 @@ const AdminPanel = () => {
     }
   };
 
+  const removeUser = async (u: AdminUser) => {
+    if (busy) return;
+    const input = window.prompt(
+      `Полностью удалить «${u.nick}»? Пропадут все его сообщения и переписка, ник освободится.\n\nНапиши ник для подтверждения:`,
+      '',
+    );
+    if (input === null) return;
+    if (input.trim().toLowerCase() !== u.nick.toLowerCase()) {
+      toast({ title: 'Ник не совпал — ничего не удалено', variant: 'destructive' });
+      return;
+    }
+    setBusy(true);
+    try {
+      await api.adminDelete(u.id);
+      setUsers((prev) => prev.filter((x) => x.id !== u.id));
+      toast({ title: `${u.nick} удалён без следа` });
+    } catch (e) {
+      toast({ title: (e as Error).message, variant: 'destructive' });
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const needle = search.trim().toLowerCase();
   const shownUsers = users
     .filter((u) => (filter === 'banned' ? u.banned : filter === 'online' ? u.online : true))
@@ -255,20 +278,31 @@ const AdminPanel = () => {
                     </p>
                   </div>
                   {!u.isAdmin && (
-                    <button
-                      onClick={() => toggleBan(u)}
-                      disabled={busy}
-                      title={u.banned ? 'Вернуть в общагу' : 'Выселить'}
-                      className={cn(
-                        'flex shrink-0 items-center gap-1.5 border-2 px-2.5 py-1.5 text-[0.68rem] font-bold uppercase tracking-[0.1em] transition-colors',
-                        u.banned
-                          ? 'border-nick-3 text-nick-3 hover:bg-nick-3 hover:text-background'
-                          : 'border-primary text-primary hover:bg-primary hover:text-primary-foreground',
-                      )}
-                    >
-                      <Icon name={u.banned ? 'RotateCcw' : 'Ban'} size={14} />
-                      <span className="hidden sm:inline">{u.banned ? 'Вернуть' : 'Выселить'}</span>
-                    </button>
+                    <div className="flex shrink-0 items-center gap-1.5">
+                      <button
+                        onClick={() => toggleBan(u)}
+                        disabled={busy}
+                        title={u.banned ? 'Вернуть в общагу' : 'Выселить'}
+                        className={cn(
+                          'flex items-center gap-1.5 border-2 px-2.5 py-1.5 text-[0.68rem] font-bold uppercase tracking-[0.1em] transition-colors',
+                          u.banned
+                            ? 'border-nick-3 text-nick-3 hover:bg-nick-3 hover:text-background'
+                            : 'border-primary text-primary hover:bg-primary hover:text-primary-foreground',
+                        )}
+                      >
+                        <Icon name={u.banned ? 'RotateCcw' : 'Ban'} size={14} />
+                        <span className="hidden sm:inline">{u.banned ? 'Вернуть' : 'Выселить'}</span>
+                      </button>
+                      <button
+                        onClick={() => removeUser(u)}
+                        disabled={busy}
+                        title="Удалить навсегда"
+                        aria-label="Удалить навсегда"
+                        className="flex h-[34px] w-[34px] items-center justify-center border-2 border-foreground/35 text-muted-foreground transition-colors hover:border-primary hover:bg-primary hover:text-primary-foreground"
+                      >
+                        <Icon name="Trash2" size={14} />
+                      </button>
+                    </div>
                   )}
                 </div>
               ))}

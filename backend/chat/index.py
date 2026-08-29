@@ -525,7 +525,7 @@ def handler(event: dict, context) -> dict:
                 cur.execute(f"DELETE FROM {SCHEMA}.sessions WHERE token = '{esc(token)}'")
             return respond(200, {'ok': True})
 
-        if action in ('admin_users', 'admin_messages', 'admin_ban', 'admin_hide'):
+        if action in ('admin_users', 'admin_messages', 'admin_ban', 'admin_hide', 'admin_delete'):
             user = get_user_by_token(cur, token)
             if user and user.get('banned'):
                 return respond(403, {'error': f"Ты выселен из общаги: {user['reason']}"})
@@ -603,6 +603,29 @@ def handler(event: dict, context) -> dict:
                     cur.execute(
                         f"UPDATE {SCHEMA}.users SET banned_at = NULL, ban_reason = NULL WHERE id = {target}"
                     )
+                return respond(200, {'ok': True})
+
+            if method == 'POST' and action == 'admin_delete':
+                target = int(body.get('id') or 0)
+                if not target:
+                    return respond(400, {'error': 'Не указан жилец'})
+                if target == user['id']:
+                    return respond(400, {'error': 'Себя удалять нельзя'})
+                cur.execute(f"SELECT is_admin FROM {SCHEMA}.users WHERE id = {target}")
+                t = cur.fetchone()
+                if not t:
+                    return respond(404, {'error': 'Такого жильца нет'})
+                if t[0]:
+                    return respond(400, {'error': 'Нельзя удалять владельца'})
+                cur.execute(f"DELETE FROM {SCHEMA}.sessions WHERE user_id = {target}")
+                cur.execute(f"DELETE FROM {SCHEMA}.messages WHERE user_id = {target}")
+                cur.execute(
+                    f"DELETE FROM {SCHEMA}.direct_messages WHERE sender_id = {target} OR recipient_id = {target}"
+                )
+                cur.execute(
+                    f"DELETE FROM {SCHEMA}.call_signals WHERE sender_id = {target} OR recipient_id = {target}"
+                )
+                cur.execute(f"DELETE FROM {SCHEMA}.users WHERE id = {target}")
                 return respond(200, {'ok': True})
 
         return respond(400, {'error': 'Неизвестное действие'})
