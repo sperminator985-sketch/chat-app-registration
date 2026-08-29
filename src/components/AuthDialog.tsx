@@ -19,6 +19,8 @@ const AuthDialog = () => {
   const [avatar, setAvatar] = useState<AvatarId>(1);
   const [room, setRoom] = useState(rooms[1].id);
   const [agree, setAgree] = useState(false);
+  const [showPass, setShowPass] = useState(false);
+  const [showPass2, setShowPass2] = useState(false);
   const [errors, setErrors] = useState<Errors>({});
 
   const isRegister = authTab === 'register';
@@ -126,13 +128,23 @@ const AuthDialog = () => {
               <label className="mb-1.5 block text-[0.78rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                 Пароль
               </label>
-              <input
-                type="password"
-                value={pass}
-                onChange={(e) => setPass(e.target.value)}
-                placeholder="••••••"
-                className={cn(field, errors.pass && 'border-primary')}
-              />
+              <div className="relative">
+                <input
+                  type={showPass ? 'text' : 'password'}
+                  value={pass}
+                  onChange={(e) => setPass(e.target.value)}
+                  placeholder="••••••"
+                  className={cn(field, 'pr-11', errors.pass && 'border-primary')}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPass((v) => !v)}
+                  aria-label={showPass ? 'Скрыть пароль' : 'Показать пароль'}
+                  className="absolute right-1 top-1/2 -translate-y-1/2 p-2 text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  <Icon name={showPass ? 'EyeOff' : 'Eye'} size={18} />
+                </button>
+              </div>
               {errors.pass && <p className="mt-1.5 text-[0.85rem] text-primary">{errors.pass}</p>}
             </div>
 
@@ -141,13 +153,23 @@ const AuthDialog = () => {
                 <label className="mb-1.5 block text-[0.78rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                   Ещё раз
                 </label>
-                <input
-                  type="password"
-                  value={pass2}
-                  onChange={(e) => setPass2(e.target.value)}
-                  placeholder="••••••"
-                  className={cn(field, errors.pass2 && 'border-primary')}
-                />
+                <div className="relative">
+                  <input
+                    type={showPass2 ? 'text' : 'password'}
+                    value={pass2}
+                    onChange={(e) => setPass2(e.target.value)}
+                    placeholder="••••••"
+                    className={cn(field, 'pr-11', errors.pass2 && 'border-primary')}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPass2((v) => !v)}
+                    aria-label={showPass2 ? 'Скрыть пароль' : 'Показать пароль'}
+                    className="absolute right-1 top-1/2 -translate-y-1/2 p-2 text-muted-foreground transition-colors hover:text-foreground"
+                  >
+                    <Icon name={showPass2 ? 'EyeOff' : 'Eye'} size={18} />
+                  </button>
+                </div>
                 {errors.pass2 && <p className="mt-1.5 text-[0.85rem] text-primary">{errors.pass2}</p>}
               </div>
             )}
