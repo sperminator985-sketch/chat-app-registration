@@ -2,9 +2,10 @@ import { useEffect, useState } from 'react';
 import { api } from '@/lib/api';
 
 const CACHE_KEY = 'obshaga-news';
-const DAY = 86400000;
 
-type Cached = { at: number; items: string[] };
+type Cached = { day: string; items: string[] };
+
+const today = () => new Date().toLocaleDateString('ru-RU');
 
 const readCache = (): Cached | null => {
   try {
@@ -22,17 +23,23 @@ export const useNews = () => {
   const [items, setItems] = useState<string[]>(() => readCache()?.items ?? []);
 
   useEffect(() => {
-    const cached = readCache();
-    if (cached && Date.now() - cached.at < DAY) return;
+    const load = () => {
+      const cached = readCache();
+      if (cached && cached.day === today() && cached.items.length) return;
 
-    api
-      .news()
-      .then((res) => {
-        if (!res.news?.length) return;
-        setItems(res.news);
-        localStorage.setItem(CACHE_KEY, JSON.stringify({ at: Date.now(), items: res.news }));
-      })
-      .catch(() => undefined);
+      api
+        .news()
+        .then((res) => {
+          if (!res.news?.length) return;
+          setItems(res.news);
+          localStorage.setItem(CACHE_KEY, JSON.stringify({ day: today(), items: res.news }));
+        })
+        .catch(() => undefined);
+    };
+
+    load();
+    const timer = window.setInterval(load, 3600000);
+    return () => window.clearInterval(timer);
   }, []);
 
   return items;

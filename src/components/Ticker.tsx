@@ -36,7 +36,7 @@ const Ticker = () => {
       ? `СЕЙЧАС В ЧАТЕ ${live.online} ${plural(live.online, 'ЖИЛЕЦ', 'ЖИЛЬЦА', 'ЖИЛЬЦОВ')}`
       : 'ЭТАЖИ ПУСТЫЕ — ЗАХОДИ ПЕРВЫМ';
 
-  const newsLines = news.slice(0, 6).map((t) => t.toUpperCase());
+  const newsLines = news.slice(0, 8).map((t) => t.toUpperCase());
 
   const items = newsLines.length
     ? [liveLine, newsLines[0], weatherLine, ...newsLines.slice(1), base[2]].filter(Boolean)

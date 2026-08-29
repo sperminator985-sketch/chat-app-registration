@@ -822,12 +822,13 @@ try {
     // --- Новости Томска (обновляются раз в сутки) ---
     if ($method === 'GET' && $action === 'news') {
         $cacheFile = sys_get_temp_dir() . '/obshaga_news.json';
-        $fresh = is_readable($cacheFile) && (time() - (int) filemtime($cacheFile) < 86400);
+        $todayKey = date('Y-m-d');
+        $fresh = false;
 
-        if ($fresh) {
+        if (is_readable($cacheFile)) {
             $cached = json_decode((string) file_get_contents($cacheFile), true);
-            if (is_array($cached) && $cached) {
-                out(200, ['news' => $cached]);
+            if (is_array($cached) && !empty($cached['items']) && ($cached['day'] ?? '') === $todayKey) {
+                out(200, ['news' => $cached['items']]);
             }
         }
 
@@ -836,29 +837,47 @@ try {
             'timeout' => 4,
             'header' => "User-Agent: ObshagaChat/1.0\r\n",
         ]]);
-        $xml = @file_get_contents('https://news.vtomske.ru/rss', false, $ctx);
-        if ($xml !== false) {
+        $feeds = [
+            'https://news.vtomske.ru/rss',
+            'https://tomsk.gov.ru/rss',
+            'https://www.tvtomsk.ru/rss.xml',
+        ];
+        foreach ($feeds as $feed) {
+            $xml = @file_get_contents($feed, false, $ctx);
+            if ($xml === false) {
+                continue;
+            }
             $doc = @simplexml_load_string($xml);
-            if ($doc && isset($doc->channel->item)) {
-                foreach ($doc->channel->item as $item) {
-                    $title = trim(html_entity_decode((string) $item->title, ENT_QUOTES, 'UTF-8'));
-                    if ($title === '') {
-                        continue;
-                    }
-                    $items[] = mb_substr($title, 0, 120);
-                    if (count($items) >= 8) {
-                        break;
-                    }
+            if (!$doc || !isset($doc->channel->item)) {
+                continue;
+            }
+            foreach ($doc->channel->item as $item) {
+                $title = trim(html_entity_decode((string) $item->title, ENT_QUOTES, 'UTF-8'));
+                if ($title === '') {
+                    continue;
+                }
+                $title = mb_substr($title, 0, 120);
+                if (!in_array($title, $items, true)) {
+                    $items[] = $title;
                 }
             }
         }
+        if (count($items) > 1) {
+            mt_srand((int) date('Ymd'));
+            shuffle($items);
+            mt_srand();
+        }
+        $items = array_slice($items, 0, 12);
 
         if ($items) {
-            @file_put_contents($cacheFile, json_encode($items, JSON_UNESCAPED_UNICODE));
+            @file_put_contents(
+                $cacheFile,
+                json_encode(['day' => $todayKey, 'items' => $items], JSON_UNESCAPED_UNICODE)
+            );
         } elseif (is_readable($cacheFile)) {
             $old = json_decode((string) file_get_contents($cacheFile), true);
-            if (is_array($old)) {
-                $items = $old;
+            if (is_array($old) && !empty($old['items'])) {
+                $items = $old['items'];
             }
         }
 
