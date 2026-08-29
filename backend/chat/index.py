@@ -190,11 +190,14 @@ def handler(event: dict, context) -> dict:
             cur.execute(f"SELECT id FROM {SCHEMA}.users WHERE nick_lower = '{esc(nick.lower())}'")
             if cur.fetchone():
                 return respond(409, {'error': 'Такой ник уже занят'})
+            question = (body.get('question') or '').strip()[:120]
+            answer = (body.get('answer') or '').strip()
             pwd = hash_password(password, secrets.token_hex(8))
+            ans_hash = hash_password(answer.lower(), secrets.token_hex(8)) if question and answer else None
             owner = 'TRUE' if nick.lower() == OWNER_NICK else 'FALSE'
             cur.execute(
-                f"INSERT INTO {SCHEMA}.users (nick, nick_lower, password_hash, color, status, room, avatar, is_admin) "
-                f"VALUES ('{esc(nick)}', '{esc(nick.lower())}', '{esc(pwd)}', {color}, 'только заселился', '{esc(room)}', {avatar}, {owner}) "
+                f"INSERT INTO {SCHEMA}.users (nick, nick_lower, password_hash, color, status, room, avatar, is_admin, secret_question, secret_answer_hash) "
+                f"VALUES ('{esc(nick)}', '{esc(nick.lower())}', '{esc(pwd)}', {color}, 'только заселился', '{esc(room)}', {avatar}, {owner}, {sql_str(question or None)}, {sql_str(ans_hash)}) "
                 f"RETURNING id, nick, color, status, room, created_at, avatar, avatar_url, is_admin"
             )
             user = user_row(cur.fetchone())
@@ -220,6 +223,37 @@ def handler(event: dict, context) -> dict:
             cur.execute(f"INSERT INTO {SCHEMA}.sessions (token, user_id) VALUES ('{new_token}', {user['id']})")
             cur.execute(f"UPDATE {SCHEMA}.users SET last_seen = NOW() WHERE id = {user['id']}")
             return respond(200, {'user': user, 'token': new_token})
+
+        if method == 'GET' and action == 'recover_question':
+            nick = (params.get('nick') or '').strip()
+            cur.execute(
+                f"SELECT secret_question FROM {SCHEMA}.users WHERE nick_lower = '{esc(nick.lower())}'"
+            )
+            row = cur.fetchone()
+            if not row:
+                return respond(404, {'error': 'Такого жильца нет в журнале'})
+            if not row[0]:
+                return respond(404, {'error': 'У этого ника не задан секретный вопрос. Напиши админу в общаге'})
+            return respond(200, {'question': row[0]})
+
+        if method == 'POST' and action == 'recover_reset':
+            nick = (body.get('nick') or '').strip()
+            answer = (body.get('answer') or '').strip()
+            new_password = body.get('password') or ''
+            if len(new_password) < 5:
+                return respond(400, {'error': 'Пароль от 5 символов'})
+            cur.execute(
+                f"SELECT id, secret_answer_hash FROM {SCHEMA}.users WHERE nick_lower = '{esc(nick.lower())}'"
+            )
+            row = cur.fetchone()
+            if not row or not row[1]:
+                return respond(404, {'error': 'Восстановление недоступно для этого ника'})
+            if not check_password(answer.lower(), row[1]):
+                return respond(401, {'error': 'Ответ не совпадает'})
+            pwd = hash_password(new_password, secrets.token_hex(8))
+            cur.execute(f"UPDATE {SCHEMA}.users SET password_hash = '{esc(pwd)}' WHERE id = {row[0]}")
+            cur.execute(f"DELETE FROM {SCHEMA}.sessions WHERE user_id = {row[0]}")
+            return respond(200, {'ok': True})
 
         if method == 'POST' and action == 'send':
             user = get_user_by_token(cur, token)

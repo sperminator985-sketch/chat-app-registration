@@ -12,7 +12,7 @@ type AuthState = {
   closeWelcome: () => void;
   openAuth: (tab?: 'register' | 'login') => void;
   closeAuth: () => void;
-  register: (body: { nick: string; password: string; color: number; room: string; avatar: number }) => Promise<void>;
+  register: (body: { nick: string; password: string; color: number; room: string; avatar: number; question?: string; answer?: string }) => Promise<void>;
   login: (body: { nick: string; password: string }) => Promise<void>;
   signOut: () => void;
   saveProfile: (body: { status: string; color: number; avatar: number; image?: string; removeImage?: boolean }) => Promise<void>;
@@ -48,7 +48,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const closeWelcome = useCallback(() => setWelcomeOpen(false), []);
 
-  const register = useCallback(async (body: { nick: string; password: string; color: number; room: string; avatar: number }) => {
+  const register = useCallback(async (body: { nick: string; password: string; color: number; room: string; avatar: number; question?: string; answer?: string }) => {
     const res = await api.register(body);
     setToken(res.token);
     setUser(res.user);

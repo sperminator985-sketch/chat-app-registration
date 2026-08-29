@@ -3,10 +3,20 @@ import { Dialog, DialogContent } from '@/components/ui/dialog';
 import Icon from '@/components/ui/icon';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/use-auth';
+import { api } from '@/lib/api';
 import { AvatarId, NickColor, nickBgClass, nickColorClass, nickColors, rooms } from '@/data/chat';
 import { toast } from '@/hooks/use-toast';
 
-type Errors = { nick?: string; pass?: string; pass2?: string; agree?: string };
+type Errors = { nick?: string; pass?: string; pass2?: string; agree?: string; answer?: string };
+
+const SECRET_QUESTIONS = [
+  'Кличка первого питомца?',
+  'Девичья фамилия мамы?',
+  'Название твоей школы?',
+  'Любимое блюдо в детстве?',
+  'Город, где ты родился?',
+  'Имя лучшего друга детства?',
+];
 
 const AuthDialog = () => {
   const { authOpen, authTab, closeAuth, openAuth, register, login } = useAuth();
@@ -21,6 +31,16 @@ const AuthDialog = () => {
   const [agree, setAgree] = useState(false);
   const [showPass, setShowPass] = useState(false);
   const [showPass2, setShowPass2] = useState(false);
+  const [question, setQuestion] = useState(SECRET_QUESTIONS[0]);
+  const [answer, setAnswer] = useState('');
+
+  const [mode, setMode] = useState<'auth' | 'recover'>('auth');
+  const [recNick, setRecNick] = useState('');
+  const [recQuestion, setRecQuestion] = useState('');
+  const [recAnswer, setRecAnswer] = useState('');
+  const [recPass, setRecPass] = useState('');
+  const [recShow, setRecShow] = useState(false);
+  const [recError, setRecError] = useState('');
   const [errors, setErrors] = useState<Errors>({});
 
   const isRegister = authTab === 'register';
@@ -36,6 +56,7 @@ const AuthDialog = () => {
     if (isRegister) {
       if (pass2 !== pass) next.pass2 = 'Пароли не совпадают';
       if (!agree) next.agree = 'Правила общаги надо принять';
+      if (answer.trim().length < 2) next.answer = 'Ответ от 2 символов — пригодится при восстановлении';
     }
     setErrors(next);
     return Object.keys(next).length === 0;
@@ -48,7 +69,15 @@ const AuthDialog = () => {
     setBusy(true);
     try {
       if (isRegister) {
-        await register({ nick: nick.trim(), password: pass, color, room: chosen.id, avatar });
+        await register({
+          nick: nick.trim(),
+          password: pass,
+          color,
+          room: chosen.id,
+          avatar,
+          question,
+          answer: answer.trim(),
+        });
       } else {
         await login({ nick: nick.trim(), password: pass });
       }
@@ -66,6 +95,49 @@ const AuthDialog = () => {
     }
   };
 
+  const askQuestion = async () => {
+    const n = recNick.trim();
+    if (n.length < 3) {
+      setRecError('Введи ник');
+      return;
+    }
+    setBusy(true);
+    setRecError('');
+    try {
+      const res = await api.recoverQuestion(n);
+      setRecQuestion(res.question);
+    } catch (err) {
+      setRecError(err instanceof Error ? err.message : 'Не получилось');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const resetPassword = async () => {
+    if (recAnswer.trim().length < 2) {
+      setRecError('Введи ответ');
+      return;
+    }
+    if (recPass.length < 5) {
+      setRecError('Новый пароль от 5 символов');
+      return;
+    }
+    setBusy(true);
+    setRecError('');
+    try {
+      await api.recoverReset({ nick: recNick.trim(), answer: recAnswer.trim(), password: recPass });
+      toast({ title: 'Пароль обновлён', description: 'Теперь войди с новым паролем' });
+      setNick(recNick.trim());
+      setPass('');
+      setMode('auth');
+      openAuth('login');
+    } catch (err) {
+      setRecError(err instanceof Error ? err.message : 'Не получилось');
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const field = 'w-full border-2 border-foreground/35 bg-input px-3 py-2.5 text-foreground outline-none transition-colors placeholder:text-muted-foreground/70 focus:border-secondary';
 
   return (
@@ -77,6 +149,7 @@ const AuthDialog = () => {
               key={tab}
               onClick={() => {
                 setErrors({});
+                setMode('auth');
                 openAuth(tab);
               }}
               className={cn(
@@ -98,6 +171,95 @@ const AuthDialog = () => {
           </button>
         </div>
 
+        {mode === 'recover' ? (
+          <div className="space-y-5 px-6 pb-6 pt-5">
+            <div>
+              <p className="font-display text-lg font-extrabold uppercase tracking-[0.06em]">
+                Восстановление доступа
+              </p>
+              <p className="mt-1 text-[0.95rem] leading-[1.4] text-muted-foreground">
+                Введи ник — вахтёрша задаст твой секретный вопрос.
+              </p>
+            </div>
+
+            <div>
+              <label className="mb-1.5 block text-[0.78rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                Ник
+              </label>
+              <input
+                value={recNick}
+                onChange={(e) => {
+                  setRecNick(e.target.value);
+                  setRecQuestion('');
+                }}
+                placeholder="твой ник"
+                className={field}
+              />
+            </div>
+
+            {recQuestion && (
+              <>
+                <div>
+                  <label className="mb-1.5 block text-[0.78rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                    {recQuestion}
+                  </label>
+                  <input
+                    value={recAnswer}
+                    onChange={(e) => setRecAnswer(e.target.value)}
+                    placeholder="ответ"
+                    className={field}
+                  />
+                </div>
+                <div>
+                  <label className="mb-1.5 block text-[0.78rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                    Новый пароль
+                  </label>
+                  <div className="relative">
+                    <input
+                      type={recShow ? 'text' : 'password'}
+                      value={recPass}
+                      onChange={(e) => setRecPass(e.target.value)}
+                      placeholder="••••••"
+                      className={cn(field, 'pr-11')}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setRecShow((v) => !v)}
+                      aria-label={recShow ? 'Скрыть пароль' : 'Показать пароль'}
+                      className="absolute right-1 top-1/2 -translate-y-1/2 p-2 text-muted-foreground transition-colors hover:text-foreground"
+                    >
+                      <Icon name={recShow ? 'EyeOff' : 'Eye'} size={18} />
+                    </button>
+                  </div>
+                </div>
+              </>
+            )}
+
+            {recError && (
+              <p className="flex items-center gap-1.5 text-[0.85rem] text-primary">
+                <Icon name="TriangleAlert" size={14} />
+                {recError}
+              </p>
+            )}
+
+            <button
+              type="button"
+              disabled={busy}
+              onClick={recQuestion ? resetPassword : askQuestion}
+              className="btn-brut w-full disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {busy ? 'Секунду…' : recQuestion ? 'Сменить пароль' : 'Показать вопрос'}
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setMode('auth')}
+              className="w-full text-center text-[0.9rem] text-muted-foreground underline underline-offset-4 transition-colors hover:text-secondary"
+            >
+              Назад ко входу
+            </button>
+          </div>
+        ) : (
         <form onSubmit={submit} className="space-y-5 px-6 pb-6 pt-5">
           <p className="text-[0.98rem] leading-[1.4] text-muted-foreground">
             {isRegister
@@ -217,6 +379,32 @@ const AuthDialog = () => {
                 </select>
               </div>
 
+              <div>
+                <label className="mb-1.5 block text-[0.78rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                  Секретный вопрос (для восстановления пароля)
+                </label>
+                <select
+                  value={question}
+                  onChange={(e) => setQuestion(e.target.value)}
+                  className={cn(field, 'mb-2')}
+                >
+                  {SECRET_QUESTIONS.map((q) => (
+                    <option key={q} value={q} className="bg-card">
+                      {q}
+                    </option>
+                  ))}
+                </select>
+                <input
+                  value={answer}
+                  onChange={(e) => setAnswer(e.target.value)}
+                  placeholder="твой ответ"
+                  className={cn(field, errors.answer && 'border-primary')}
+                />
+                {errors.answer && (
+                  <p className="mt-1.5 text-[0.85rem] text-primary">{errors.answer}</p>
+                )}
+              </div>
+
               <label
                 className={cn(
                   'flex cursor-pointer items-start gap-3 border-2 px-3 py-2.5 text-[0.95rem] leading-[1.4] transition-colors',
@@ -248,7 +436,25 @@ const AuthDialog = () => {
           >
             {busy ? 'Секунду…' : isRegister ? 'Занять комнату' : 'Войти'}
           </button>
+
+          {!isRegister && (
+            <button
+              type="button"
+              onClick={() => {
+                setRecNick(nick.trim());
+                setRecQuestion('');
+                setRecAnswer('');
+                setRecPass('');
+                setRecError('');
+                setMode('recover');
+              }}
+              className="w-full text-center text-[0.9rem] text-muted-foreground underline underline-offset-4 transition-colors hover:text-secondary"
+            >
+              Забыл пароль
+            </button>
+          )}
         </form>
+        )}
       </DialogContent>
     </Dialog>
   );

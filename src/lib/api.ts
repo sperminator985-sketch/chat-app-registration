@@ -162,7 +162,11 @@ export const api = {
   away: () => request<{ ok: boolean }>('away', { method: 'POST' }),
   news: () => request<{ news: string[] }>('news'),
   me: () => request<{ user: ApiUser }>('me'),
-  register: (body: { nick: string; password: string; color: number; room: string; avatar: number }) =>
+  recoverQuestion: (nick: string) =>
+    request<{ question: string }>('recover_question', { query: `&nick=${encodeURIComponent(nick)}` }),
+  recoverReset: (body: { nick: string; answer: string; password: string }) =>
+    request<{ ok: boolean }>('recover_reset', { method: 'POST', body }),
+  register: (body: { nick: string; password: string; color: number; room: string; avatar: number; question?: string; answer?: string }) =>
     request<{ user: ApiUser; token: string }>('register', { method: 'POST', body }),
   login: (body: { nick: string; password: string }) =>
     request<{ user: ApiUser; token: string }>('login', { method: 'POST', body }),

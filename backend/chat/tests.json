@@ -23,7 +23,9 @@
       "method": "GET",
       "path": "/?action=unknown",
       "expectedStatus": 400,
-      "expectedBody": {"error": "string"},
+      "expectedBody": {
+        "error": "string"
+      },
       "bodyMatcher": "partial"
     },
     {
@@ -31,16 +33,33 @@
       "method": "GET",
       "path": "/?action=call_poll",
       "expectedStatus": 401,
-      "expectedBody": {"error": "string"},
+      "expectedBody": {
+        "error": "string"
+      },
       "bodyMatcher": "partial"
     },
     {
       "name": "Вход с неверным ником",
       "method": "POST",
       "path": "/?action=login",
-      "body": {"nick": "no_such_user_zzz", "password": "12345"},
+      "body": {
+        "nick": "no_such_user_zzz",
+        "password": "12345"
+      },
       "expectedStatus": 401,
-      "expectedBody": {"error": "string"},
+      "expectedBody": {
+        "error": "string"
+      },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Секретный вопрос неизвестного ника",
+      "method": "GET",
+      "path": "/?action=recover_question&nick=no_such_user_zzz",
+      "expectedStatus": 404,
+      "expectedBody": {
+        "error": "string"
+      },
       "bodyMatcher": "partial"
     }
   ]
