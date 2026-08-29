@@ -18,10 +18,10 @@ const Hero = () => {
               </span>
             </span>
           </h1>
-          <Facade className="w-full max-w-[436px]" rows={9} cellAspect="1/0.68" />
+          <Facade className="w-full max-w-[436px] md:-mt-[2.4cm]" rows={9} cellAspect="1/0.68" />
         </div>
 
-        <p className="-mt-1 md:-mt-[2.5cm] whitespace-nowrap text-center font-display text-[clamp(0.7rem,3.1vw,1.1rem)] font-semibold uppercase tracking-[0.34em] text-secondary md:text-left md:text-[clamp(0.95rem,2.42vw,2.1rem)]">
+        <p className="-mt-1 md:-mt-[1.1cm] whitespace-nowrap text-center font-display text-[clamp(0.7rem,3.1vw,1.1rem)] font-semibold uppercase tracking-[0.34em] text-secondary md:text-left md:text-[clamp(0.95rem,2.42vw,2.1rem)]">
           the rebirth of a legend
         </p>
 
