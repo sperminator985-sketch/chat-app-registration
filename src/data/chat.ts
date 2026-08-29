@@ -22,7 +22,7 @@ export const nickBgClass: Record<NickColor, string> = {
   8: 'bg-nick-8',
 };
 
-export const nickColors: NickColor[] = [1, 2, 3, 4, 5, 6, 7, 8];
+export const nickColors: NickColor[] = [1, 2, 3, 4, 5, 6, 7];
 
 export type AvatarId = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12;
 
