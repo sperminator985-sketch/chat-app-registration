@@ -5,9 +5,10 @@ type FacadeProps = {
   cols?: number;
   rows?: number;
   seed?: number;
+  cellAspect?: string;
 };
 
-const Facade = ({ className, cols = 10, rows = 3, seed = 7 }: FacadeProps) => {
+const Facade = ({ className, cols = 10, rows = 3, seed = 7, cellAspect = '1/1.35' }: FacadeProps) => {
   const total = cols * rows;
   const cells = Array.from({ length: total }, (_, i) => {
     const n = (i * seed + 3) % 10;
@@ -27,13 +28,16 @@ const Facade = ({ className, cols = 10, rows = 3, seed = 7 }: FacadeProps) => {
         <span
           key={i}
           className={cn(
-            'block aspect-[1/1.35]',
+            'block',
             kind === 'off' && 'bg-window-off',
             kind === 'on' && 'bg-window-on',
             kind === 'hot' && 'bg-primary',
             kind === 'blink' && 'animate-blink bg-window-on',
           )}
-          style={kind === 'blink' ? { animationDelay: `${(i % 5) * 0.7}s` } : undefined}
+          style={{
+            aspectRatio: cellAspect,
+            ...(kind === 'blink' ? { animationDelay: `${(i % 5) * 0.7}s` } : {}),
+          }}
         />
       ))}
     </div>
