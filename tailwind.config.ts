@@ -121,8 +121,9 @@ export default {
 					to: { transform: 'translateX(0)' }
 				},
 				blink: {
-					'0%, 46%': { background: 'hsl(var(--window-on))' },
-					'50%, 100%': { background: 'hsl(var(--window-off))' }
+					'0%, 34%': { background: 'hsl(var(--window-on))' },
+					'42%, 78%': { background: 'hsl(var(--window-off))' },
+					'86%, 100%': { background: 'hsl(var(--window-on))' }
 				},
 				marquee: {
 					from: { transform: 'translateX(0)' },
@@ -140,7 +141,7 @@ export default {
 				'fade-in': 'fade-in .35s ease-out both',
 				'scale-in': 'scale-in .2s ease-out both',
 				'slide-in-right': 'slide-in-right .3s ease-out both',
-				blink: 'blink 4.6s steps(1,end) infinite',
+				blink: 'blink 14s ease-in-out infinite',
 				marquee: 'marquee 34s linear infinite',
 				caret: 'caret 1s steps(1,end) infinite'
 			}
