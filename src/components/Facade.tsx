@@ -92,14 +92,14 @@ const Facade = ({
             <span className="mb-[9px] h-[16px] flex-1 border border-foreground/25 bg-window-on md:h-[20px]" />
 
             <span className="flex w-[26%] flex-col items-center">
-              <span
-                className={cn(
-                  'h-[5px] w-full transition-colors duration-500',
-                  alarm ? 'animate-pulse bg-primary' : 'bg-foreground/30',
-                )}
-              />
+              <span className="h-[5px] w-full bg-foreground/30" />
               <span className="flex w-[62%] flex-col items-center border-2 border-t-0 border-foreground/45 bg-window-off px-[3px] pb-0 pt-[3px]">
-                <span className="h-[5px] w-[70%] bg-window-on" />
+                <span
+                  className={cn(
+                    'h-[5px] w-[70%] transition-colors duration-500',
+                    alarm ? 'bg-primary' : 'bg-window-on',
+                  )}
+                />
                 <span className="mt-[3px] h-[16px] w-full bg-foreground/70 md:h-[22px]" />
               </span>
               <span className="h-[3px] w-[80%] bg-foreground/45" />
