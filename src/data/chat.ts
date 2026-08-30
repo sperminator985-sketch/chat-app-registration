@@ -89,10 +89,10 @@ export const rooms: Room[] = [
   {
     id: 'tomsk',
     floor: '05',
-    title: 'Томск',
-    about: 'Город на связи: где вкусно, где холодно, где играют вживую.',
+    title: 'ТПУ',
+    about: 'Политех на связи: лабы, курсовые, общаги на Вершинина и Усова.',
     online: 64,
-    icon: 'MapPin',
+    icon: 'Cpu',
   },
   {
     id: 'znakomstva',
@@ -186,10 +186,10 @@ export const roomMessages: Record<string, Message[]> = {
     { id: 4, nick: 'Пельмень', color: 3, time: '12:14', text: 'лучшая пара семестра честно говоря' },
   ],
   tomsk: [
-    { id: 1, nick: 'система', color: 8, time: '19:05', text: 'Вы вошли на этаж 05 — Томск', system: true },
-    { id: 2, nick: 'DJ_Общага', color: 5, time: '19:06', text: 'на Ленина сегодня играют вживую, кто идёт' },
-    { id: 3, nick: 'Тётя_Валя', color: 7, time: '19:08', text: 'минус двадцать восемь, оденьтесь как люди' },
-    { id: 4, nick: 'Кипяток', color: 2, time: '19:09', text: 'мам, мне 24' },
+    { id: 1, nick: 'система', color: 8, time: '19:05', text: 'Вы вошли на этаж 05 — ТПУ', system: true },
+    { id: 2, nick: 'DJ_Общага', color: 5, time: '19:06', text: 'кто сдал лабу по физике? поделитесь отчётом' },
+    { id: 3, nick: 'Тётя_Валя', color: 7, time: '19:08', text: 'в восьмом корпусе опять холодно, сидим в куртках' },
+    { id: 4, nick: 'Кипяток', color: 2, time: '19:09', text: 'зато не уснёшь на паре' },
   ],
   znakomstva: [
     { id: 1, nick: 'система', color: 8, time: '20:05', text: 'Вы вошли на этаж 06 — Знакомства', system: true },
