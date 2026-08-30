@@ -7,6 +7,16 @@ type FacadeProps = {
   seed?: number;
   cellAspect?: string;
   entrance?: boolean;
+  floorCounts?: number[];
+};
+
+const shuffledCols = (cols: number, row: number, seed: number) => {
+  const order = Array.from({ length: cols }, (_, i) => i);
+  for (let i = cols - 1; i > 0; i -= 1) {
+    const j = (row * 31 + seed * 17 + i * 7) % (i + 1);
+    [order[i], order[j]] = [order[j], order[i]];
+  }
+  return order;
 };
 
 const Facade = ({
@@ -16,9 +26,22 @@ const Facade = ({
   seed = 7,
   cellAspect = '1/1.35',
   entrance = true,
+  floorCounts,
 }: FacadeProps) => {
   const total = cols * rows;
+
+  const live = new Set<number>();
+  if (floorCounts) {
+    for (let row = 0; row < rows; row += 1) {
+      const floor = rows - 1 - row;
+      const count = Math.min(floorCounts[floor] ?? 0, cols);
+      const order = shuffledCols(cols, row, seed);
+      for (let k = 0; k < count; k += 1) live.add(row * cols + order[k]);
+    }
+  }
+
   const cells = Array.from({ length: total }, (_, i) => {
+    if (floorCounts) return live.has(i) ? 'on' : 'off';
     const n = (i * seed + 3) % 10;
     if (i % 17 === 6) return 'blink';
     if (i % 13 === 4) return 'blink';
@@ -43,7 +66,7 @@ const Facade = ({
             <span
               key={i}
               className={cn(
-                'block border border-foreground/25',
+                'block border border-foreground/25 transition-colors duration-700',
                 kind === 'off' && 'bg-window-off',
                 kind === 'on' && 'bg-window-on',
                 kind === 'blink' && 'animate-blink bg-window-on',

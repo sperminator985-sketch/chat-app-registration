@@ -1,8 +1,10 @@
 import Facade from '@/components/Facade';
 import { useLiveStats } from '@/hooks/use-live-stats';
+import { rooms } from '@/data/chat';
 
 const Hero = () => {
   const live = useLiveStats();
+  const floorCounts = rooms.map((r) => live?.roomCounts?.[r.id] ?? 0);
 
   return (
     <section id="top" className="mx-auto w-full max-w-[1400px] overflow-x-clip px-5 pb-4 pt-3 md:px-10 md:py-8">
@@ -22,7 +24,12 @@ const Hero = () => {
               </span>
             </span>
           </h1>
-          <Facade className="w-full max-w-[436px] md:-mt-[1.1cm]" rows={9} cellAspect="1/0.68" />
+          <Facade
+            className="w-full max-w-[436px] md:-mt-[1.1cm]"
+            rows={9}
+            cellAspect="1/0.68"
+            floorCounts={floorCounts}
+          />
         </div>
 
         <p className="hidden -mt-1 md:-mt-[3.1cm] whitespace-nowrap text-center font-display text-[clamp(0.7rem,3.1vw,1.1rem)] font-semibold uppercase tracking-[0.34em] text-secondary md:block md:text-left md:text-[clamp(0.95rem,2.42vw,2.1rem)]">
