@@ -206,9 +206,10 @@ try {
                 'status' => $r['status'],
                 'avatar' => (int) $r['avatar'],
                 'avatarUrl' => $r['avatar_url'],
+                'isAdmin' => (bool) $r['is_admin'],
             ];
         }, q(
-            'SELECT nick, color, status, avatar, avatar_url FROM users
+            'SELECT nick, color, status, avatar, avatar_url, is_admin FROM users
              WHERE last_seen > UTC_TIMESTAMP() - INTERVAL ? SECOND
              ORDER BY last_seen DESC LIMIT 40',
             [ONLINE_SEC]

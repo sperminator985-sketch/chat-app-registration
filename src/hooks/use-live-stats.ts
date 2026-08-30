@@ -25,7 +25,8 @@ const load = () => {
         dayMessages: res.dayMessages,
         roomCounts: res.roomCounts ?? {},
         adminOnline: (res.online ?? []).some(
-          (u: { nick?: string }) => (u.nick ?? '').trim().toLowerCase() === 'админ',
+          (u: { nick?: string; isAdmin?: boolean }) =>
+            u.isAdmin === true || (u.nick ?? '').trim().toLowerCase() === 'админ',
         ),
       };
       listeners.forEach((fn) => fn(cache as LiveStats));

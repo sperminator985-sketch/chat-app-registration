@@ -132,11 +132,12 @@ def handler(event: dict, context) -> dict:
                 for r in rows
             ]
             cur.execute(
-                f"SELECT nick, color, status, avatar, avatar_url FROM {SCHEMA}.users "
+                f"SELECT nick, color, status, avatar, avatar_url, is_admin FROM {SCHEMA}.users "
                 f"WHERE last_seen > NOW() - INTERVAL '2 minutes' ORDER BY last_seen DESC LIMIT 40"
             )
             online = [
-                {'nick': r[0], 'color': r[1], 'status': r[2], 'avatar': r[3], 'avatarUrl': r[4]}
+                {'nick': r[0], 'color': r[1], 'status': r[2], 'avatar': r[3], 'avatarUrl': r[4],
+                 'isAdmin': bool(r[5])}
                 for r in cur.fetchall()
             ]
             cur.execute(
