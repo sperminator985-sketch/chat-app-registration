@@ -233,7 +233,7 @@ const Header = ({ onProfile }: HeaderProps) => {
               <button onClick={() => openAuth('login')} className="nav-link">
                 Вход
               </button>
-              <button onClick={() => openAuth('register')} className="btn-brut !px-5 !py-2 text-xs">
+              <button onClick={() => openAuth('register')} className="nav-link">
                 Регистрация
               </button>
             </>
