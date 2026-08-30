@@ -81,8 +81,8 @@ export const rooms: Room[] = [
   {
     id: 'ucheba',
     floor: '04',
-    title: 'Учёба',
-    about: 'ТГУ, ТПУ, ТУСУР. Сессия, лабы, «а кто был на паре?».',
+    title: 'ТУСУР',
+    about: 'Лабы, схемы, зачёты и общаги ТУСУРа. «А кто был на паре?».',
     online: 51,
     icon: 'GraduationCap',
   },
@@ -180,8 +180,8 @@ export const roomMessages: Record<string, Message[]> = {
     { id: 4, nick: 'первокур', color: 6, time: '18:23', text: '412, стучать три раза' },
   ],
   ucheba: [
-    { id: 1, nick: 'система', color: 8, time: '12:10', text: 'Вы вошли на этаж 04 — Учёба', system: true },
-    { id: 2, nick: 'сессия_близко', color: 2, time: '12:11', text: 'кто был на матане? скиньте фото доски' },
+    { id: 1, nick: 'система', color: 8, time: '12:10', text: 'Вы вошли на этаж 04 — ТУСУР', system: true },
+    { id: 2, nick: 'сессия_близко', color: 2, time: '12:11', text: 'кто был на схемотехнике? скиньте фото доски' },
     { id: 3, nick: 'south_park_312', color: 3, time: '12:12', text: 'был. доска пустая, он весь час рассказывал про рыбалку' },
     { id: 4, nick: 'Пельмень', color: 3, time: '12:14', text: 'лучшая пара семестра честно говоря' },
   ],
