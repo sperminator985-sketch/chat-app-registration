@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Icon from '@/components/ui/icon';
 import Wordmark from '@/components/Wordmark';
+import Logo from '@/components/Logo';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/use-auth';
 import { nickColorClass } from '@/data/chat';
@@ -161,16 +162,12 @@ const Header = ({ onProfile }: HeaderProps) => {
         {user ? (
           <>
             <Wordmark className="md:hidden" />
-            <span className="hidden font-display text-base font-extrabold tracking-[0.06em] text-secondary md:inline-flex md:text-lg">
-              ЧАТ<span className="text-primary">—</span>ОБЩАГА
-            </span>
+            <Logo size="sm" className="hidden md:flex" />
           </>
         ) : (
           <a href="#top" onClick={go('#top')} className="min-w-0">
             <Wordmark className="md:hidden" />
-            <span className="hidden font-display text-base font-extrabold tracking-[0.06em] text-secondary md:inline-flex md:text-lg">
-              ЧАТ<span className="text-primary">—</span>ОБЩАГА
-            </span>
+            <Logo size="sm" className="hidden md:flex" />
           </a>
         )}
 
