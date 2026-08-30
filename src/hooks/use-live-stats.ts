@@ -7,6 +7,7 @@ export type LiveStats = {
   totalUsers: number;
   dayMessages: number;
   roomCounts: Record<string, number>;
+  adminOnline: boolean;
 };
 
 let cache: LiveStats | null = null;
@@ -23,6 +24,9 @@ const load = () => {
         totalUsers: res.totalUsers,
         dayMessages: res.dayMessages,
         roomCounts: res.roomCounts ?? {},
+        adminOnline: (res.online ?? []).some(
+          (u: { nick?: string }) => (u.nick ?? '').trim().toLowerCase() === 'админ',
+        ),
       };
       listeners.forEach((fn) => fn(cache as LiveStats));
     })

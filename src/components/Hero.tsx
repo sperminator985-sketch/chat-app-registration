@@ -29,6 +29,7 @@ const Hero = () => {
             rows={9}
             cellAspect="1/0.68"
             floorCounts={floorCounts}
+            alarm={live?.adminOnline ?? false}
           />
         </div>
 
