@@ -255,13 +255,14 @@ const Header = ({ onProfile }: HeaderProps) => {
 
         <div className="flex shrink-0 items-center gap-2.5 md:hidden">
           {temp !== null && (
-            <span className="flex items-center gap-1 border-2 border-foreground/30 px-2 py-1 text-[0.7rem] font-semibold uppercase tracking-[0.06em] text-muted-foreground">
+            <span className="flex min-w-0 items-center gap-1 border-2 border-foreground/30 px-2 py-1 text-[0.55rem] font-semibold uppercase leading-tight tracking-[0.04em] text-muted-foreground">
               <Icon
                 name={temp <= 0 ? 'Snowflake' : 'Sun'}
                 size={13}
-                className={temp < 0 ? 'text-primary' : 'text-secondary'}
+                className={cn('shrink-0', temp < 0 ? 'text-primary' : 'text-secondary')}
               />
-              <span className={cn('font-bold', temp < 0 ? 'text-primary' : 'text-secondary')}>
+              <span className="whitespace-nowrap">Сейчас за окном</span>
+              <span className={cn('text-[0.72rem] font-bold', temp < 0 ? 'text-primary' : 'text-secondary')}>
                 {formatTemp(temp)}°
               </span>
             </span>
