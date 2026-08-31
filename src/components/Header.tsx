@@ -24,7 +24,7 @@ const Header = ({ onProfile }: HeaderProps) => {
   const [scrolled, setScrolled] = useState(false);
   const [active, setActive] = useState('');
   const { user, openAuth, signOut } = useAuth();
-  const { unread, openList } = useDm();
+  const { unread, openList, soundOn, toggleSound } = useDm();
   const temp = useWeather();
   const live = useLiveStats();
   const links = user ? [] : guestLinks;
@@ -49,6 +49,21 @@ const Header = ({ onProfile }: HeaderProps) => {
           {unread > 99 ? '99+' : unread}
         </span>
       )}
+    </button>
+  );
+
+  const soundButton = (extra?: string) => (
+    <button
+      onClick={toggleSound}
+      aria-label={soundOn ? 'Выключить звук' : 'Включить звук'}
+      title={soundOn ? 'Выключить звук уведомлений' : 'Включить звук уведомлений'}
+      className={cn(
+        'flex h-10 w-10 items-center justify-center border-2 transition-colors hover:border-secondary hover:text-secondary',
+        soundOn ? 'border-foreground/40 text-foreground' : 'border-foreground/25 text-muted-foreground',
+        extra,
+      )}
+    >
+      <Icon name={soundOn ? 'Volume2' : 'VolumeX'} size={18} />
     </button>
   );
 
@@ -209,6 +224,7 @@ const Header = ({ onProfile }: HeaderProps) => {
           {user ? (
             <>
               {mailButton()}
+              {soundButton()}
               {user.isAdmin && (
                 <Link
                   to="/admin"
@@ -239,6 +255,7 @@ const Header = ({ onProfile }: HeaderProps) => {
 
         <div className="flex shrink-0 items-center gap-2.5 md:hidden">
           {user && mailButton()}
+          {user && soundButton()}
           {user && (
             <button
               onClick={signOut}
