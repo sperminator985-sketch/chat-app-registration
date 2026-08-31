@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Icon from '@/components/ui/icon';
-import Wordmark from '@/components/Wordmark';
 import Logo from '@/components/Logo';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/use-auth';
@@ -176,12 +175,12 @@ const Header = ({ onProfile }: HeaderProps) => {
       <div className="mx-auto flex max-w-[1400px] items-center justify-between gap-2 rule-bottom py-4 pl-2.5 pr-5 md:gap-4 md:px-10">
         {user ? (
           <>
-            <Wordmark className="md:hidden" />
+            <Logo size="xs" iconAsLetter className="md:hidden" />
             <Logo size="sm" iconAsLetter className="hidden md:flex" />
           </>
         ) : (
           <a href="#top" onClick={go('#top')} className="min-w-0">
-            <Wordmark className="md:hidden" />
+            <Logo size="xs" iconAsLetter className="md:hidden" />
             <Logo size="sm" iconAsLetter className="hidden md:flex" />
           </a>
         )}

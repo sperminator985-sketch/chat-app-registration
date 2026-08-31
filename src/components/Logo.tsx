@@ -2,11 +2,17 @@ import { cn } from '@/lib/utils';
 
 type LogoProps = {
   className?: string;
-  size?: 'sm' | 'md' | 'lg';
+  size?: 'xs' | 'sm' | 'md' | 'lg';
   iconAsLetter?: boolean;
 };
 
 const sizes = {
+  xs: {
+    box: 'h-8 w-8',
+    letterBox: 'h-[clamp(1.35rem,5.6vw,1.95rem)] w-[clamp(1.35rem,5.6vw,1.95rem)]',
+    chat: 'text-[clamp(1.05rem,4.6vw,1.6rem)]',
+    plate: 'text-[clamp(0.95rem,4.2vw,1.45rem)]',
+  },
   sm: { box: 'h-9 w-9', letterBox: 'h-[1.75rem] w-[1.75rem]', chat: 'text-[1.05rem]', plate: 'text-[0.95rem]' },
   md: { box: 'h-11 w-11', letterBox: 'h-[2.2rem] w-[2.2rem]', chat: 'text-[1.35rem]', plate: 'text-[1.2rem]' },
   lg: { box: 'h-16 w-16', letterBox: 'h-[3.3rem] w-[3.3rem]', chat: 'text-[2.1rem]', plate: 'text-[1.85rem]' },
