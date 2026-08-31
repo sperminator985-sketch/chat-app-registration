@@ -254,7 +254,7 @@ const Header = ({ onProfile }: HeaderProps) => {
         </nav>
 
         <div className="flex shrink-0 items-center gap-2.5 md:hidden">
-          {temp !== null && (
+          {temp !== null && !user && (
             <span className="flex min-w-0 items-center gap-1 border-2 border-foreground/30 px-2 py-1 text-[0.55rem] font-semibold uppercase leading-tight tracking-[0.04em] text-muted-foreground">
               <Icon
                 name={temp <= 0 ? 'Snowflake' : 'Sun'}
