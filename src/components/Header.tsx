@@ -177,12 +177,12 @@ const Header = ({ onProfile }: HeaderProps) => {
         {user ? (
           <>
             <Wordmark className="md:hidden" />
-            <Logo size="sm" className="hidden md:flex" />
+            <Logo size="sm" iconAsLetter className="hidden md:flex" />
           </>
         ) : (
           <a href="#top" onClick={go('#top')} className="min-w-0">
             <Wordmark className="md:hidden" />
-            <Logo size="sm" className="hidden md:flex" />
+            <Logo size="sm" iconAsLetter className="hidden md:flex" />
           </a>
         )}
 

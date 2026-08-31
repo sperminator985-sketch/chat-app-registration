@@ -3,24 +3,25 @@ import { cn } from '@/lib/utils';
 type LogoProps = {
   className?: string;
   size?: 'sm' | 'md' | 'lg';
+  iconAsLetter?: boolean;
 };
 
 const sizes = {
-  sm: { box: 'h-9 w-9', chat: 'text-[1.05rem]', plate: 'text-[0.95rem]' },
-  md: { box: 'h-11 w-11', chat: 'text-[1.35rem]', plate: 'text-[1.2rem]' },
-  lg: { box: 'h-16 w-16', chat: 'text-[2.1rem]', plate: 'text-[1.85rem]' },
+  sm: { box: 'h-9 w-9', letterBox: 'h-[1.5rem] w-[1.5rem]', chat: 'text-[1.05rem]', plate: 'text-[0.95rem]' },
+  md: { box: 'h-11 w-11', letterBox: 'h-[1.9rem] w-[1.9rem]', chat: 'text-[1.35rem]', plate: 'text-[1.2rem]' },
+  lg: { box: 'h-16 w-16', letterBox: 'h-[2.9rem] w-[2.9rem]', chat: 'text-[2.1rem]', plate: 'text-[1.85rem]' },
 };
 
 const windows = [1, 0, 1, 1, 1, 1, 0, 0, 1];
 
-const Logo = ({ className, size = 'md' }: LogoProps) => {
+const Logo = ({ className, size = 'md', iconAsLetter = false }: LogoProps) => {
   const s = sizes[size];
   return (
-    <span className={cn('flex min-w-0 items-center gap-2.5', className)}>
+    <span className={cn('flex min-w-0 items-center', iconAsLetter ? 'gap-1' : 'gap-2.5', className)}>
       <span
         className={cn(
           'relative flex shrink-0 flex-col items-center justify-end border-2 border-foreground bg-window-off p-[3px]',
-          s.box,
+          iconAsLetter ? s.letterBox : s.box,
         )}
       >
         <span className="grid w-full flex-1 grid-cols-3 gap-[2px]">
@@ -35,7 +36,8 @@ const Logo = ({ className, size = 'md' }: LogoProps) => {
 
       <span className="flex min-w-0 items-center gap-x-1.5 font-display font-extrabold uppercase tracking-[-0.035em]">
         <span className={cn('whitespace-nowrap leading-[.92] text-foreground', s.chat)}>
-          ЧАТ<b className="text-primary">—</b>
+          {iconAsLetter ? 'АТ' : 'ЧАТ'}
+          <b className="text-primary">—</b>
         </span>
         <span className="plate relative inline-block w-fit origin-center -rotate-[1.5deg] px-2 pb-[5px] pt-[3px]">
           <span className={cn('block whitespace-nowrap leading-[.9] tracking-[-0.045em]', s.plate)}>
