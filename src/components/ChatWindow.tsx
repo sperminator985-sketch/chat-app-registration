@@ -236,7 +236,7 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
 
             <div
               ref={feedRef}
-              className="scrollbar-brut min-h-0 flex-1 space-y-3 overflow-y-auto overscroll-contain px-5 py-5"
+              className="scrollbar-brut min-h-0 flex-1 space-y-1 overflow-y-auto overscroll-contain px-4 py-3 sm:px-5"
             >
               {!loaded && (
                 <p className="font-mono text-[0.85rem] text-muted-foreground">соединяемся с этажом…</p>
@@ -252,11 +252,11 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
                 <div
                   key={m.key}
                   className={cn(
-                    'animate-fade-in leading-[1.45]',
-                    m.private && 'border-l-4 border-sky-400 bg-sky-400/15 px-2 py-1',
+                    'animate-fade-in leading-[1.3]',
+                    m.private && 'border-l-4 border-sky-400 bg-sky-400/15 px-2 py-0.5',
                   )}
                 >
-                  <p className="flex flex-wrap items-center gap-x-2">
+                  <p className="flex flex-wrap items-baseline gap-x-1.5">
                     {m.private && (
                       <button
                         type="button"
@@ -271,13 +271,13 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
                       type="button"
                       onClick={() => user && m.nick !== user.nick && setPrivateTo(m.nick)}
                       title={`Написать лично: ${m.nick}`}
-                      className={cn('text-[0.84rem] font-semibold hover:underline sm:text-[1rem]', nickColorClass[m.color])}
+                      className={cn('text-[0.82rem] font-semibold hover:underline sm:text-[0.92rem]', nickColorClass[m.color])}
                     >
                       &lt;{m.nick}&gt;
                     </button>
                     <span
                       className={cn(
-                        'text-[0.86rem] sm:text-[1.02rem]',
+                        'text-[0.84rem] sm:text-[0.94rem]',
                         user && m.nick === user.nick ? 'text-foreground' : 'text-foreground/90',
                       )}
                     >
