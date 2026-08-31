@@ -311,8 +311,8 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
               </div>
             )}
 
-            <form onSubmit={send} className="flex flex-row items-center gap-2 border-t-2 border-foreground/35 px-3 py-3 sm:gap-3 sm:px-5 sm:py-4">
-              <div className="flex flex-1 items-center gap-2 border-2 border-foreground/35 bg-input px-3 py-2 focus-within:border-secondary">
+            <form onSubmit={send} className="flex flex-row items-center gap-2 border-t-2 border-foreground/35 px-3 py-2 sm:gap-2.5 sm:px-5 sm:py-2.5">
+              <div className="flex flex-1 items-center gap-2 border-2 border-foreground/35 bg-input px-3 py-1.5 focus-within:border-secondary">
                 <input
                   ref={inputRef}
                   value={draft}
@@ -332,10 +332,10 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
                         ? `Лично для ${privateTo}…`
                         : 'Напиши что-нибудь…'
                   }
-                  className="w-full min-w-0 bg-transparent text-[0.82rem] text-foreground outline-none placeholder:text-muted-foreground/70 sm:text-[1.02rem]"
+                  className="w-full min-w-0 bg-transparent text-[0.82rem] text-foreground outline-none placeholder:text-muted-foreground/70 sm:text-[0.92rem]"
                 />
               </div>
-              <div className="flex shrink-0 items-center gap-2 sm:gap-3">
+              <div className="flex shrink-0 items-center gap-2 sm:gap-2.5">
                 <EmojiPicker onPick={(e) => setDraft((prev) => (prev + e).slice(0, 480))} />
                 <button
                   type="submit"
