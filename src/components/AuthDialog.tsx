@@ -426,7 +426,7 @@ const AuthDialog = () => {
                 </span>
               </label>
 
-              <p className="text-center text-[0.8rem] leading-[1.4] text-muted-foreground">
+              <p className="text-center text-[0.68rem] leading-[1.35] text-muted-foreground">
                 Регистрируясь, ты соглашаешься с{' '}
                 <a
                   href="/privacy"
