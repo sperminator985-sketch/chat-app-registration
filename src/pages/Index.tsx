@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { AuthProvider, useAuth } from '@/hooks/use-auth';
 import { toast } from '@/hooks/use-toast';
 import { DmProvider } from '@/hooks/use-dm';
@@ -43,6 +43,10 @@ const PageBody = () => {
       window.removeEventListener('resize', apply);
     };
   }, []);
+
+  useEffect(() => {
+    if (user?.room) setActiveRoom(user.room);
+  }, [user?.room]);
 
   const pickRoom = (id: string) => {
     if (!user) {

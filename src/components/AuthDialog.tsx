@@ -5,7 +5,7 @@ import Icon from '@/components/ui/icon';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/use-auth';
 import { api } from '@/lib/api';
-import { AvatarId, NickColor, nickBgClass, nickColorClass, nickColors, rooms } from '@/data/chat';
+import { AvatarId, NickColor, nickBgClass, nickColorClass, nickColors, rooms, roomUni, canEnterRoom } from '@/data/chat';
 import { toast } from '@/hooks/use-toast';
 
 type Errors = { nick?: string; pass?: string; pass2?: string; agree?: string; answer?: string };
@@ -376,11 +376,13 @@ const AuthDialog = () => {
                   Стартовый этаж
                 </label>
                 <select value={room} onChange={(e) => setRoom(e.target.value)} className={field}>
-                  {rooms.map((r) => (
-                    <option key={r.id} value={r.id} className="bg-card">
-                      {r.floor} — {r.title}
-                    </option>
-                  ))}
+                  {rooms
+                    .filter((r) => canEnterRoom(r.id, uni))
+                    .map((r) => (
+                      <option key={r.id} value={r.id} className="bg-card">
+                        {r.floor} — {r.title}
+                      </option>
+                    ))}
                 </select>
               </div>
 
@@ -388,7 +390,17 @@ const AuthDialog = () => {
                 <label className="mb-1.5 block text-[0.78rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground sm:mb-1 sm:text-[0.7rem]">
                   В каком Вузе Томска вы учились (учитесь)?
                 </label>
-                <select value={uni} onChange={(e) => setUni(e.target.value)} className={field}>
+                <select
+                  value={uni}
+                  onChange={(e) => {
+                    const next = e.target.value;
+                    setUni(next);
+                    const target = Object.keys(roomUni).find((id) => roomUni[id] === next);
+                    if (target) setRoom(target);
+                    else if (!canEnterRoom(room, next)) setRoom(rooms[1].id);
+                  }}
+                  className={field}
+                >
                   <option value="" className="bg-card">
                     Не указывать
                   </option>
