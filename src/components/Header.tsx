@@ -254,6 +254,18 @@ const Header = ({ onProfile }: HeaderProps) => {
         </nav>
 
         <div className="flex shrink-0 items-center gap-2.5 md:hidden">
+          {temp !== null && (
+            <span className="flex items-center gap-1 border-2 border-foreground/30 px-2 py-1 text-[0.7rem] font-semibold uppercase tracking-[0.06em] text-muted-foreground">
+              <Icon
+                name={temp <= 0 ? 'Snowflake' : 'Sun'}
+                size={13}
+                className={temp < 0 ? 'text-primary' : 'text-secondary'}
+              />
+              <span className={cn('font-bold', temp < 0 ? 'text-primary' : 'text-secondary')}>
+                {formatTemp(temp)}°
+              </span>
+            </span>
+          )}
           {user && mailButton()}
           {user && soundButton()}
           {user && (
