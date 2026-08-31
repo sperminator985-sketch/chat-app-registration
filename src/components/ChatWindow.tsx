@@ -2,7 +2,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Icon from '@/components/ui/icon';
 import { cn } from '@/lib/utils';
 import { usePolling } from '@/hooks/use-polling';
-import { lastSeenText } from '@/lib/last-seen';
 import { useAuth } from '@/hooks/use-auth';
 import { getToken, api, ApiMessage } from '@/lib/api';
 import { toast } from '@/hooks/use-toast';
@@ -30,7 +29,6 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
   const room = useMemo(() => rooms.find((r) => r.id === activeRoom) ?? rooms[0], [activeRoom]);
   const [messages, setMessages] = useState<ApiMessage[]>([]);
   const [online, setOnline] = useState<OnlineItem[]>([]);
-  const [recent, setRecent] = useState<OnlineItem[]>([]);
   const [draft, setDraft] = useState('');
   const [sending, setSending] = useState(false);
   const [loaded, setLoaded] = useState(false);
@@ -52,7 +50,6 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
       const data = await api.feed(room.id, true);
       setMessages(data.messages);
       setOnline(data.online);
-      setRecent(data.recent ?? []);
       setTypingUsers(data.typing ?? []);
       const dm = await api.dmAll();
       setPrivateMsgs(dm.messages);
@@ -405,40 +402,6 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
                 );
               })}
 
-              {recent.length > 0 && (
-                <>
-                  <li className="bg-muted/40 px-4 py-2 text-[0.7rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground/80">
-                    Заходили недавно
-                  </li>
-                  {recent.map((u) => (
-                    <li key={`recent-${u.nick}`} className="opacity-70">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setWhoOpen(false);
-                          setPrivateTo(u.nick);
-                        }}
-                        disabled={Boolean(user && u.nick === user.nick)}
-                        className="w-full px-4 py-3 text-left transition-colors hover:bg-muted/50 disabled:cursor-default disabled:hover:bg-transparent"
-                      >
-                        <div className="flex items-center gap-2">
-                          <span className={cn('font-normal', nickColorClass[u.color as 1])}>{u.nick}</span>
-                          {unread[u.nick] ? (
-                            <span className="ml-auto border-2 border-secondary bg-secondary px-1.5 font-mono text-[0.7rem] font-bold text-secondary-foreground">
-                              {unread[u.nick]}
-                            </span>
-                          ) : (
-                            <Icon name="Mail" size={13} className="ml-auto text-muted-foreground/60" />
-                          )}
-                        </div>
-                        <p className="mt-1 font-mono text-[0.75rem] uppercase tracking-[0.06em] text-muted-foreground/70">
-                          {lastSeenText(u.seenAgo)}
-                        </p>
-                      </button>
-                    </li>
-                  ))}
-                </>
-              )}
             </ul>
           </aside>
         </div>
