@@ -143,7 +143,7 @@ const AuthDialog = () => {
 
   return (
     <Dialog open={authOpen} onOpenChange={(v) => (v ? openAuth(authTab) : closeAuth())}>
-      <DialogContent className="max-w-[520px] border-2 border-foreground/40 bg-card p-0 text-card-foreground [&>button]:hidden">
+      <DialogContent className="top-[5vh] max-h-[90vh] max-w-[520px] translate-y-0 overflow-y-auto border-2 border-foreground/40 bg-card p-0 text-card-foreground [&>button]:hidden">
         <div className="flex border-b-2 border-foreground/35">
           {(['register', 'login'] as const).map((tab) => (
             <button
