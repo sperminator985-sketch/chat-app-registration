@@ -271,7 +271,7 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
                       type="button"
                       onClick={() => user && m.nick !== user.nick && setPrivateTo(m.nick)}
                       title={`Написать лично: ${m.nick}`}
-                      className={cn('text-[0.82rem] font-semibold hover:underline sm:text-[0.92rem]', nickColorClass[m.color])}
+                      className={cn('text-[0.82rem] font-normal hover:underline sm:text-[0.92rem]', nickColorClass[m.color])}
                     >
                       &lt;{m.nick}&gt;
                     </button>
@@ -388,7 +388,7 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
                       className="w-full px-4 py-3 text-left transition-colors hover:bg-muted/50 disabled:cursor-default disabled:hover:bg-transparent"
                     >
                       <div className="flex items-center gap-2">
-                        <span className={cn('font-semibold', nickColorClass[u.color as 1])}>{u.nick}</span>
+                        <span className={cn('font-normal', nickColorClass[u.color as 1])}>{u.nick}</span>
                         {isMe ? (
                           <span className="ml-auto font-mono text-[0.7rem] uppercase text-secondary">это ты</span>
                         ) : unread[u.nick] ? (
@@ -422,7 +422,7 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
                         className="w-full px-4 py-3 text-left transition-colors hover:bg-muted/50 disabled:cursor-default disabled:hover:bg-transparent"
                       >
                         <div className="flex items-center gap-2">
-                          <span className={cn('font-semibold', nickColorClass[u.color as 1])}>{u.nick}</span>
+                          <span className={cn('font-normal', nickColorClass[u.color as 1])}>{u.nick}</span>
                           {unread[u.nick] ? (
                             <span className="ml-auto border-2 border-secondary bg-secondary px-1.5 font-mono text-[0.7rem] font-bold text-secondary-foreground">
                               {unread[u.nick]}
