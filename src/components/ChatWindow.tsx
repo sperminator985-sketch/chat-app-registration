@@ -162,9 +162,9 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
         <div className="grid min-h-0 flex-1 gap-[2px] overflow-hidden border-2 border-foreground/35 bg-foreground/35 lg:grid-cols-[1fr_280px]">
           <div className="flex min-h-0 flex-col bg-background">
             <div className="relative flex flex-wrap items-center gap-x-3 gap-y-2 border-b-2 border-foreground/35 px-4 py-3 md:px-5 md:py-4 lg:h-[68px]">
-              <div className="flex min-w-0 items-center gap-2 md:max-w-[34%] md:gap-3">
-                <Icon name={room.icon} size={20} className="shrink-0 text-secondary" />
-                <span className="truncate font-display text-[0.72rem] font-extrabold uppercase tracking-[-0.02em] sm:text-base md:text-lg">
+              <div className="flex min-w-0 shrink items-center gap-1.5 md:max-w-[34%] md:gap-3">
+                <Icon name={room.icon} size={16} className="shrink-0 text-secondary md:h-5 md:w-5" />
+                <span className="truncate font-display text-[0.58rem] font-extrabold uppercase tracking-[-0.03em] sm:text-base md:text-lg">
                   Этаж {room.floor} · {room.title}
                 </span>
               </div>
@@ -185,7 +185,7 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
                   </button>
                 ))}
               </div>
-              <div className="ml-auto flex shrink-0 items-center gap-2">
+              <div className="ml-auto flex shrink-0 items-center gap-1.5 md:gap-2">
                 <button
                   onClick={() => setWhoOpen((v) => !v)}
                   title="Кто в чате"
