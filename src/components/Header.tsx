@@ -261,7 +261,7 @@ const Header = ({ onProfile }: HeaderProps) => {
                 size={13}
                 className={cn('shrink-0', temp < 0 ? 'text-primary' : 'text-secondary')}
               />
-              <span className="whitespace-nowrap">Сейчас за окном</span>
+              <span className="whitespace-nowrap">В Томске</span>
               <span className={cn('text-[0.72rem] font-bold', temp < 0 ? 'text-primary' : 'text-secondary')}>
                 {formatTemp(temp)}°
               </span>
