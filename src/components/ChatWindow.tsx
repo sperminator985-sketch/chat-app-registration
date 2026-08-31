@@ -164,7 +164,7 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
       <div className="mx-auto flex w-full min-h-0 max-w-[1400px] flex-1 flex-col px-3 py-4 md:px-6 md:py-6">
         <div className="grid min-h-0 flex-1 gap-px overflow-hidden border-2 border-foreground/35 bg-foreground/25 lg:grid-cols-[1fr_280px]">
           <div className="flex min-h-0 flex-col bg-background">
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-2 border-b-2 border-foreground/35 px-4 py-3 md:px-5 md:py-4">
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-2 border-b-2 border-foreground/35 px-4 py-3 md:px-5 md:py-4 lg:h-[68px]">
               <div className="flex min-w-0 items-center gap-2 md:gap-3">
                 <Icon name={room.icon} size={20} className="shrink-0 text-secondary" />
                 <span className="truncate font-display text-[0.72rem] font-extrabold uppercase tracking-[-0.02em] sm:text-base md:text-lg">
@@ -351,11 +351,11 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
           </div>
 
           <aside className={cn('min-h-0 flex-col overflow-hidden bg-background lg:flex', whoOpen ? 'flex' : 'hidden')}>
-            <div className="shrink-0 border-b-2 border-foreground/35 px-4 py-4 text-center">
+            <div className="flex shrink-0 flex-col items-center justify-center border-b-2 border-foreground/35 px-4 py-4 text-center lg:h-[68px] lg:py-3">
               <h3 className="text-[0.8rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
                 Кто в чате · {onlineList.length}
               </h3>
-              <p className="mt-1 text-[0.8rem] text-muted-foreground/80">Кликни по нику — откроется личка</p>
+              <p className="mt-1 text-[0.8rem] leading-tight text-muted-foreground/80">Кликни по нику — откроется личка</p>
             </div>
             <ul className="scrollbar-brut min-h-0 flex-1 divide-y divide-foreground/15 overflow-y-auto overscroll-contain">
               {onlineList.length === 0 && (
