@@ -11,10 +11,11 @@ import { useDm } from '@/hooks/use-dm';
 import { useCall } from '@/hooks/use-call';
 import EmojiPicker from '@/components/EmojiPicker';
 import { usePolling } from '@/hooks/use-polling';
+import { playKnock } from '@/lib/notify-sound';
 
 const DirectMessages = () => {
   const { user } = useAuth();
-  const { dmNick: nick, closeDm: onClose, refresh } = useDm();
+  const { dmNick: nick, closeDm: onClose, refresh, soundOn } = useDm();
   const { startCall } = useCall();
   const [messages, setMessages] = useState<ApiMessage[]>([]);
   const [peer, setPeer] = useState<{ nick: string; color: NickColor; status: string; avatar?: number; avatarUrl?: string | null; online?: boolean; seenAgo?: number | null } | null>(null);
@@ -22,6 +23,7 @@ const DirectMessages = () => {
   const [sending, setSending] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const feedRef = useRef<HTMLDivElement>(null);
+  const lastIncomingId = useRef<number | null>(null);
 
   const load = useCallback(async () => {
     if (!nick) return;
@@ -29,17 +31,24 @@ const DirectMessages = () => {
       const data = await api.dm(nick);
       setPeer(data.peer);
       setMessages(data.messages);
+      const incoming = data.messages.filter((m) => m.nick !== user?.nick);
+      const lastId = incoming.length ? incoming[incoming.length - 1].id : 0;
+      if (lastIncomingId.current !== null && lastId > lastIncomingId.current && soundOn) {
+        playKnock();
+      }
+      lastIncomingId.current = lastId;
     } catch {
       /* повторим на следующем опросе */
     } finally {
       setLoaded(true);
     }
-  }, [nick]);
+  }, [nick, user?.nick, soundOn]);
 
   useEffect(() => {
     if (!nick) return;
     setLoaded(false);
     setMessages([]);
+    lastIncomingId.current = null;
   }, [nick]);
 
   usePolling(load, 5000, Boolean(nick));
