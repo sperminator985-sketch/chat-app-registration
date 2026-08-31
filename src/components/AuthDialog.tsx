@@ -139,7 +139,7 @@ const AuthDialog = () => {
     }
   };
 
-  const field = 'w-full border-2 border-foreground/35 bg-input px-3 py-2.5 text-foreground outline-none transition-colors placeholder:text-muted-foreground/70 focus:border-secondary';
+  const field = 'w-full border-2 border-foreground/35 bg-input px-3 py-2.5 text-foreground outline-none transition-colors placeholder:text-muted-foreground/70 focus:border-secondary sm:py-1.5 sm:text-[0.92rem]';
 
   return (
     <Dialog open={authOpen} onOpenChange={(v) => (v ? openAuth(authTab) : closeAuth())}>
@@ -154,7 +154,7 @@ const AuthDialog = () => {
                 openAuth(tab);
               }}
               className={cn(
-                'flex-1 px-4 py-4 font-display text-sm font-extrabold uppercase tracking-[0.08em] transition-colors',
+                'flex-1 px-4 py-4 font-display text-sm font-extrabold sm:py-2.5 uppercase tracking-[0.08em] transition-colors',
                 authTab === tab
                   ? 'bg-secondary text-secondary-foreground'
                   : 'text-muted-foreground hover:text-foreground',
@@ -173,7 +173,7 @@ const AuthDialog = () => {
         </div>
 
         {mode === 'recover' ? (
-          <div className="space-y-5 px-6 pb-6 pt-5">
+          <div className="space-y-5 px-6 pb-6 pt-5 sm:space-y-3 sm:pb-4 sm:pt-4">
             <div>
               <p className="font-display text-lg font-extrabold uppercase tracking-[0.06em]">
                 Восстановление доступа
@@ -184,7 +184,7 @@ const AuthDialog = () => {
             </div>
 
             <div>
-              <label className="mb-1.5 block text-[0.78rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+              <label className="mb-1.5 block text-[0.78rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground sm:mb-1 sm:text-[0.7rem]">
                 Ник
               </label>
               <input
@@ -201,7 +201,7 @@ const AuthDialog = () => {
             {recQuestion && (
               <>
                 <div>
-                  <label className="mb-1.5 block text-[0.78rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                  <label className="mb-1.5 block text-[0.78rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground sm:mb-1 sm:text-[0.7rem]">
                     {recQuestion}
                   </label>
                   <input
@@ -212,7 +212,7 @@ const AuthDialog = () => {
                   />
                 </div>
                 <div>
-                  <label className="mb-1.5 block text-[0.78rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                  <label className="mb-1.5 block text-[0.78rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground sm:mb-1 sm:text-[0.7rem]">
                     Новый пароль
                   </label>
                   <div className="relative">
@@ -261,15 +261,15 @@ const AuthDialog = () => {
             </button>
           </div>
         ) : (
-        <form onSubmit={submit} className="space-y-5 px-6 pb-6 pt-5">
-          <p className="text-[0.98rem] leading-[1.4] text-muted-foreground">
+        <form onSubmit={submit} className="space-y-5 px-6 pb-6 pt-5 sm:space-y-3 sm:pb-4 sm:pt-4">
+          <p className="text-[0.98rem] leading-[1.4] text-muted-foreground sm:text-[0.85rem]">
             {isRegister
               ? 'Ник, пароль, цвет — и комната твоя. Почту не спрашиваем.'
               : 'Ник и пароль. Вахтёрша Зина проверит по журналу.'}
           </p>
 
           <div>
-            <label className="mb-1.5 block text-[0.78rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+            <label className="mb-1.5 block text-[0.78rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground sm:mb-1 sm:text-[0.7rem]">
               Ник
             </label>
             <input
@@ -286,9 +286,9 @@ const AuthDialog = () => {
             )}
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid gap-4 sm:grid-cols-2 sm:gap-3">
             <div>
-              <label className="mb-1.5 block text-[0.78rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+              <label className="mb-1.5 block text-[0.78rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground sm:mb-1 sm:text-[0.7rem]">
                 Пароль
               </label>
               <div className="relative">
@@ -313,7 +313,7 @@ const AuthDialog = () => {
 
             {isRegister && (
               <div>
-                <label className="mb-1.5 block text-[0.78rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                <label className="mb-1.5 block text-[0.78rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground sm:mb-1 sm:text-[0.7rem]">
                   Ещё раз
                 </label>
                 <div className="relative">
@@ -341,7 +341,7 @@ const AuthDialog = () => {
           {isRegister && (
             <>
               <div>
-                <span className="mb-2 block text-[0.78rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                <span className="mb-2 block text-[0.78rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground sm:mb-1 sm:text-[0.7rem]">
                   Цвет ника
                 </span>
                 <div className="flex flex-wrap gap-2">
@@ -352,14 +352,14 @@ const AuthDialog = () => {
                       onClick={() => setColor(c)}
                       aria-label={`Цвет ${c}`}
                       className={cn(
-                        'h-8 w-8 border-2 transition-transform',
+                        'h-8 w-8 border-2 transition-transform sm:h-6 sm:w-6',
                         nickBgClass[c],
                         color === c ? 'scale-110 border-foreground' : 'border-transparent hover:scale-105',
                       )}
                     />
                   ))}
                 </div>
-                <p className="mt-2 flex items-center gap-2 text-[0.9rem] text-muted-foreground">
+                <p className="mt-2 flex items-center gap-2 text-[0.9rem] text-muted-foreground sm:mt-1.5 sm:text-[0.8rem]">
                   Так тебя увидят соседи:
                   <span className={cn('font-semibold', nickColorClass[color])}>
                     &lt;{nick.trim() || 'твой_ник'}&gt;
@@ -368,7 +368,7 @@ const AuthDialog = () => {
               </div>
 
               <div>
-                <label className="mb-1.5 block text-[0.78rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                <label className="mb-1.5 block text-[0.78rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground sm:mb-1 sm:text-[0.7rem]">
                   Стартовый этаж
                 </label>
                 <select value={room} onChange={(e) => setRoom(e.target.value)} className={field}>
@@ -381,7 +381,7 @@ const AuthDialog = () => {
               </div>
 
               <div>
-                <label className="mb-1.5 block text-[0.78rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                <label className="mb-1.5 block text-[0.78rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground sm:mb-1 sm:text-[0.7rem]">
                   Секретный вопрос (для восстановления пароля)
                 </label>
                 <select
@@ -408,7 +408,7 @@ const AuthDialog = () => {
 
               <label
                 className={cn(
-                  'flex cursor-pointer items-start gap-3 border-2 px-3 py-2.5 text-[0.95rem] leading-[1.4] transition-colors',
+                  'flex cursor-pointer items-start gap-3 border-2 px-3 py-2.5 text-[0.95rem] leading-[1.4] transition-colors sm:py-2 sm:text-[0.82rem]',
                   agree
                     ? 'border-secondary bg-secondary/10'
                     : errors.agree
