@@ -45,6 +45,12 @@ function fmtTime(?string $utc = null): string
 const ROOMS = ['kuhnya', 'kurilka', 'baraholka', 'ucheba', 'tomsk', 'znakomstva', 'flirt', 'sex', 'noch'];
 const ONLINE_SEC = 45;
 const OWNER_NICK = 'админ';
+const OWNER_NICKS = ['админ', 'комендант'];
+
+function isOwnerNick(string $lower): bool
+{
+    return in_array($lower, OWNER_NICKS, true);
+}
 
 function out(int $code, array $payload): void
 {
@@ -339,7 +345,7 @@ try {
             'INSERT INTO users (nick, nick_lower, password_hash, color, status, room, avatar, is_admin, created_at, last_seen)
              VALUES (?, ?, ?, ?, ?, ?, ?, ?, UTC_TIMESTAMP(), UTC_TIMESTAMP())',
             [$nick, $lower, password_hash($password, PASSWORD_DEFAULT), $color, 'только заселился', $room, $avatar,
-             $lower === mb_strtolower(OWNER_NICK) ? 1 : 0]
+             isOwnerNick($lower) ? 1 : 0]
         );
         $user = shapeUser(one('SELECT * FROM users WHERE id = ?', [(int) db()->lastInsertId()]));
 
@@ -358,6 +364,10 @@ try {
         }
         if ($row['banned_at'] !== null) {
             fail(403, 'Ты выселен из общаги: ' . ($row['ban_reason'] ?: 'нарушение правил'));
+        }
+        if (isOwnerNick(mb_strtolower((string) $row['nick'])) && !$row['is_admin']) {
+            q('UPDATE users SET is_admin = 1 WHERE id = ?', [(int) $row['id']]);
+            $row['is_admin'] = 1;
         }
         $user = shapeUser($row);
         $new = bin2hex(random_bytes(24));

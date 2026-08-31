@@ -34,6 +34,7 @@ SCHEMA = 't_p16512527_chat_app_registratio'
 ROOMS = ['kuhnya', 'kurilka', 'baraholka', 'ucheba', 'tomsk', 'znakomstva', 'flirt', 'sex', 'noch']
 NICK_RE = re.compile(r'^[a-zA-Zа-яА-ЯёЁ0-9_]{3,18}$')
 OWNER_NICK = 'админ'
+OWNER_NICKS = ('админ', 'комендант')
 
 CORS = {
     'Access-Control-Allow-Origin': '*',
@@ -206,7 +207,7 @@ def handler(event: dict, context) -> dict:
             answer = (body.get('answer') or '').strip()
             pwd = hash_password(password, secrets.token_hex(8))
             ans_hash = hash_password(answer.lower(), secrets.token_hex(8)) if question and answer else None
-            owner = 'TRUE' if nick.lower() == OWNER_NICK else 'FALSE'
+            owner = 'TRUE' if nick.lower() in OWNER_NICKS else 'FALSE'
             cur.execute(
                 f"INSERT INTO {SCHEMA}.users (nick, nick_lower, password_hash, color, status, room, avatar, is_admin, secret_question, secret_answer_hash) "
                 f"VALUES ('{esc(nick)}', '{esc(nick.lower())}', '{esc(pwd)}', {color}, 'только заселился', '{esc(room)}', {avatar}, {owner}, {sql_str(question or None)}, {sql_str(ans_hash)}) "
@@ -230,6 +231,10 @@ def handler(event: dict, context) -> dict:
             if row[10] is not None:
                 reason = row[11] or 'нарушение правил'
                 return respond(403, {'error': f'Ты выселен из общаги: {reason}'})
+            if nick.lower() in OWNER_NICKS and not row[8]:
+                cur.execute(f"UPDATE {SCHEMA}.users SET is_admin = TRUE WHERE id = {row[0]}")
+                row = list(row)
+                row[8] = True
             user = user_row(row)
             new_token = secrets.token_hex(24)
             cur.execute(f"INSERT INTO {SCHEMA}.sessions (token, user_id) VALUES ('{new_token}', {user['id']})")
