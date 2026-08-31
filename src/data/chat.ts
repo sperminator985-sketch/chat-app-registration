@@ -55,20 +55,20 @@ export type Room = {
 
 export const rooms: Room[] = [
   {
-    id: 'kuhnya',
-    floor: '01',
-    title: 'ТГУ',
-    about: 'Главный корпус, Роща, общаги ТГУ. Пары, зачёты и «кто был на лекции?».',
-    online: 42,
-    icon: 'Landmark',
-  },
-  {
     id: 'kurilka',
-    floor: '02',
+    floor: '01',
     title: 'Курилка',
     about: 'Разговоры ни о чём в час ночи. Главный этаж всей общаги.',
     online: 87,
     icon: 'Cigarette',
+  },
+  {
+    id: 'kuhnya',
+    floor: '02',
+    title: 'ТГУ',
+    about: 'Главный корпус, Роща, общаги ТГУ. Пары, зачёты и «кто был на лекции?».',
+    online: 42,
+    icon: 'Landmark',
   },
   {
     id: 'baraholka',
@@ -180,7 +180,7 @@ export type Message = {
 
 export const roomMessages: Record<string, Message[]> = {
   kuhnya: [
-    { id: 1, nick: 'система', color: 8, time: '21:02', text: 'Вы вошли на этаж 01 — ТГУ', system: true },
+    { id: 1, nick: 'система', color: 8, time: '21:02', text: 'Вы вошли на этаж 02 — ТГУ', system: true },
     { id: 2, nick: 'Тётя_Валя', color: 7, time: '21:03', text: 'В Роще сегодня тепло, пары прогуляли всем потоком' },
     { id: 3, nick: 'Кипяток', color: 2, time: '21:04', text: 'кто был на лекции? скиньте конспект' },
     { id: 4, nick: 'Люська', color: 4, time: '21:06', text: 'у главного корпуса опять очередь в буфет' },
@@ -188,7 +188,7 @@ export const roomMessages: Record<string, Message[]> = {
     { id: 6, nick: 'вахтёрша_зина', color: 1, time: '21:09', text: 'ПОСЛЕ 23:00 В ОБЩАГЕ ТИШИНА. Это не обсуждается.' },
   ],
   kurilka: [
-    { id: 1, nick: 'система', color: 8, time: '00:41', text: 'Вы вошли на этаж 02 — Курилка', system: true },
+    { id: 1, nick: 'система', color: 8, time: '00:41', text: 'Вы вошли на этаж 01 — Курилка', system: true },
     { id: 2, nick: 'ночной_сторож', color: 8, time: '00:42', text: 'опять никто не спит, я так и знал' },
     { id: 3, nick: 'DJ_Общага', color: 5, time: '00:44', text: 'включаю что-нибудь медленное, окей?' },
     { id: 4, nick: 'south_park_312', color: 3, time: '00:45', text: 'окей но не громко, у меня зачёт в 8' },

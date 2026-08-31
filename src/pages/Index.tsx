@@ -21,7 +21,7 @@ import ProfileDialog from '@/components/ProfileDialog';
 import { rooms, canEnterRoom, roomUni } from '@/data/chat';
 
 const PageBody = () => {
-  const [activeRoom, setActiveRoom] = useState(rooms[1].id);
+  const [activeRoom, setActiveRoom] = useState(rooms[0].id);
   const [profileOpen, setProfileOpen] = useState(false);
   const topRef = useRef<HTMLDivElement>(null);
   const { user, openAuth } = useAuth();

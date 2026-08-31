@@ -30,7 +30,7 @@ const AuthDialog = () => {
   const [pass2, setPass2] = useState('');
   const [color, setColor] = useState<NickColor>(1);
   const [avatar, setAvatar] = useState<AvatarId>(1);
-  const [room, setRoom] = useState(rooms[1].id);
+  const [room, setRoom] = useState(rooms[0].id);
   const [agree, setAgree] = useState(false);
   const [showPass, setShowPass] = useState(false);
   const [showPass2, setShowPass2] = useState(false);
@@ -397,7 +397,7 @@ const AuthDialog = () => {
                     setUni(next);
                     const target = Object.keys(roomUni).find((id) => roomUni[id] === next);
                     if (target) setRoom(target);
-                    else if (!canEnterRoom(room, next)) setRoom(rooms[1].id);
+                    else if (!canEnterRoom(room, next)) setRoom(rooms[0].id);
                   }}
                   className={field}
                 >
