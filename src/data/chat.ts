@@ -63,12 +63,12 @@ export const rooms: Room[] = [
     icon: 'Cigarette',
   },
   {
-    id: 'kuhnya',
+    id: 'znakomstva',
     floor: '02',
-    title: 'ТГУ',
-    about: 'Главный корпус, Роща, общаги ТГУ. Пары, зачёты и «кто был на лекции?».',
-    online: 42,
-    icon: 'Landmark',
+    title: 'Знакомства',
+    about: 'Анкеты жильцов: кто ты, сколько лет, кого ищешь. Серьёзно и по-доброму.',
+    online: 108,
+    icon: 'Users',
   },
   {
     id: 'baraholka',
@@ -95,12 +95,12 @@ export const rooms: Room[] = [
     icon: 'Cpu',
   },
   {
-    id: 'znakomstva',
+    id: 'kuhnya',
     floor: '06',
-    title: 'Знакомства',
-    about: 'Анкеты жильцов: кто ты, сколько лет, кого ищешь. Серьёзно и по-доброму.',
-    online: 108,
-    icon: 'Users',
+    title: 'ТГУ',
+    about: 'Главный корпус, Роща, общаги ТГУ. Пары, зачёты и «кто был на лекции?».',
+    online: 42,
+    icon: 'Landmark',
   },
   {
     id: 'flirt',
@@ -180,7 +180,7 @@ export type Message = {
 
 export const roomMessages: Record<string, Message[]> = {
   kuhnya: [
-    { id: 1, nick: 'система', color: 8, time: '21:02', text: 'Вы вошли на этаж 02 — ТГУ', system: true },
+    { id: 1, nick: 'система', color: 8, time: '21:02', text: 'Вы вошли на этаж 06 — ТГУ', system: true },
     { id: 2, nick: 'Тётя_Валя', color: 7, time: '21:03', text: 'В Роще сегодня тепло, пары прогуляли всем потоком' },
     { id: 3, nick: 'Кипяток', color: 2, time: '21:04', text: 'кто был на лекции? скиньте конспект' },
     { id: 4, nick: 'Люська', color: 4, time: '21:06', text: 'у главного корпуса опять очередь в буфет' },
@@ -213,7 +213,7 @@ export const roomMessages: Record<string, Message[]> = {
     { id: 4, nick: 'Кипяток', color: 2, time: '19:09', text: 'зато не уснёшь на паре' },
   ],
   znakomstva: [
-    { id: 1, nick: 'система', color: 8, time: '20:05', text: 'Вы вошли на этаж 06 — Знакомства', system: true },
+    { id: 1, nick: 'система', color: 8, time: '20:05', text: 'Вы вошли на этаж 02 — Знакомства', system: true },
     { id: 2, nick: 'первокур', color: 6, time: '20:06', text: '19, ТУСУР, ищу с кем ходить на каток. я плохо катаюсь, предупреждаю' },
     { id: 3, nick: 'Люська', color: 4, time: '20:08', text: '23, люблю долгие разговоры в Роще до утра. пиши в личку, если тоже' },
     { id: 4, nick: 'Кипяток', color: 2, time: '20:11', text: 'а анкету обязательно писать или можно просто поздороваться' },
