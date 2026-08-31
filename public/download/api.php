@@ -215,25 +215,6 @@ try {
             [ONLINE_SEC]
         )->fetchAll());
 
-        $recent = array_map(static function (array $r): array {
-            return [
-                'nick' => $r['nick'],
-                'color' => (int) $r['color'],
-                'status' => $r['status'],
-                'avatar' => (int) $r['avatar'],
-                'avatarUrl' => $r['avatar_url'],
-                'seenAgo' => $r['ago'] === null ? null : (int) $r['ago'],
-            ];
-        }, q(
-            'SELECT nick, color, status, avatar, avatar_url,
-                    TIMESTAMPDIFF(SECOND, last_seen, UTC_TIMESTAMP()) AS ago
-             FROM users
-             WHERE banned_at IS NULL
-               AND last_seen <= UTC_TIMESTAMP() - INTERVAL ? SECOND
-             ORDER BY last_seen DESC LIMIT 30',
-            [ONLINE_SEC]
-        )->fetchAll());
-
         $typing = [];
         try {
             if (hasTypingColumns()) {
@@ -262,7 +243,6 @@ try {
             'messages' => $messages,
             'online' => $online,
             'typing' => $typing,
-            'recent' => $recent,
             'roomCounts' => (object) $counts,
             'totalUsers' => (int) scalar('SELECT COUNT(*) FROM users'),
             'dayMessages' => (int) scalar(
