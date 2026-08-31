@@ -22,6 +22,7 @@ $sql[] = "CREATE TABLE IF NOT EXISTS users (
     avatar TINYINT NOT NULL DEFAULT 1,
     avatar_url VARCHAR(255) NULL,
     is_admin TINYINT(1) NOT NULL DEFAULT 0,
+    uni VARCHAR(16) NULL,
     banned_at DATETIME NULL,
     ban_reason VARCHAR(200) NULL,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,

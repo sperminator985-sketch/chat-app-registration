@@ -46,6 +46,7 @@ const ROOMS = ['kuhnya', 'kurilka', 'baraholka', 'ucheba', 'tomsk', 'znakomstva'
 const ONLINE_SEC = 45;
 const OWNER_NICK = 'админ';
 const OWNER_NICKS = ['админ', 'комендант'];
+const UNI_LIST = ['ТГУ', 'ТУСУР', 'СибГМУ', 'ТПУ', 'ТГАСУ', 'ТГПУ'];
 
 function isOwnerNick(string $lower): bool
 {
@@ -107,6 +108,7 @@ function shapeUser(array $r): array
         'avatar' => (int) $r['avatar'],
         'avatarUrl' => $r['avatar_url'],
         'isAdmin' => (bool) ($r['is_admin'] ?? false),
+        'uni' => $r['uni'] ?? null,
     ];
 }
 
@@ -164,6 +166,32 @@ function hasTypingColumns(): bool
             }
         }
         $ok = $found >= 2;
+    } catch (Throwable $e) {
+        $ok = false;
+    }
+    return $ok;
+}
+
+function hasUniColumn(): bool
+{
+    static $ok = null;
+    if ($ok !== null) {
+        return $ok;
+    }
+    try {
+        $found = (int) scalar(
+            "SELECT COUNT(*) FROM information_schema.COLUMNS
+             WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users' AND COLUMN_NAME = 'uni'"
+        );
+        if ($found < 1) {
+            try {
+                db()->exec("ALTER TABLE users ADD COLUMN uni VARCHAR(16) NULL");
+                $found = 1;
+            } catch (Throwable $e) {
+                // нет прав на ALTER
+            }
+        }
+        $ok = $found >= 1;
     } catch (Throwable $e) {
         $ok = false;
     }
@@ -327,12 +355,26 @@ try {
             ? password_hash(mb_strtolower($answer), PASSWORD_DEFAULT)
             : null;
 
-        q(
-            'INSERT INTO users (nick, nick_lower, password_hash, color, status, room, avatar, is_admin, secret_question, secret_answer_hash, created_at, last_seen)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, UTC_TIMESTAMP(), UTC_TIMESTAMP())',
-            [$nick, $lower, password_hash($password, PASSWORD_DEFAULT), $color, 'только заселился', $room, $avatar,
-             isOwnerNick($lower) ? 1 : 0, $question !== '' ? $question : null, $ansHash]
-        );
+        $uni = trim((string) param('uni', ''));
+        if (!in_array($uni, UNI_LIST, true)) {
+            $uni = null;
+        }
+
+        if (hasUniColumn()) {
+            q(
+                'INSERT INTO users (nick, nick_lower, password_hash, color, status, room, avatar, is_admin, secret_question, secret_answer_hash, uni, created_at, last_seen)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, UTC_TIMESTAMP(), UTC_TIMESTAMP())',
+                [$nick, $lower, password_hash($password, PASSWORD_DEFAULT), $color, 'только заселился', $room, $avatar,
+                 isOwnerNick($lower) ? 1 : 0, $question !== '' ? $question : null, $ansHash, $uni]
+            );
+        } else {
+            q(
+                'INSERT INTO users (nick, nick_lower, password_hash, color, status, room, avatar, is_admin, secret_question, secret_answer_hash, created_at, last_seen)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, UTC_TIMESTAMP(), UTC_TIMESTAMP())',
+                [$nick, $lower, password_hash($password, PASSWORD_DEFAULT), $color, 'только заселился', $room, $avatar,
+                 isOwnerNick($lower) ? 1 : 0, $question !== '' ? $question : null, $ansHash]
+            );
+        }
         $user = shapeUser(one('SELECT * FROM users WHERE id = ?', [(int) db()->lastInsertId()]));
 
         $new = bin2hex(random_bytes(24));

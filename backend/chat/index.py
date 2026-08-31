@@ -35,6 +35,7 @@ ROOMS = ['kuhnya', 'kurilka', 'baraholka', 'ucheba', 'tomsk', 'znakomstva', 'fli
 NICK_RE = re.compile(r'^[a-zA-Zа-яА-ЯёЁ0-9_]{3,18}$')
 OWNER_NICK = 'админ'
 OWNER_NICKS = ('админ', 'комендант')
+UNI_LIST = ('ТГУ', 'ТУСУР', 'СибГМУ', 'ТПУ', 'ТГАСУ', 'ТГПУ')
 
 CORS = {
     'Access-Control-Allow-Origin': '*',
@@ -70,6 +71,7 @@ def user_row(row) -> dict:
         'room': row[4], 'since': tomsk(row[5]).strftime('%d.%m.%Y'), 'avatar': row[6],
         'avatarUrl': row[7] if len(row) > 7 else None,
         'isAdmin': bool(row[8]) if len(row) > 8 else False,
+        'uni': row[9] if len(row) > 9 else None,
     }
 
 
@@ -81,15 +83,15 @@ def get_user_by_token(cur, token: str):
     if not token:
         return None
     cur.execute(
-        f"SELECT u.id, u.nick, u.color, u.status, u.room, u.created_at, u.avatar, u.avatar_url, u.is_admin, "
+        f"SELECT u.id, u.nick, u.color, u.status, u.room, u.created_at, u.avatar, u.avatar_url, u.is_admin, u.uni, "
         f"u.banned_at, u.ban_reason FROM {SCHEMA}.sessions s "
         f"JOIN {SCHEMA}.users u ON u.id = s.user_id WHERE s.token = '{esc(token)}'"
     )
     row = cur.fetchone()
     if not row:
         return None
-    if row[9] is not None:
-        return {'banned': True, 'reason': row[10] or 'нарушение правил'}
+    if row[10] is not None:
+        return {'banned': True, 'reason': row[11] or 'нарушение правил'}
     return user_row(row)
 
 
@@ -208,10 +210,12 @@ def handler(event: dict, context) -> dict:
             pwd = hash_password(password, secrets.token_hex(8))
             ans_hash = hash_password(answer.lower(), secrets.token_hex(8)) if question and answer else None
             owner = 'TRUE' if nick.lower() in OWNER_NICKS else 'FALSE'
+            uni = (body.get('uni') or '').strip()
+            uni = uni if uni in UNI_LIST else None
             cur.execute(
-                f"INSERT INTO {SCHEMA}.users (nick, nick_lower, password_hash, color, status, room, avatar, is_admin, secret_question, secret_answer_hash) "
-                f"VALUES ('{esc(nick)}', '{esc(nick.lower())}', '{esc(pwd)}', {color}, 'только заселился', '{esc(room)}', {avatar}, {owner}, {sql_str(question or None)}, {sql_str(ans_hash)}) "
-                f"RETURNING id, nick, color, status, room, created_at, avatar, avatar_url, is_admin"
+                f"INSERT INTO {SCHEMA}.users (nick, nick_lower, password_hash, color, status, room, avatar, is_admin, secret_question, secret_answer_hash, uni) "
+                f"VALUES ('{esc(nick)}', '{esc(nick.lower())}', '{esc(pwd)}', {color}, 'только заселился', '{esc(room)}', {avatar}, {owner}, {sql_str(question or None)}, {sql_str(ans_hash)}, {sql_str(uni)}) "
+                f"RETURNING id, nick, color, status, room, created_at, avatar, avatar_url, is_admin, uni"
             )
             user = user_row(cur.fetchone())
             new_token = secrets.token_hex(24)
@@ -222,14 +226,14 @@ def handler(event: dict, context) -> dict:
             nick = (body.get('nick') or '').strip()
             password = body.get('password') or ''
             cur.execute(
-                f"SELECT id, nick, color, status, room, created_at, avatar, avatar_url, is_admin, password_hash, banned_at, ban_reason FROM {SCHEMA}.users "
+                f"SELECT id, nick, color, status, room, created_at, avatar, avatar_url, is_admin, uni, password_hash, banned_at, ban_reason FROM {SCHEMA}.users "
                 f"WHERE nick_lower = '{esc(nick.lower())}'"
             )
             row = cur.fetchone()
-            if not row or not check_password(password, row[9]):
+            if not row or not check_password(password, row[10]):
                 return respond(401, {'error': 'Ник или пароль не подходят'})
-            if row[10] is not None:
-                reason = row[11] or 'нарушение правил'
+            if row[11] is not None:
+                reason = row[12] or 'нарушение правил'
                 return respond(403, {'error': f'Ты выселен из общаги: {reason}'})
             if nick.lower() in OWNER_NICKS and not row[8]:
                 cur.execute(f"UPDATE {SCHEMA}.users SET is_admin = TRUE WHERE id = {row[0]}")
@@ -356,7 +360,7 @@ def handler(event: dict, context) -> dict:
             cur.execute(
                 f"UPDATE {SCHEMA}.users SET status = '{esc(status)}', color = {color}, avatar = {avatar}, "
                 f"avatar_url = {sql_str(avatar_url)}, last_seen = NOW() "
-                f"WHERE id = {user['id']} RETURNING id, nick, color, status, room, created_at, avatar, avatar_url, is_admin"
+                f"WHERE id = {user['id']} RETURNING id, nick, color, status, room, created_at, avatar, avatar_url, is_admin, uni"
             )
             return respond(200, {'user': user_row(cur.fetchone())})
 

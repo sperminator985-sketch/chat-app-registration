@@ -19,6 +19,8 @@ const SECRET_QUESTIONS = [
   'Имя лучшего друга детства?',
 ];
 
+const UNI_LIST = ['ТГУ', 'ТУСУР', 'СибГМУ', 'ТПУ', 'ТГАСУ', 'ТГПУ'];
+
 const AuthDialog = () => {
   const { authOpen, authTab, closeAuth, openAuth, register, login } = useAuth();
   const [busy, setBusy] = useState(false);
@@ -32,6 +34,7 @@ const AuthDialog = () => {
   const [agree, setAgree] = useState(false);
   const [showPass, setShowPass] = useState(false);
   const [showPass2, setShowPass2] = useState(false);
+  const [uni, setUni] = useState('');
   const [question, setQuestion] = useState(SECRET_QUESTIONS[0]);
   const [answer, setAnswer] = useState('');
 
@@ -78,6 +81,7 @@ const AuthDialog = () => {
           avatar,
           question,
           answer: answer.trim(),
+          uni: uni || undefined,
         });
       } else {
         await login({ nick: nick.trim(), password: pass });
@@ -375,6 +379,22 @@ const AuthDialog = () => {
                   {rooms.map((r) => (
                     <option key={r.id} value={r.id} className="bg-card">
                       {r.floor} — {r.title}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="mb-1.5 block text-[0.78rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground sm:mb-1 sm:text-[0.7rem]">
+                  Какой вуз?
+                </label>
+                <select value={uni} onChange={(e) => setUni(e.target.value)} className={field}>
+                  <option value="" className="bg-card">
+                    Не указывать
+                  </option>
+                  {UNI_LIST.map((u) => (
+                    <option key={u} value={u} className="bg-card">
+                      {u}
                     </option>
                   ))}
                 </select>
