@@ -10,12 +10,20 @@ const Footer = () => (
         Все права защищены.
       </span>
 
-      <Link
-        to="/privacy"
-        className="shrink-0 text-center underline underline-offset-4 transition-colors hover:text-secondary"
-      >
-        Политика конфиденциальности
-      </Link>
+      <div className="flex shrink-0 flex-col items-center gap-1 text-center">
+        <Link
+          to="/privacy"
+          className="underline underline-offset-4 transition-colors hover:text-secondary"
+        >
+          Политика конфиденциальности
+        </Link>
+        <Link
+          to="/terms"
+          className="underline underline-offset-4 transition-colors hover:text-secondary"
+        >
+          Пользовательское соглашение
+        </Link>
+      </div>
 
       <Stats />
     </div>
