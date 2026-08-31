@@ -41,7 +41,7 @@ export const useLiveStats = () => {
     listeners.add(setData);
     if (cache) setData(cache);
     load();
-    if (timer === null) timer = window.setInterval(load, 15000);
+    if (timer === null) timer = window.setInterval(load, 5000);
     const onVisibility = () => {
       if (isPageVisible()) load();
     };
