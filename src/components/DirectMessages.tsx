@@ -42,7 +42,7 @@ const DirectMessages = () => {
     setMessages([]);
   }, [nick]);
 
-  usePolling(load, 15000, Boolean(nick));
+  usePolling(load, 5000, Boolean(nick));
 
   useEffect(() => {
     const el = feedRef.current;

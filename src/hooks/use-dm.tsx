@@ -95,7 +95,7 @@ export const DmProvider = ({ children }: { children: ReactNode }) => {
       .catch(() => undefined);
   }, [user]);
 
-  usePolling(refresh, 15000, Boolean(user));
+  usePolling(refresh, 5000, Boolean(user));
 
   const openDm = useCallback(
     (nick: string) => {
