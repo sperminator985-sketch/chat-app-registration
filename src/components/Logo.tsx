@@ -31,7 +31,6 @@ const Logo = ({ className, size = 'md' }: LogoProps) => {
             />
           ))}
         </span>
-        <span className="mt-[2px] h-[22%] w-[38%] bg-primary" />
       </span>
 
       <span className="flex min-w-0 items-center gap-x-1.5 font-display font-extrabold uppercase tracking-[-0.035em]">
