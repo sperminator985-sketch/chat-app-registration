@@ -8,14 +8,15 @@ const Footer = () => (
         © 2026 Siberia Art Ltd.
         <br />
         Все права защищены.
-        <br />
-        <Link
-          to="/privacy"
-          className="underline underline-offset-4 transition-colors hover:text-secondary"
-        >
-          Политика конфиденциальности
-        </Link>
       </span>
+
+      <Link
+        to="/privacy"
+        className="shrink-0 text-center underline underline-offset-4 transition-colors hover:text-secondary"
+      >
+        Политика конфиденциальности
+      </Link>
+
       <Stats />
     </div>
   </footer>
