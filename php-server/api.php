@@ -209,7 +209,7 @@ try {
             ];
         }, q(
             'SELECT nick, color, status, avatar, avatar_url FROM users
-             WHERE last_seen > UTC_TIMESTAMP() - INTERVAL ? SECOND
+             WHERE last_seen > UTC_TIMESTAMP() - INTERVAL ? SECOND AND is_admin = 0
              ORDER BY last_seen DESC LIMIT 40',
             [ONLINE_SEC]
         )->fetchAll());
@@ -228,6 +228,7 @@ try {
                     TIMESTAMPDIFF(SECOND, last_seen, UTC_TIMESTAMP()) AS ago
              FROM users
              WHERE banned_at IS NULL
+               AND is_admin = 0
                AND last_seen <= UTC_TIMESTAMP() - INTERVAL ? SECOND
              ORDER BY last_seen DESC LIMIT 30',
             [ONLINE_SEC]
@@ -251,7 +252,7 @@ try {
         $counts = [];
         foreach (q(
             'SELECT room, COUNT(*) AS c FROM users
-             WHERE last_seen > UTC_TIMESTAMP() - INTERVAL ? SECOND GROUP BY room',
+             WHERE last_seen > UTC_TIMESTAMP() - INTERVAL ? SECOND AND is_admin = 0 GROUP BY room',
             [ONLINE_SEC]
         )->fetchAll() as $r) {
             $counts[$r['room']] = (int) $r['c'];
