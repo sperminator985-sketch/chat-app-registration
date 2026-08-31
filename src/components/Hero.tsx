@@ -16,7 +16,7 @@ const Hero = () => {
         </p>
 
         <div className="relative z-10 flex animate-rise flex-col items-center gap-6 md:flex-row md:items-start md:justify-between md:gap-7">
-          <h1 className="mt-0 hidden min-w-0 md:mt-[3cm] flex-nowrap items-center justify-center gap-x-2 font-extrabold uppercase tracking-[-0.035em] md:flex md:justify-start md:gap-x-4">
+          <h1 className="mt-0 hidden min-w-0 md:mt-[2cm] flex-nowrap items-center justify-center gap-x-2 font-extrabold uppercase tracking-[-0.035em] md:flex md:justify-start md:gap-x-4">
             <span className="flex shrink-0 flex-col items-center justify-end border-[3px] border-foreground bg-window-off p-[5px] h-[clamp(1.9rem,8.4vw,3.2rem)] w-[clamp(1.9rem,8.4vw,3.2rem)] md:h-[clamp(2rem,6.7vw,6.3rem)] md:w-[clamp(2rem,6.7vw,6.3rem)]">
               <span className="grid w-full flex-1 grid-cols-3 gap-[3px]">
                 {windows.map((on, i) => (
