@@ -11,7 +11,7 @@ const sizes = {
   lg: { box: 'h-16 w-16', chat: 'text-[2.1rem]', plate: 'text-[1.85rem]' },
 };
 
-const windows = [1, 0, 1, 1, 1, 0, 0, 1, 1];
+const windows = [1, 0, 1, 1, 1, 0, 1, 0, 1];
 
 const Logo = ({ className, size = 'md' }: LogoProps) => {
   const s = sizes[size];
@@ -23,7 +23,6 @@ const Logo = ({ className, size = 'md' }: LogoProps) => {
           s.box,
         )}
       >
-        <span className="absolute -top-[2px] left-1/2 h-[3px] w-[55%] -translate-x-1/2 bg-primary" />
         <span className="grid w-full flex-1 grid-cols-3 gap-[2px]">
           {windows.map((on, i) => (
             <span
