@@ -425,6 +425,19 @@ const AuthDialog = () => {
                   Правила общаги прочитал. Обещаю соблюдать их как воинский устав.
                 </span>
               </label>
+
+              <p className="text-center text-[0.8rem] leading-[1.4] text-muted-foreground">
+                Регистрируясь, ты соглашаешься с{' '}
+                <a
+                  href="/privacy"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="underline underline-offset-4 transition-colors hover:text-secondary"
+                >
+                  политикой конфиденциальности
+                </a>{' '}
+                Siberia Art Ltd.
+              </p>
             </>
           )}
 
