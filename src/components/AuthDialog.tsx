@@ -247,7 +247,7 @@ const AuthDialog = () => {
               type="button"
               disabled={busy}
               onClick={recQuestion ? resetPassword : askQuestion}
-              className="btn-brut w-full disabled:cursor-not-allowed disabled:opacity-50"
+              className="btn-brut w-full disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50"
             >
               {busy ? 'Секунду…' : recQuestion ? 'Сменить пароль' : 'Показать вопрос'}
             </button>
@@ -445,7 +445,7 @@ const AuthDialog = () => {
             type="submit"
             disabled={busy || (isRegister && !agree)}
             title={isRegister && !agree ? 'Сначала прими правила общаги' : undefined}
-            className="btn-brut w-full disabled:cursor-not-allowed disabled:opacity-50"
+            className="btn-brut w-full disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50"
           >
             {busy ? 'Секунду…' : isRegister ? 'Занять комнату' : 'Войти'}
           </button>
