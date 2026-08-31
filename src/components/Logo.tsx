@@ -11,7 +11,7 @@ const sizes = {
   lg: { box: 'h-16 w-16', chat: 'text-[2.1rem]', plate: 'text-[1.85rem]' },
 };
 
-const windows = [1, 0, 1, 1, 1, 0, 1, 0, 1];
+const windows = [1, 0, 1, 1, 1, 1, 0, 0, 1];
 
 const Logo = ({ className, size = 'md' }: LogoProps) => {
   const s = sizes[size];
