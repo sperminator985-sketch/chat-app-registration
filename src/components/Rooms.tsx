@@ -1,5 +1,6 @@
 import Icon from '@/components/ui/icon';
-import { rooms } from '@/data/chat';
+import { rooms, canEnterRoom } from '@/data/chat';
+import { useAuth } from '@/hooks/use-auth';
 import { cn } from '@/lib/utils';
 import { useLiveStats } from '@/hooks/use-live-stats';
 
@@ -10,6 +11,7 @@ type RoomsProps = {
 
 const Rooms = ({ activeRoom, onPick }: RoomsProps) => {
   const live = useLiveStats();
+  const { user } = useAuth();
 
   const hottest = (() => {
     if (!live) return null;
@@ -39,6 +41,7 @@ const Rooms = ({ activeRoom, onPick }: RoomsProps) => {
         const active = room.id === activeRoom;
         const count = live ? (live.roomCounts[room.id] ?? 0) : null;
         const hot = room.id === hottest;
+        const locked = Boolean(user) && !canEnterRoom(room.id, user?.uni, user?.isAdmin);
         return (
           <button
             key={room.id}
@@ -46,6 +49,7 @@ const Rooms = ({ activeRoom, onPick }: RoomsProps) => {
             style={{ animationDelay: `${i * 60}ms` }}
             className={cn(
               'group animate-fade-in relative flex h-full flex-col items-start gap-3 p-6 text-left transition-colors duration-200',
+              locked && 'opacity-55',
               active
                 ? 'bg-secondary text-secondary-foreground'
                 : hot
@@ -53,7 +57,13 @@ const Rooms = ({ activeRoom, onPick }: RoomsProps) => {
                   : 'bg-card text-card-foreground hover:bg-muted',
             )}
           >
-            {hot && !active && (
+            {locked && (
+              <span className="absolute right-0 top-0 flex items-center gap-1 bg-foreground/70 px-2 py-1 font-mono text-[0.66rem] font-bold uppercase tracking-[0.1em] text-background">
+                <Icon name="Lock" size={11} />
+                Другой вуз
+              </span>
+            )}
+            {hot && !active && !locked && (
               <span className="absolute right-0 top-0 flex items-center gap-1 bg-primary px-2 py-1 font-mono text-[0.66rem] font-bold uppercase tracking-[0.1em] text-primary-foreground">
                 <Icon name="Flame" size={11} />
                 Тут жизнь

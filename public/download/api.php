@@ -47,6 +47,25 @@ const ONLINE_SEC = 45;
 const OWNER_NICK = 'админ';
 const OWNER_NICKS = ['админ', 'комендант'];
 const UNI_LIST = ['ТГУ', 'ТУСУР', 'СибГМУ', 'ТПУ', 'ТГАСУ', 'ТГПУ'];
+const ROOM_UNI = [
+    'kuhnya' => 'ТГУ',
+    'ucheba' => 'ТУСУР',
+    'tomsk' => 'ТПУ',
+    'flirt' => 'СибГМУ',
+    'sex' => 'ТГАСУ',
+    'noch' => 'ТГПУ',
+];
+
+function canEnterRoom(string $room, array $user): bool
+{
+    if (!empty($user['isAdmin'])) {
+        return true;
+    }
+    if (!isset(ROOM_UNI[$room])) {
+        return true;
+    }
+    return ($user['uni'] ?? null) === ROOM_UNI[$room];
+}
 
 function isOwnerNick(string $lower): bool
 {
@@ -470,6 +489,9 @@ try {
         }
         if (!in_array($room, ROOMS, true)) {
             fail(400, 'Неизвестная комната');
+        }
+        if (!canEnterRoom($room, $user)) {
+            fail(403, 'Этот этаж только для студентов своего вуза');
         }
         q(
             'INSERT INTO messages (room, user_id, nick, color, text, avatar, avatar_url, created_at)

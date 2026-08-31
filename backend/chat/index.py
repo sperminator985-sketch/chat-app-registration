@@ -36,6 +36,17 @@ NICK_RE = re.compile(r'^[a-zA-Zа-яА-ЯёЁ0-9_]{3,18}$')
 OWNER_NICK = 'админ'
 OWNER_NICKS = ('админ', 'комендант')
 UNI_LIST = ('ТГУ', 'ТУСУР', 'СибГМУ', 'ТПУ', 'ТГАСУ', 'ТГПУ')
+ROOM_UNI = {'kuhnya': 'ТГУ', 'ucheba': 'ТУСУР', 'tomsk': 'ТПУ',
+            'flirt': 'СибГМУ', 'sex': 'ТГАСУ', 'noch': 'ТГПУ'}
+
+
+def can_enter(room: str, user: dict) -> bool:
+    if user.get('isAdmin'):
+        return True
+    if room not in ROOM_UNI:
+        return True
+    return user.get('uni') == ROOM_UNI[room]
+
 
 CORS = {
     'Access-Control-Allow-Origin': '*',
@@ -288,6 +299,8 @@ def handler(event: dict, context) -> dict:
                 return respond(400, {'error': 'Пустое сообщение'})
             if room not in ROOMS:
                 return respond(400, {'error': 'Неизвестная комната'})
+            if not can_enter(room, user):
+                return respond(403, {'error': 'Этот этаж только для студентов своего вуза'})
             cur.execute(
                 f"INSERT INTO {SCHEMA}.messages (room, user_id, nick, color, text, avatar, avatar_url) "
                 f"VALUES ('{esc(room)}', {user['id']}, '{esc(user['nick'])}', {user['color']}, '{esc(text)}', "

@@ -1,5 +1,6 @@
 import { useLayoutEffect, useRef, useState } from 'react';
 import { AuthProvider, useAuth } from '@/hooks/use-auth';
+import { toast } from '@/hooks/use-toast';
 import { DmProvider } from '@/hooks/use-dm';
 import { CallProvider } from '@/hooks/use-call';
 import CallWindow from '@/components/CallWindow';
@@ -17,7 +18,7 @@ import WelcomeDialog from '@/components/WelcomeDialog';
 import DialogsList from '@/components/DialogsList';
 import DirectMessages from '@/components/DirectMessages';
 import ProfileDialog from '@/components/ProfileDialog';
-import { rooms } from '@/data/chat';
+import { rooms, canEnterRoom, roomUni } from '@/data/chat';
 
 const PageBody = () => {
   const [activeRoom, setActiveRoom] = useState(rooms[1].id);
@@ -44,11 +45,20 @@ const PageBody = () => {
   }, []);
 
   const pickRoom = (id: string) => {
-    setActiveRoom(id);
     if (!user) {
+      setActiveRoom(id);
       openAuth('register');
       return;
     }
+    if (!canEnterRoom(id, user.uni, user.isAdmin)) {
+      toast({
+        title: 'Этаж закрыт',
+        description: `Сюда пускают только студентов ${roomUni[id]}`,
+        variant: 'destructive',
+      });
+      return;
+    }
+    setActiveRoom(id);
     setTimeout(
       () => document.querySelector('#chat')?.scrollIntoView({ behavior: 'smooth', block: 'start' }),
       50,
@@ -63,7 +73,7 @@ const PageBody = () => {
       </div>
       <main>
         {user ? (
-          <ChatWindow activeRoom={activeRoom} onPick={setActiveRoom} />
+          <ChatWindow activeRoom={activeRoom} onPick={pickRoom} />
         ) : (
           <>
             <div className="flex min-h-[calc(100svh-var(--top-offset,4.5rem))] flex-col md:min-h-[calc(100vh-var(--top-offset,4.5rem))]">

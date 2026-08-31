@@ -5,7 +5,7 @@ import { usePolling } from '@/hooks/use-polling';
 import { useAuth } from '@/hooks/use-auth';
 import { getToken, api, ApiMessage } from '@/lib/api';
 import { toast } from '@/hooks/use-toast';
-import { nickColorClass, rooms } from '@/data/chat';
+import { nickColorClass, rooms, canEnterRoom } from '@/data/chat';
 import { useDm } from '@/hooks/use-dm';
 import { useCall } from '@/hooks/use-call';
 import EmojiPicker from '@/components/EmojiPicker';
@@ -169,21 +169,26 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
                 </span>
               </div>
               <div className="order-last flex w-full items-center justify-center gap-1.5 md:pointer-events-none md:absolute md:inset-x-0 md:order-none md:w-full md:gap-2">
-                {rooms.map((r) => (
-                  <button
-                    key={r.id}
-                    onClick={() => onPick(r.id)}
-                    title={r.title}
-                    className={cn(
-                      'pointer-events-auto h-7 w-7 shrink-0 border-2 font-mono text-[0.7rem] font-semibold transition-colors',
-                      r.id === room.id
-                        ? 'border-secondary bg-secondary text-secondary-foreground'
-                        : 'border-foreground/35 text-muted-foreground hover:border-secondary hover:text-foreground',
-                    )}
-                  >
-                    {r.floor}
-                  </button>
-                ))}
+                {rooms.map((r) => {
+                  const locked = !canEnterRoom(r.id, user?.uni, user?.isAdmin);
+                  return (
+                    <button
+                      key={r.id}
+                      onClick={() => onPick(r.id)}
+                      title={locked ? `${r.title} — только для своих` : r.title}
+                      className={cn(
+                        'pointer-events-auto h-7 w-7 shrink-0 border-2 font-mono text-[0.7rem] font-semibold transition-colors',
+                        r.id === room.id
+                          ? 'border-secondary bg-secondary text-secondary-foreground'
+                          : locked
+                            ? 'border-foreground/20 text-muted-foreground/40'
+                            : 'border-foreground/35 text-muted-foreground hover:border-secondary hover:text-foreground',
+                      )}
+                    >
+                      {r.floor}
+                    </button>
+                  );
+                })}
               </div>
               <div className="ml-auto flex shrink-0 items-center gap-1.5 md:gap-2">
                 <button

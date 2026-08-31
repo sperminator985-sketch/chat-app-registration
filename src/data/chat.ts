@@ -128,6 +128,27 @@ export const rooms: Room[] = [
   },
 ];
 
+export const roomUni: Record<string, string> = {
+  kuhnya: 'ТГУ',
+  ucheba: 'ТУСУР',
+  tomsk: 'ТПУ',
+  flirt: 'СибГМУ',
+  sex: 'ТГАСУ',
+  noch: 'ТГПУ',
+};
+
+export const openRooms = ['kurilka', 'baraholka', 'znakomstva'];
+
+export const canEnterRoom = (
+  roomId: string,
+  uni?: string | null,
+  isAdmin?: boolean,
+) => {
+  if (isAdmin) return true;
+  if (openRooms.includes(roomId)) return true;
+  return Boolean(uni) && roomUni[roomId] === uni;
+};
+
 export type OnlineUser = {
   nick: string;
   color: NickColor;
