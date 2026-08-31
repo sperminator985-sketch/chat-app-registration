@@ -134,6 +134,7 @@ def handler(event: dict, context) -> dict:
             cur.execute(
                 f"SELECT nick, color, status, avatar, avatar_url, is_admin FROM {SCHEMA}.users "
                 f"WHERE last_seen > NOW() - INTERVAL '2 minutes' AND room = '{esc(room)}' "
+                f"AND is_admin IS NOT TRUE "
                 f"ORDER BY last_seen DESC LIMIT 40"
             )
             online = [
@@ -148,11 +149,11 @@ def handler(event: dict, context) -> dict:
             typing = [{'nick': r[0], 'color': r[1]} for r in cur.fetchall()]
             cur.execute(
                 f"SELECT room, COUNT(*) FROM {SCHEMA}.users "
-                f"WHERE last_seen > NOW() - INTERVAL '2 minutes' GROUP BY room"
+                f"WHERE last_seen > NOW() - INTERVAL '2 minutes' AND is_admin IS NOT TRUE GROUP BY room"
             )
             counts = {r[0]: r[1] for r in cur.fetchall()}
             cur.execute(
-                f"SELECT COUNT(*), BOOL_OR(is_admin) FROM {SCHEMA}.users "
+                f"SELECT COUNT(*) FILTER (WHERE is_admin IS NOT TRUE), BOOL_OR(is_admin) FROM {SCHEMA}.users "
                 f"WHERE last_seen > NOW() - INTERVAL '2 minutes'"
             )
             row_all = cur.fetchone()
