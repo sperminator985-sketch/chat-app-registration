@@ -39,7 +39,7 @@ const Rules = () => (
       </div>
 
       <div className="hidden flex-col justify-end gap-4 lg:flex">
-        <Facade cols={8} rows={9} seed={5} entrance={false} />
+        <Facade cols={10} rows={9} seed={5} entrance={false} cellAspect="1/1.3" />
         <p className="text-[0.78rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
           Каждое окно — чей-то ник в сети
         </p>
