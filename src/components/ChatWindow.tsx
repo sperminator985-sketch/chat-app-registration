@@ -164,21 +164,21 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
       <div className="mx-auto flex w-full min-h-0 max-w-[1400px] flex-1 flex-col px-3 py-4 md:px-6 md:py-6">
         <div className="grid min-h-0 flex-1 gap-px overflow-hidden border-2 border-foreground/35 bg-foreground/25 lg:grid-cols-[1fr_280px]">
           <div className="flex min-h-0 flex-col bg-background">
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-2 border-b-2 border-foreground/35 px-4 py-3 md:px-5 md:py-4 lg:h-[68px]">
-              <div className="flex min-w-0 items-center gap-2 md:gap-3">
+            <div className="relative flex flex-wrap items-center gap-x-3 gap-y-2 border-b-2 border-foreground/35 px-4 py-3 md:px-5 md:py-4 lg:h-[68px]">
+              <div className="flex min-w-0 items-center gap-2 md:max-w-[34%] md:gap-3">
                 <Icon name={room.icon} size={20} className="shrink-0 text-secondary" />
                 <span className="truncate font-display text-[0.72rem] font-extrabold uppercase tracking-[-0.02em] sm:text-base md:text-lg">
                   Этаж {room.floor} · {room.title}
                 </span>
               </div>
-              <div className="order-last flex w-full items-center justify-center gap-1.5 md:order-none md:mx-auto md:w-auto md:gap-2">
+              <div className="order-last flex w-full items-center justify-center gap-1.5 md:pointer-events-none md:absolute md:inset-x-0 md:order-none md:w-full md:gap-2">
                 {rooms.map((r) => (
                   <button
                     key={r.id}
                     onClick={() => onPick(r.id)}
                     title={r.title}
                     className={cn(
-                      'h-7 w-7 border-2 font-mono text-[0.7rem] font-semibold transition-colors',
+                      'pointer-events-auto h-7 w-7 shrink-0 border-2 font-mono text-[0.7rem] font-semibold transition-colors',
                       r.id === room.id
                         ? 'border-secondary bg-secondary text-secondary-foreground'
                         : 'border-foreground/35 text-muted-foreground hover:border-secondary hover:text-foreground',
