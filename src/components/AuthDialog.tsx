@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import Icon from '@/components/ui/icon';
 import { cn } from '@/lib/utils';
@@ -428,14 +429,13 @@ const AuthDialog = () => {
 
               <p className="text-center text-[0.68rem] leading-[1.35] text-muted-foreground">
                 Регистрируясь, ты соглашаешься с{' '}
-                <a
-                  href="/privacy"
-                  target="_blank"
-                  rel="noreferrer"
+                <Link
+                  to="/privacy"
+                  onClick={closeAuth}
                   className="underline underline-offset-4 transition-colors hover:text-secondary"
                 >
                   политикой конфиденциальности
-                </a>{' '}
+                </Link>{' '}
                 Siberia Art Ltd.
               </p>
             </>
