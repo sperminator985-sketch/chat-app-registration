@@ -20,14 +20,16 @@ const load = () => {
     .feed('kurilka')
     .then((res) => {
       cache = {
-        online: res.online.length,
+        online: res.onlineTotal ?? res.online.length,
         totalUsers: res.totalUsers,
         dayMessages: res.dayMessages,
         roomCounts: res.roomCounts ?? {},
-        adminOnline: (res.online ?? []).some(
-          (u: { nick?: string; isAdmin?: boolean }) =>
-            u.isAdmin === true || (u.nick ?? '').trim().toLowerCase() === 'админ',
-        ),
+        adminOnline:
+          res.adminOnline ??
+          (res.online ?? []).some(
+            (u: { nick?: string; isAdmin?: boolean }) =>
+              u.isAdmin === true || (u.nick ?? '').trim().toLowerCase() === 'админ',
+          ),
       };
       listeners.forEach((fn) => fn(cache as LiveStats));
     })

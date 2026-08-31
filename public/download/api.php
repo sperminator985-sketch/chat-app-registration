@@ -210,9 +210,9 @@ try {
             ];
         }, q(
             'SELECT nick, color, status, avatar, avatar_url, is_admin FROM users
-             WHERE last_seen > UTC_TIMESTAMP() - INTERVAL ? SECOND
+             WHERE last_seen > UTC_TIMESTAMP() - INTERVAL ? SECOND AND room = ?
              ORDER BY last_seen DESC LIMIT 40',
-            [ONLINE_SEC]
+            [ONLINE_SEC, $room]
         )->fetchAll());
 
         $typing = [];
@@ -239,9 +239,17 @@ try {
             $counts[$r['room']] = (int) $r['c'];
         }
 
+        $allOnline = q(
+            'SELECT COUNT(*) AS c, MAX(is_admin) AS a FROM users
+             WHERE last_seen > UTC_TIMESTAMP() - INTERVAL ? SECOND',
+            [ONLINE_SEC]
+        )->fetch();
+
         out(200, [
             'messages' => $messages,
             'online' => $online,
+            'onlineTotal' => (int) ($allOnline['c'] ?? 0),
+            'adminOnline' => (bool) ($allOnline['a'] ?? 0),
             'typing' => $typing,
             'roomCounts' => (object) $counts,
             'totalUsers' => (int) scalar('SELECT COUNT(*) FROM users'),

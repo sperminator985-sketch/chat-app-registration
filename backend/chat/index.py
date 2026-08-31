@@ -133,7 +133,8 @@ def handler(event: dict, context) -> dict:
             ]
             cur.execute(
                 f"SELECT nick, color, status, avatar, avatar_url, is_admin FROM {SCHEMA}.users "
-                f"WHERE last_seen > NOW() - INTERVAL '2 minutes' ORDER BY last_seen DESC LIMIT 40"
+                f"WHERE last_seen > NOW() - INTERVAL '2 minutes' AND room = '{esc(room)}' "
+                f"ORDER BY last_seen DESC LIMIT 40"
             )
             online = [
                 {'nick': r[0], 'color': r[1], 'status': r[2], 'avatar': r[3], 'avatarUrl': r[4],
@@ -150,6 +151,13 @@ def handler(event: dict, context) -> dict:
                 f"WHERE last_seen > NOW() - INTERVAL '2 minutes' GROUP BY room"
             )
             counts = {r[0]: r[1] for r in cur.fetchall()}
+            cur.execute(
+                f"SELECT COUNT(*), BOOL_OR(is_admin) FROM {SCHEMA}.users "
+                f"WHERE last_seen > NOW() - INTERVAL '2 minutes'"
+            )
+            row_all = cur.fetchone()
+            online_total = int(row_all[0] or 0)
+            admin_online = bool(row_all[1])
             cur.execute(f"SELECT COUNT(*) FROM {SCHEMA}.users")
             total_users = cur.fetchone()[0]
             cur.execute(f"SELECT COUNT(*) FROM {SCHEMA}.messages WHERE hidden_at IS NULL AND created_at > NOW() - INTERVAL '24 hours'")
@@ -157,6 +165,8 @@ def handler(event: dict, context) -> dict:
             return respond(200, {
                 'messages': messages,
                 'online': online,
+                'onlineTotal': online_total,
+                'adminOnline': admin_online,
                 'typing': typing,
                 'roomCounts': counts,
                 'totalUsers': total_users,
