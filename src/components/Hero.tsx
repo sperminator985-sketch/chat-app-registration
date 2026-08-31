@@ -17,18 +17,18 @@ const Hero = () => {
 
         <div className="relative z-10 flex animate-rise flex-col items-center gap-6 md:flex-row md:items-start md:justify-between md:gap-7">
           <h1 className="mt-0 hidden min-w-0 md:mt-[3cm] flex-nowrap items-center justify-center gap-x-2 font-extrabold uppercase tracking-[-0.035em] md:flex md:justify-start md:gap-x-4">
-            <span className="flex shrink-0 flex-col items-center justify-end border-[3px] border-foreground bg-window-off p-[5px] h-[clamp(1.9rem,8.4vw,3.2rem)] w-[clamp(1.9rem,8.4vw,3.2rem)] md:h-[clamp(2rem,5.5vw,5.2rem)] md:w-[clamp(2rem,5.5vw,5.2rem)]">
+            <span className="flex shrink-0 flex-col items-center justify-end border-[3px] border-foreground bg-window-off p-[5px] h-[clamp(1.9rem,8.4vw,3.2rem)] w-[clamp(1.9rem,8.4vw,3.2rem)] md:h-[clamp(2rem,6.7vw,6.3rem)] md:w-[clamp(2rem,6.7vw,6.3rem)]">
               <span className="grid w-full flex-1 grid-cols-3 gap-[3px]">
                 {windows.map((on, i) => (
                   <span key={i} className={on ? 'w-full bg-window-on' : 'w-full bg-foreground/45'} />
                 ))}
               </span>
             </span>
-            <span className="whitespace-nowrap text-[clamp(1.5rem,7vw,2.6rem)] leading-[.92] text-foreground md:text-[clamp(1.7rem,4.6vw,4.4rem)]">
+            <span className="whitespace-nowrap text-[clamp(1.5rem,7vw,2.6rem)] leading-[.92] text-foreground md:text-[clamp(1.7rem,5.6vw,5.4rem)]">
               АТ<b className="font-extrabold text-primary"> —</b>
             </span>
             <span className="plate relative inline-block w-fit max-w-full origin-center -rotate-[1.1deg] px-3 pb-3 pt-1.5 md:origin-left md:px-5 md:pb-4 md:pt-2">
-              <span className="block whitespace-nowrap text-[clamp(1.35rem,6.4vw,2.4rem)] leading-[.9] tracking-[-0.045em] md:text-[clamp(1.5rem,4.1vw,3.9rem)]">
+              <span className="block whitespace-nowrap text-[clamp(1.35rem,6.4vw,2.4rem)] leading-[.9] tracking-[-0.045em] md:text-[clamp(1.5rem,5vw,4.8rem)]">
                 ОБЩАГА
               </span>
               <span className="absolute -bottom-[16px] left-6 h-0 w-0 border-l-[18px] border-t-[18px] border-l-transparent border-t-secondary" />
