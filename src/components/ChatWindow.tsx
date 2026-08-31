@@ -175,13 +175,15 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
                     <button
                       key={r.id}
                       onClick={() => onPick(r.id)}
-                      title={locked ? `${r.title} — только для своих` : r.title}
+                      disabled={locked}
+                      aria-disabled={locked}
+                      title={locked ? `${r.title} — этаж другого вуза` : r.title}
                       className={cn(
                         'pointer-events-auto h-7 w-7 shrink-0 border-2 font-mono text-[0.7rem] font-semibold transition-colors',
                         r.id === room.id
                           ? 'border-secondary bg-secondary text-secondary-foreground'
                           : locked
-                            ? 'border-foreground/20 text-muted-foreground/40'
+                            ? 'cursor-not-allowed border-foreground/15 text-muted-foreground/35 opacity-50'
                             : 'border-foreground/35 text-muted-foreground hover:border-secondary hover:text-foreground',
                       )}
                     >
