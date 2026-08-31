@@ -28,6 +28,11 @@ const Footer = () => (
       <div className="order-1 sm:order-none">
         <Stats />
       </div>
+
+      <div
+        aria-hidden
+        className="order-1 h-[2px] w-full bg-foreground/25 sm:order-none sm:hidden"
+      />
     </div>
   </footer>
 );
