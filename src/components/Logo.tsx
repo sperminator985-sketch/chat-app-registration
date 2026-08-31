@@ -7,9 +7,9 @@ type LogoProps = {
 };
 
 const sizes = {
-  sm: { box: 'h-9 w-9', letterBox: 'h-[1.5rem] w-[1.5rem]', chat: 'text-[1.05rem]', plate: 'text-[0.95rem]' },
-  md: { box: 'h-11 w-11', letterBox: 'h-[1.9rem] w-[1.9rem]', chat: 'text-[1.35rem]', plate: 'text-[1.2rem]' },
-  lg: { box: 'h-16 w-16', letterBox: 'h-[2.9rem] w-[2.9rem]', chat: 'text-[2.1rem]', plate: 'text-[1.85rem]' },
+  sm: { box: 'h-9 w-9', letterBox: 'h-[1.75rem] w-[1.75rem]', chat: 'text-[1.05rem]', plate: 'text-[0.95rem]' },
+  md: { box: 'h-11 w-11', letterBox: 'h-[2.2rem] w-[2.2rem]', chat: 'text-[1.35rem]', plate: 'text-[1.2rem]' },
+  lg: { box: 'h-16 w-16', letterBox: 'h-[3.3rem] w-[3.3rem]', chat: 'text-[2.1rem]', plate: 'text-[1.85rem]' },
 };
 
 const windows = [1, 0, 1, 1, 1, 1, 0, 0, 1];
