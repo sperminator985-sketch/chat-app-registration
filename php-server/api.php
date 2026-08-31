@@ -258,9 +258,17 @@ try {
             $counts[$r['room']] = (int) $r['c'];
         }
 
+        $allOnline = q(
+            'SELECT SUM(is_admin = 0) AS c, MAX(is_admin) AS a FROM users
+             WHERE last_seen > UTC_TIMESTAMP() - INTERVAL ? SECOND',
+            [ONLINE_SEC]
+        )->fetch();
+
         out(200, [
             'messages' => $messages,
             'online' => $online,
+            'onlineTotal' => (int) ($allOnline['c'] ?? 0),
+            'adminOnline' => (bool) ($allOnline['a'] ?? 0),
             'typing' => $typing,
             'recent' => $recent,
             'roomCounts' => (object) $counts,
