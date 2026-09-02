@@ -147,18 +147,23 @@ const AdminPanel = () => {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <header className="sticky top-0 z-50 border-b-2 border-foreground/35 bg-background/95 backdrop-blur-sm">
-        <div className="relative mx-auto flex max-w-[1200px] flex-wrap items-center gap-3 px-4 py-3 md:px-8 md:py-4">
-          <button
-            onClick={() => navigate('/')}
-            className="flex items-center gap-2 text-[0.78rem] font-bold uppercase tracking-[0.1em] text-muted-foreground transition-colors hover:text-secondary"
-          >
-            <Icon name="ChevronLeft" size={18} />
-            Выход
-          </button>
-          <span className="pointer-events-none absolute left-1/2 hidden -translate-x-1/2 font-display text-base font-extrabold uppercase tracking-[0.04em] md:block md:text-lg">
+        <div className="relative mx-auto flex max-w-[1200px] flex-col gap-2 px-4 py-3 md:flex-row md:items-center md:gap-3 md:px-8 md:py-4">
+          <div className="relative flex items-center">
+            <button
+              onClick={() => navigate('/')}
+              className="relative z-10 flex items-center gap-1.5 text-[0.72rem] font-bold uppercase tracking-[0.1em] text-muted-foreground transition-colors hover:text-secondary md:text-[0.78rem]"
+            >
+              <Icon name="ChevronLeft" size={18} />
+              Выход
+            </button>
+            <span className="pointer-events-none absolute left-1/2 -translate-x-1/2 whitespace-nowrap font-display text-[0.95rem] font-extrabold uppercase tracking-[0.04em] md:hidden">
+              Комендантская
+            </span>
+          </div>
+          <span className="pointer-events-none absolute left-1/2 hidden -translate-x-1/2 font-display text-lg font-extrabold uppercase tracking-[0.04em] md:block">
             Комендантская
           </span>
-          <div className="ml-auto flex items-center gap-2">
+          <div className="flex items-center justify-end gap-2 md:ml-auto">
             <button
               onClick={() => setTab('users')}
               className={cn(
