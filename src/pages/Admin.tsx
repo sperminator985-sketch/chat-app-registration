@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Icon from '@/components/ui/icon';
-import Avatar from '@/components/Avatar';
 import { cn } from '@/lib/utils';
 import { AuthProvider, useAuth } from '@/hooks/use-auth';
 import { api, type AdminMessage, type AdminUser } from '@/lib/api';
@@ -254,7 +253,6 @@ const AdminPanel = () => {
                     u.banned && 'opacity-60',
                   )}
                 >
-                  <Avatar avatar={u.avatar} avatarUrl={u.avatarUrl} color={u.color} size={40} />
                   <div className="min-w-0 flex-1">
                     <p className="flex flex-wrap items-center gap-2">
                       <span className={cn('font-semibold', nickColorClass[u.color])}>{u.nick}</span>
