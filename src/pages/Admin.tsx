@@ -101,15 +101,6 @@ const AdminPanel = () => {
 
   const removeUser = async (u: AdminUser) => {
     if (busy) return;
-    const input = window.prompt(
-      `Полностью удалить «${u.nick}»? Пропадут все его сообщения и переписка, ник освободится.\n\nНапиши ник для подтверждения:`,
-      '',
-    );
-    if (input === null) return;
-    if (input.trim().toLowerCase() !== u.nick.toLowerCase()) {
-      toast({ title: 'Ник не совпал — ничего не удалено', variant: 'destructive' });
-      return;
-    }
     setBusy(true);
     try {
       await api.adminDelete(u.id);
