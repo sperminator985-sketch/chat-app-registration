@@ -250,7 +250,7 @@ const AdminPanel = () => {
                 <div
                   key={u.id}
                   className={cn(
-                    'flex items-center gap-3 bg-card p-4',
+                    'flex items-center gap-3 bg-card p-3 sm:p-4',
                     u.banned && 'opacity-60',
                   )}
                 >
@@ -278,13 +278,13 @@ const AdminPanel = () => {
                     </p>
                   </div>
                   {!u.isAdmin && (
-                    <div className="flex shrink-0 items-center gap-1.5">
+                    <div className="flex shrink-0 flex-col items-stretch gap-1.5 sm:flex-row sm:items-center">
                       <button
                         onClick={() => toggleBan(u)}
                         disabled={busy}
                         title={u.banned ? 'Вернуть в общагу' : 'Выселить'}
                         className={cn(
-                          'flex items-center gap-1.5 border-2 px-2.5 py-1.5 text-[0.68rem] font-bold uppercase tracking-[0.1em] transition-colors',
+                          'flex h-[34px] w-[34px] items-center justify-center gap-1.5 border-2 text-[0.68rem] font-bold uppercase tracking-[0.1em] transition-colors sm:h-auto sm:w-auto sm:px-2.5 sm:py-1.5',
                           u.banned
                             ? 'border-nick-3 text-nick-3 hover:bg-nick-3 hover:text-background'
                             : 'border-primary text-primary hover:bg-primary hover:text-primary-foreground',

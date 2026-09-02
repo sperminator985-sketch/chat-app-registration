@@ -5,7 +5,7 @@ import Icon from '@/components/ui/icon';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/use-auth';
 import { api } from '@/lib/api';
-import { AvatarId, NickColor, nickBgClass, nickColorClass, nickColors, rooms, roomUni, canEnterRoom } from '@/data/chat';
+import { AvatarId, NickColor, nickBgClass, nickColorClass, nickColors, rooms, canEnterRoom } from '@/data/chat';
 import { toast } from '@/hooks/use-toast';
 
 type Errors = { nick?: string; pass?: string; pass2?: string; agree?: string; answer?: string };
@@ -395,9 +395,10 @@ const AuthDialog = () => {
                   onChange={(e) => {
                     const next = e.target.value;
                     setUni(next);
-                    const target = Object.keys(roomUni).find((id) => roomUni[id] === next);
-                    if (target) setRoom(target);
-                    else if (!canEnterRoom(room, next)) setRoom(rooms[0].id);
+                    if (!canEnterRoom(room, next)) {
+                      const first = rooms.find((r) => canEnterRoom(r.id, next));
+                      if (first) setRoom(first.id);
+                    }
                   }}
                   className={field}
                 >
