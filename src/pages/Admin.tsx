@@ -30,6 +30,7 @@ const AdminPanel = () => {
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState<'all' | 'banned' | 'online'>('all');
   const [denied, setDenied] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
   const loadUsers = useCallback(async () => {
     try {
@@ -62,6 +63,18 @@ const AdminPanel = () => {
     if (tab === 'users') loadUsers();
     else loadMessages();
   }, [user, loading, tab, room, navigate, loadUsers, loadMessages]);
+
+  const refresh = async () => {
+    if (refreshing) return;
+    setRefreshing(true);
+    try {
+      if (tab === 'users') await loadUsers();
+      else await loadMessages();
+      toast({ title: 'Данные обновлены' });
+    } finally {
+      setRefreshing(false);
+    }
+  };
 
   const hide = async (m: AdminMessage) => {
     if (busy) return;
@@ -185,6 +198,15 @@ const AdminPanel = () => {
               )}
             >
               Сообщения
+            </button>
+            <button
+              onClick={refresh}
+              disabled={refreshing}
+              title="Обновить данные"
+              className="flex items-center gap-1.5 border-2 border-foreground/35 px-3 py-1.5 text-[0.72rem] font-bold uppercase tracking-[0.1em] text-muted-foreground transition-colors hover:border-secondary hover:text-secondary disabled:opacity-50"
+            >
+              <Icon name="RefreshCw" size={14} className={refreshing ? 'animate-spin' : ''} />
+              <span className="hidden sm:inline">Обновить</span>
             </button>
           </div>
         </div>
