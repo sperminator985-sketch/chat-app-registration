@@ -142,7 +142,7 @@ export default {
 				'scale-in': 'scale-in .2s ease-out both',
 				'slide-in-right': 'slide-in-right .3s ease-out both',
 				blink: 'blink 14s ease-in-out infinite',
-				marquee: 'marquee 34s linear infinite',
+				marquee: 'marquee 45s linear infinite',
 				caret: 'caret 1s steps(1,end) infinite'
 			}
 		}
