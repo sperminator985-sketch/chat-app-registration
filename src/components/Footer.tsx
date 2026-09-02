@@ -1,5 +1,4 @@
 import { Link } from 'react-router-dom';
-import Stats from '@/components/Stats';
 
 const Footer = () => (
   <footer className="border-t-2 border-foreground/35 bg-card">
@@ -23,10 +22,6 @@ const Footer = () => (
         >
           Пользовательское соглашение
         </Link>
-      </div>
-
-      <div className="order-1 sm:order-none">
-        <Stats />
       </div>
 
       <div
