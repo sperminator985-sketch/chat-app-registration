@@ -286,6 +286,16 @@ const Header = ({ onProfile }: HeaderProps) => {
       {open && (
         <div className="animate-fade-in border-b-2 border-foreground/35 bg-card px-5 py-5 md:hidden">
           <div className="flex flex-col gap-4">
+            {!user && (
+              <a
+                href="#top"
+                onClick={go('#top')}
+                className="btn-ghost-brut flex items-center justify-center gap-2"
+              >
+                <Icon name="Home" size={16} />
+                Главная
+              </a>
+            )}
             {temp !== null && (
               <span className="flex items-center gap-2 border-2 border-foreground/30 px-3 py-2 text-[0.76rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground">
                 <Icon
@@ -308,7 +318,7 @@ const Header = ({ onProfile }: HeaderProps) => {
                 {live ? live.online : '—'}
               </span>
             </span>
-            {links.map((l) => (
+            {links.filter((l) => l.href !== '#top').map((l) => (
               <a
               key={l.href}
               href={l.href}
