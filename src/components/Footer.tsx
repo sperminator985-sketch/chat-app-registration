@@ -23,11 +23,6 @@ const Footer = () => (
           Пользовательское соглашение
         </Link>
       </div>
-
-      <div
-        aria-hidden
-        className="order-1 h-[2px] w-full bg-foreground/25 sm:order-none sm:hidden"
-      />
     </div>
   </footer>
 );
