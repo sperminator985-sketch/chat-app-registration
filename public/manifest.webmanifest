@@ -1,0 +1,33 @@
+{
+  "name": "ЧАТ-ОБЩАГА — томский чат",
+  "short_name": "Общага",
+  "description": "Томский чат с регистрацией: этажи-комнаты, лента сообщений, цветные ники и список тех, кто сейчас в чате.",
+  "lang": "ru",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#1E3ACC",
+  "theme_color": "#1E3ACC",
+  "categories": ["social", "communication"],
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
