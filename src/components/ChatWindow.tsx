@@ -377,7 +377,7 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
                         onClick={() => startCall(u.nick)}
                         title={`Видеозвонок: ${u.nick}`}
                         aria-label={`Видеозвонок: ${u.nick}`}
-                        className="absolute bottom-3 right-3 z-10 flex h-7 w-7 items-center justify-center border-2 border-foreground/30 text-muted-foreground transition-colors hover:border-secondary hover:text-secondary"
+                        className="absolute right-3 top-1/2 z-10 flex h-7 w-7 -translate-y-1/2 items-center justify-center border-2 border-foreground/30 text-muted-foreground transition-colors hover:border-secondary hover:text-secondary"
                       >
                         <Icon name="Video" size={13} />
                       </button>
@@ -389,7 +389,7 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
                         setPrivateTo(u.nick);
                       }}
                       disabled={isMe}
-                      className="w-full px-4 py-3 text-left transition-colors hover:bg-muted/50 disabled:cursor-default disabled:hover:bg-transparent"
+                      className="w-full py-3 pl-4 pr-14 text-left transition-colors hover:bg-muted/50 disabled:cursor-default disabled:hover:bg-transparent"
                     >
                       <div className="flex items-center gap-2">
                         <span className={cn('font-normal', nickColorClass[u.color as 1])}>{u.nick}</span>
@@ -399,11 +399,8 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
                           <span className="ml-auto border-2 border-secondary bg-secondary px-1.5 font-mono text-[0.7rem] font-bold text-secondary-foreground">
                             {unread[u.nick]}
                           </span>
-                        ) : (
-                          <Icon name="Mail" size={13} className="ml-auto text-muted-foreground/60" />
-                        )}
+                        ) : null}
                       </div>
-                      <p className="mt-1 text-[0.88rem] text-muted-foreground">{u.status}</p>
                     </button>
                   </li>
                 );
