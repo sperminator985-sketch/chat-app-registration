@@ -36,7 +36,7 @@ const Rooms = ({ activeRoom, onPick }: RoomsProps) => {
       Девять этажей <span className="text-primary">— выбирай свой</span>
     </h2>
 
-    <p className="mx-auto mt-4 max-w-[52rem] text-center text-[0.78rem] font-medium leading-relaxed text-muted-foreground sm:text-[0.85rem]">
+    <p className="mx-auto mt-4 max-w-[52rem] text-center text-[clamp(0.82rem,1.35vw,1.02rem)] leading-[1.45] text-muted-foreground">
       Пользователь при выборе своего вуза при регистрации может заселиться только на свой этаж, этажи
       других вузов будут для него недоступными.
     </p>
