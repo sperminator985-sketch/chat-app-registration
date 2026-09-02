@@ -768,7 +768,7 @@ try {
     }
 
     // --- Комендантская: только для владельца ---
-    if (in_array($action, ['admin_users', 'admin_messages', 'admin_ban', 'admin_hide'], true)) {
+    if (in_array($action, ['admin_users', 'admin_messages', 'admin_ban', 'admin_hide', 'admin_delete'], true)) {
         $user = requireUser();
         $row = one('SELECT is_admin FROM users WHERE id = ?', [$user['id']]);
         if (!$row || !$row['is_admin']) {
@@ -849,11 +849,23 @@ try {
             if ($t['is_admin']) {
                 fail(400, 'Нельзя удалять владельца');
             }
-            q('DELETE FROM sessions WHERE user_id = ?', [$target]);
-            q('DELETE FROM messages WHERE user_id = ?', [$target]);
-            q('DELETE FROM direct_messages WHERE sender_id = ? OR recipient_id = ?', [$target, $target]);
-            q('DELETE FROM call_signals WHERE sender_id = ? OR recipient_id = ?', [$target, $target]);
-            q('DELETE FROM users WHERE id = ?', [$target]);
+            foreach ([
+                ['DELETE FROM sessions WHERE user_id = ?', [$target]],
+                ['DELETE FROM messages WHERE user_id = ?', [$target]],
+                ['DELETE FROM direct_messages WHERE sender_id = ? OR recipient_id = ?', [$target, $target]],
+                ['DELETE FROM call_signals WHERE sender_id = ? OR recipient_id = ?', [$target, $target]],
+            ] as $step) {
+                try {
+                    q($step[0], $step[1]);
+                } catch (Throwable $e) {
+                    // таблицы может не быть на старой базе — это не мешает удалить жильца
+                }
+            }
+            try {
+                q('DELETE FROM users WHERE id = ?', [$target]);
+            } catch (Throwable $e) {
+                fail(500, 'Не удалось удалить жильца: ' . $e->getMessage());
+            }
             out(200, ['ok' => true]);
         }
 

@@ -259,32 +259,13 @@ try {
                 'status' => $r['status'],
                 'avatar' => (int) $r['avatar'],
                 'avatarUrl' => $r['avatar_url'],
+                'isAdmin' => (bool) $r['is_admin'],
             ];
         }, q(
-            'SELECT nick, color, status, avatar, avatar_url FROM users
-             WHERE last_seen > UTC_TIMESTAMP() - INTERVAL ? SECOND AND is_admin = 0
+            'SELECT nick, color, status, avatar, avatar_url, is_admin FROM users
+             WHERE last_seen > UTC_TIMESTAMP() - INTERVAL ? SECOND AND room = ? AND is_admin = 0
              ORDER BY last_seen DESC LIMIT 40',
-            [ONLINE_SEC]
-        )->fetchAll());
-
-        $recent = array_map(static function (array $r): array {
-            return [
-                'nick' => $r['nick'],
-                'color' => (int) $r['color'],
-                'status' => $r['status'],
-                'avatar' => (int) $r['avatar'],
-                'avatarUrl' => $r['avatar_url'],
-                'seenAgo' => $r['ago'] === null ? null : (int) $r['ago'],
-            ];
-        }, q(
-            'SELECT nick, color, status, avatar, avatar_url,
-                    TIMESTAMPDIFF(SECOND, last_seen, UTC_TIMESTAMP()) AS ago
-             FROM users
-             WHERE banned_at IS NULL
-               AND is_admin = 0
-               AND last_seen <= UTC_TIMESTAMP() - INTERVAL ? SECOND
-             ORDER BY last_seen DESC LIMIT 30',
-            [ONLINE_SEC]
+            [ONLINE_SEC, $room]
         )->fetchAll());
 
         $typing = [];
@@ -323,7 +304,6 @@ try {
             'onlineTotal' => (int) ($allOnline['c'] ?? 0),
             'adminOnline' => (bool) ($allOnline['a'] ?? 0),
             'typing' => $typing,
-            'recent' => $recent,
             'roomCounts' => (object) $counts,
             'totalUsers' => (int) scalar('SELECT COUNT(*) FROM users'),
             'dayMessages' => (int) scalar(
@@ -388,6 +368,12 @@ try {
             fail(409, 'Такой ник уже занят');
         }
 
+        $question = mb_substr(trim((string) param('question', '')), 0, 120);
+        $answer = trim((string) param('answer', ''));
+        $ansHash = ($question !== '' && $answer !== '')
+            ? password_hash(mb_strtolower($answer), PASSWORD_DEFAULT)
+            : null;
+
         $uni = trim((string) param('uni', ''));
         if (!in_array($uni, UNI_LIST, true)) {
             $uni = null;
@@ -395,17 +381,17 @@ try {
 
         if (hasUniColumn()) {
             q(
-                'INSERT INTO users (nick, nick_lower, password_hash, color, status, room, avatar, is_admin, uni, created_at, last_seen)
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, UTC_TIMESTAMP(), UTC_TIMESTAMP())',
+                'INSERT INTO users (nick, nick_lower, password_hash, color, status, room, avatar, is_admin, secret_question, secret_answer_hash, uni, created_at, last_seen)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, UTC_TIMESTAMP(), UTC_TIMESTAMP())',
                 [$nick, $lower, password_hash($password, PASSWORD_DEFAULT), $color, 'только заселился', $room, $avatar,
-                 isOwnerNick($lower) ? 1 : 0, $uni]
+                 isOwnerNick($lower) ? 1 : 0, $question !== '' ? $question : null, $ansHash, $uni]
             );
         } else {
             q(
-                'INSERT INTO users (nick, nick_lower, password_hash, color, status, room, avatar, is_admin, created_at, last_seen)
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, UTC_TIMESTAMP(), UTC_TIMESTAMP())',
+                'INSERT INTO users (nick, nick_lower, password_hash, color, status, room, avatar, is_admin, secret_question, secret_answer_hash, created_at, last_seen)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, UTC_TIMESTAMP(), UTC_TIMESTAMP())',
                 [$nick, $lower, password_hash($password, PASSWORD_DEFAULT), $color, 'только заселился', $room, $avatar,
-                 isOwnerNick($lower) ? 1 : 0]
+                 isOwnerNick($lower) ? 1 : 0, $question !== '' ? $question : null, $ansHash]
             );
         }
         $user = shapeUser(one('SELECT * FROM users WHERE id = ?', [(int) db()->lastInsertId()]));
@@ -413,6 +399,40 @@ try {
         $new = bin2hex(random_bytes(24));
         q('INSERT INTO sessions (token, user_id, created_at) VALUES (?, ?, UTC_TIMESTAMP())', [$new, $user['id']]);
         out(200, ['user' => $user, 'token' => $new]);
+    }
+
+    // --- Восстановление: получить секретный вопрос ---
+    if ($method === 'GET' && $action === 'recover_question') {
+        $nick = trim((string) param('nick', ''));
+        $row = one('SELECT secret_question FROM users WHERE nick_lower = ?', [mb_strtolower($nick)]);
+        if (!$row) {
+            fail(404, 'Такого жильца нет в журнале');
+        }
+        if (empty($row['secret_question'])) {
+            fail(404, 'У этого ника не задан секретный вопрос. Напиши админу в общаге');
+        }
+        out(200, ['question' => $row['secret_question']]);
+    }
+
+    // --- Восстановление: сброс пароля по ответу ---
+    if ($method === 'POST' && $action === 'recover_reset') {
+        $nick = trim((string) param('nick', ''));
+        $answer = trim((string) param('answer', ''));
+        $newPassword = (string) param('password', '');
+        if (mb_strlen($newPassword) < 5) {
+            fail(400, 'Пароль от 5 символов');
+        }
+        $row = one('SELECT id, secret_answer_hash FROM users WHERE nick_lower = ?', [mb_strtolower($nick)]);
+        if (!$row || empty($row['secret_answer_hash'])) {
+            fail(404, 'Восстановление недоступно для этого ника');
+        }
+        if (!password_verify(mb_strtolower($answer), $row['secret_answer_hash'])) {
+            fail(401, 'Ответ не совпадает');
+        }
+        q('UPDATE users SET password_hash = ? WHERE id = ?',
+          [password_hash($newPassword, PASSWORD_DEFAULT), (int) $row['id']]);
+        q('DELETE FROM sessions WHERE user_id = ?', [(int) $row['id']]);
+        out(200, ['ok' => true]);
     }
 
     // --- Вход ---
@@ -748,7 +768,7 @@ try {
     }
 
     // --- Комендантская: только для владельца ---
-    if (in_array($action, ['admin_users', 'admin_messages', 'admin_ban', 'admin_hide'], true)) {
+    if (in_array($action, ['admin_users', 'admin_messages', 'admin_ban', 'admin_hide', 'admin_delete'], true)) {
         $user = requireUser();
         $row = one('SELECT is_admin FROM users WHERE id = ?', [$user['id']]);
         if (!$row || !$row['is_admin']) {
@@ -814,6 +834,41 @@ try {
             out(200, ['ok' => true]);
         }
 
+        if ($method === 'POST' && $action === 'admin_delete') {
+            $target = (int) param('id', 0);
+            if (!$target) {
+                fail(400, 'Не указан жилец');
+            }
+            if ($target === $user['id']) {
+                fail(400, 'Себя удалять нельзя');
+            }
+            $t = one('SELECT is_admin FROM users WHERE id = ?', [$target]);
+            if (!$t) {
+                fail(404, 'Такого жильца нет');
+            }
+            if ($t['is_admin']) {
+                fail(400, 'Нельзя удалять владельца');
+            }
+            foreach ([
+                ['DELETE FROM sessions WHERE user_id = ?', [$target]],
+                ['DELETE FROM messages WHERE user_id = ?', [$target]],
+                ['DELETE FROM direct_messages WHERE sender_id = ? OR recipient_id = ?', [$target, $target]],
+                ['DELETE FROM call_signals WHERE sender_id = ? OR recipient_id = ?', [$target, $target]],
+            ] as $step) {
+                try {
+                    q($step[0], $step[1]);
+                } catch (Throwable $e) {
+                    // таблицы может не быть на старой базе — это не мешает удалить жильца
+                }
+            }
+            try {
+                q('DELETE FROM users WHERE id = ?', [$target]);
+            } catch (Throwable $e) {
+                fail(500, 'Не удалось удалить жильца: ' . $e->getMessage());
+            }
+            out(200, ['ok' => true]);
+        }
+
         if ($method === 'POST' && $action === 'admin_ban') {
             $target = (int) param('id', 0);
             $ban = (bool) param('ban', false);
@@ -842,12 +897,13 @@ try {
     // --- Новости Томска (обновляются раз в сутки) ---
     if ($method === 'GET' && $action === 'news') {
         $cacheFile = sys_get_temp_dir() . '/obshaga_news.json';
-        $fresh = is_readable($cacheFile) && (time() - (int) filemtime($cacheFile) < 86400);
+        $todayKey = date('Y-m-d');
+        $fresh = false;
 
-        if ($fresh) {
+        if (is_readable($cacheFile)) {
             $cached = json_decode((string) file_get_contents($cacheFile), true);
-            if (is_array($cached) && $cached) {
-                out(200, ['news' => $cached]);
+            if (is_array($cached) && !empty($cached['items']) && ($cached['day'] ?? '') === $todayKey) {
+                out(200, ['news' => $cached['items']]);
             }
         }
 
@@ -856,29 +912,47 @@ try {
             'timeout' => 4,
             'header' => "User-Agent: ObshagaChat/1.0\r\n",
         ]]);
-        $xml = @file_get_contents('https://news.vtomske.ru/rss', false, $ctx);
-        if ($xml !== false) {
+        $feeds = [
+            'https://news.vtomske.ru/rss',
+            'https://tomsk.gov.ru/rss',
+            'https://www.tvtomsk.ru/rss.xml',
+        ];
+        foreach ($feeds as $feed) {
+            $xml = @file_get_contents($feed, false, $ctx);
+            if ($xml === false) {
+                continue;
+            }
             $doc = @simplexml_load_string($xml);
-            if ($doc && isset($doc->channel->item)) {
-                foreach ($doc->channel->item as $item) {
-                    $title = trim(html_entity_decode((string) $item->title, ENT_QUOTES, 'UTF-8'));
-                    if ($title === '') {
-                        continue;
-                    }
-                    $items[] = mb_substr($title, 0, 120);
-                    if (count($items) >= 8) {
-                        break;
-                    }
+            if (!$doc || !isset($doc->channel->item)) {
+                continue;
+            }
+            foreach ($doc->channel->item as $item) {
+                $title = trim(html_entity_decode((string) $item->title, ENT_QUOTES, 'UTF-8'));
+                if ($title === '') {
+                    continue;
+                }
+                $title = mb_substr($title, 0, 120);
+                if (!in_array($title, $items, true)) {
+                    $items[] = $title;
                 }
             }
         }
+        if (count($items) > 1) {
+            mt_srand((int) date('Ymd'));
+            shuffle($items);
+            mt_srand();
+        }
+        $items = array_slice($items, 0, 12);
 
         if ($items) {
-            @file_put_contents($cacheFile, json_encode($items, JSON_UNESCAPED_UNICODE));
+            @file_put_contents(
+                $cacheFile,
+                json_encode(['day' => $todayKey, 'items' => $items], JSON_UNESCAPED_UNICODE)
+            );
         } elseif (is_readable($cacheFile)) {
             $old = json_decode((string) file_get_contents($cacheFile), true);
-            if (is_array($old)) {
-                $items = $old;
+            if (is_array($old) && !empty($old['items'])) {
+                $items = $old['items'];
             }
         }
 
