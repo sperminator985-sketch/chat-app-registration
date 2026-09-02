@@ -10,6 +10,7 @@ import { useWeather, formatTemp, degreeWord } from '@/hooks/use-weather';
 import { useLiveStats } from '@/hooks/use-live-stats';
 
 const guestLinks = [
+  { href: '#top', label: 'Главная' },
   { href: '#etazhi', label: 'Этажи' },
   { href: '#pravila', label: 'Правила' },
 ];
