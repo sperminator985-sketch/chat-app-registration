@@ -193,7 +193,7 @@ const Header = ({ onProfile }: HeaderProps) => {
               size={14}
               className={temp < 0 ? 'text-primary' : 'text-secondary'}
             />
-            Сейчас за окном{' '}
+            Сейчас в Томске{' '}
             <span className={cn('text-[1.05rem] font-bold', temp < 0 ? 'text-primary' : 'text-secondary')}>
               {formatTemp(temp)}
             </span>{' '}
