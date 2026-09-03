@@ -50,10 +50,10 @@ const Ticker = () => {
             {items.map((t) => (
               <span
                 key={`${pass}-${t}`}
-                className="flex shrink-0 items-center gap-4 whitespace-nowrap px-4 font-display text-[0.72rem] font-extrabold uppercase tracking-[0.06em] text-foreground md:gap-6 md:px-6 md:text-sm md:tracking-[0.08em]"
+                className="flex shrink-0 items-center whitespace-nowrap font-display text-[0.72rem] font-extrabold uppercase tracking-[0.06em] text-foreground md:text-sm md:tracking-[0.08em]"
               >
                 {t}
-                <span className="h-2 w-2 shrink-0 bg-primary" />
+                <span className="mx-5 h-[5px] w-[5px] shrink-0 rounded-full bg-primary md:mx-7 md:h-1.5 md:w-1.5" />
               </span>
             ))}
           </div>
