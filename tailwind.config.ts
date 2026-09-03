@@ -125,6 +125,11 @@ export default {
 					'42%, 78%': { background: 'hsl(var(--window-off))' },
 					'86%, 100%': { background: 'hsl(var(--window-on))' }
 				},
+				'window-flicker': {
+					'0%, 38%': { opacity: '0.5' },
+					'46%, 82%': { opacity: '0.06' },
+					'90%, 100%': { opacity: '0.5' }
+				},
 				marquee: {
 					from: { transform: 'translateX(0)' },
 					to: { transform: 'translateX(-50%)' }
@@ -142,6 +147,7 @@ export default {
 				'scale-in': 'scale-in .2s ease-out both',
 				'slide-in-right': 'slide-in-right .3s ease-out both',
 				blink: 'blink 14s ease-in-out infinite',
+				'window-flicker': 'window-flicker 18s ease-in-out infinite',
 				marquee: 'marquee 45s linear infinite',
 				caret: 'caret 1s steps(1,end) infinite'
 			}

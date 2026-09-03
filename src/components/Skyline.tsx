@@ -33,6 +33,11 @@ const dome = (cx: number, by: number, r: number, h: number) =>
 
 const lit = (i: number, j: number, seed: number) => ((i * 13 + j * 29 + seed * 7) % 10) < 4;
 
+const flickers = (i: number, j: number, seed: number) => (i * 7 + j * 11 + seed * 23) % 5 === 0;
+
+const rndf = (i: number, j: number, seed: number, salt: number) =>
+  ((i * 41 + j * 67 + seed * 19 + salt * 83) % 100) / 100;
+
 const Skyline = ({ className }: { className?: string }) => (
   <svg
     aria-hidden="true"
@@ -106,6 +111,17 @@ const Skyline = ({ className }: { className?: string }) => (
                     y={bodyTop + gapY * (ri * 2 + 1)}
                     width={gapX}
                     height={gapY * 1.1}
+                    className={
+                      flickers(ri, ci, bi) ? 'animate-window-flicker [.day_&]:animate-none' : undefined
+                    }
+                    style={
+                      flickers(ri, ci, bi)
+                        ? {
+                            animationDelay: `${(rndf(ri, ci, bi, 1) * 22).toFixed(2)}s`,
+                            animationDuration: `${(16 + rndf(ri, ci, bi, 2) * 20).toFixed(2)}s`,
+                          }
+                        : undefined
+                    }
                   />
                 ) : null,
               ),
