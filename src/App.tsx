@@ -11,10 +11,12 @@ import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
 import InstallPrompt from "./components/InstallPrompt";
 import { ThemeProvider } from "./hooks/use-theme";
+import ErrorBoundary from "./components/ErrorBoundary";
 
 const queryClient = new QueryClient();
 
 const App = () => (
+  <ErrorBoundary>
   <QueryClientProvider client={queryClient}>
     <ThemeProvider>
     <TooltipProvider>
@@ -34,6 +36,7 @@ const App = () => (
     </TooltipProvider>
     </ThemeProvider>
   </QueryClientProvider>
+  </ErrorBoundary>
 );
 
 export default App;
