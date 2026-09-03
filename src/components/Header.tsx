@@ -7,7 +7,6 @@ import { useAuth } from '@/hooks/use-auth';
 import { nickColorClass } from '@/data/chat';
 import { useDm } from '@/hooks/use-dm';
 import { useWeather, formatTemp, degreeWord } from '@/hooks/use-weather';
-import { useLiveStats } from '@/hooks/use-live-stats';
 import { useTheme } from '@/hooks/use-theme';
 
 const guestLinks = [
@@ -27,7 +26,6 @@ const Header = ({ onProfile }: HeaderProps) => {
   const { user, openAuth, signOut } = useAuth();
   const { unread, openList, soundOn, toggleSound } = useDm();
   const temp = useWeather();
-  const live = useLiveStats();
   const { theme, toggle } = useTheme();
   const links = user ? [] : guestLinks;
 
@@ -317,28 +315,6 @@ const Header = ({ onProfile }: HeaderProps) => {
                 Главная
               </a>
             )}
-            {temp !== null && (
-              <span className="flex items-center gap-2 border-2 border-foreground/30 px-3 py-2 text-[0.76rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground">
-                <Icon
-                  name={temp <= 0 ? 'Snowflake' : 'Sun'}
-                  size={14}
-                  className={temp < 0 ? 'text-primary' : 'text-secondary'}
-                />
-                За окном{' '}
-                <span className={cn('text-[1.05rem] font-bold', temp < 0 ? 'text-primary' : 'text-secondary')}>
-                  {formatTemp(temp)}
-                </span>{' '}
-                {degreeWord(temp)}
-              </span>
-            )}
-            <span className="flex items-center gap-2 border-2 border-foreground/30 px-3 py-2 text-[0.76rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground">
-              <Icon name="Lightbulb" size={14} className="text-secondary" />
-              Сейчас в чате
-              <span className="ml-auto flex items-center gap-1.5 font-mono text-[1.05rem] font-bold leading-none text-secondary">
-                <span className="h-2 w-2 animate-pulse bg-secondary" />
-                {live ? live.online : '—'}
-              </span>
-            </span>
             <button onClick={toggle} className="btn-ghost-brut flex items-center justify-center gap-2">
               <Icon name={theme === 'day' ? 'Sun' : 'Moon'} size={16} />
               {themeLabel}
