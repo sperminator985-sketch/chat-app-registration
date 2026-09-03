@@ -71,10 +71,10 @@
     --background: 200 85% 84%;
     --foreground: 220 70% 15%;
 
-    --card: 199 70% 92%;
+    --card: 199 62% 88%;
     --card-foreground: 220 70% 15%;
 
-    --popover: 199 70% 92%;
+    --popover: 199 62% 90%;
     --popover-foreground: 220 70% 15%;
 
     --primary: 8 85% 47%;
@@ -83,7 +83,7 @@
     --secondary: 220 82% 25%;
     --secondary-foreground: 199 90% 92%;
 
-    --muted: 200 55% 88%;
+    --muted: 200 50% 83%;
     --muted-foreground: 216 45% 28%;
 
     --accent: 220 82% 25%;
@@ -93,7 +93,7 @@
     --destructive-foreground: 200 80% 97%;
 
     --border: 211 48% 45%;
-    --input: 200 55% 90%;
+    --input: 200 55% 93%;
     --ring: 8 85% 47%;
 
     --window-off: 203 40% 78%;
