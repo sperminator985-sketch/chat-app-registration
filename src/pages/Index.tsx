@@ -9,6 +9,7 @@ import ServerDownBanner from '@/components/ServerDownBanner';
 import BannedDialog from '@/components/BannedDialog';
 import Hero from '@/components/Hero';
 import Ticker from '@/components/Ticker';
+import Skyline from '@/components/Skyline';
 import Rooms from '@/components/Rooms';
 import ChatWindow from '@/components/ChatWindow';
 import Rules from '@/components/Rules';
@@ -108,11 +109,14 @@ const PageBody = () => {
           <ChatWindow activeRoom={activeRoom} onPick={pickRoom} />
         ) : (
           <>
-            <div className="flex min-h-[calc(100svh-var(--top-offset,4.5rem))] flex-col md:min-h-[calc(100vh-var(--top-offset,4.5rem))]">
-              <div className="flex flex-1 items-start md:items-center">
+            <div className="relative flex min-h-[calc(100svh-var(--top-offset,4.5rem))] flex-col overflow-hidden md:min-h-[calc(100vh-var(--top-offset,4.5rem))]">
+              <Skyline className="pointer-events-none absolute inset-x-0 bottom-0 z-0 h-[128px] md:h-[228px]" />
+              <div className="relative z-10 flex flex-1 items-start md:items-center">
                 <Hero />
               </div>
-              <Ticker />
+              <div className="relative z-10">
+                <Ticker />
+              </div>
             </div>
             <Rooms activeRoom={activeRoom} onPick={pickRoom} />
             <div className="flex min-h-[calc(100svh-var(--top-offset,4.5rem))] flex-col">
