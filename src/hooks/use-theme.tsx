@@ -10,7 +10,7 @@ type ThemeCtx = {
 const Ctx = createContext<ThemeCtx>({ theme: 'night', toggle: () => {} });
 
 const KEY = 'obshaga-theme';
-const BAR = { night: '#1E3ACC', day: '#F4EEE0' };
+const BAR = { night: '#1E3ACC', day: '#3DE0F5' };
 
 const read = (): Theme => {
   if (typeof window === 'undefined') return 'night';

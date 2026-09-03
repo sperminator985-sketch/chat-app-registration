@@ -67,46 +67,46 @@
   }
 
   .day {
-    /* ДНЕВНОЙ ФОН — тёплая бумага, тёмно-синий текст */
-    --background: 40 44% 93%;
-    --foreground: 240 55% 15%;
+    /* ДНЕВНОЙ ФОН — голубое небо, тёмно-синий текст */
+    --background: 187 100% 62%;
+    --foreground: 220 85% 15%;
 
-    --card: 38 40% 88%;
-    --card-foreground: 240 55% 15%;
+    --card: 190 78% 92%;
+    --card-foreground: 220 85% 15%;
 
-    --popover: 38 40% 88%;
-    --popover-foreground: 240 55% 15%;
+    --popover: 190 78% 92%;
+    --popover-foreground: 220 85% 15%;
 
-    --primary: 13 88% 46%;
-    --primary-foreground: 40 60% 97%;
+    --primary: 8 88% 46%;
+    --primary-foreground: 190 90% 97%;
 
-    --secondary: 36 92% 38%;
-    --secondary-foreground: 40 60% 97%;
+    --secondary: 220 90% 24%;
+    --secondary-foreground: 187 100% 78%;
 
-    --muted: 38 32% 83%;
-    --muted-foreground: 234 28% 36%;
+    --muted: 190 60% 86%;
+    --muted-foreground: 214 60% 26%;
 
-    --accent: 36 92% 38%;
-    --accent-foreground: 40 60% 97%;
+    --accent: 220 90% 24%;
+    --accent-foreground: 187 100% 78%;
 
-    --destructive: 13 88% 46%;
-    --destructive-foreground: 40 60% 97%;
+    --destructive: 8 88% 46%;
+    --destructive-foreground: 190 90% 97%;
 
-    --border: 234 26% 58%;
-    --input: 38 32% 83%;
-    --ring: 13 88% 46%;
+    --border: 214 55% 40%;
+    --input: 190 60% 88%;
+    --ring: 8 88% 46%;
 
-    --window-off: 38 26% 78%;
-    --window-on: 43 92% 52%;
+    --window-off: 192 45% 80%;
+    --window-on: 45 95% 55%;
 
-    --nick-1: 36 92% 36%;
-    --nick-2: 13 88% 44%;
-    --nick-3: 165 72% 27%;
-    --nick-4: 197 82% 33%;
-    --nick-5: 320 68% 40%;
-    --nick-6: 100 55% 28%;
-    --nick-7: 24 88% 40%;
-    --nick-8: 231 62% 45%;
+    --nick-1: 32 92% 34%;
+    --nick-2: 8 88% 44%;
+    --nick-3: 165 80% 22%;
+    --nick-4: 205 88% 30%;
+    --nick-5: 315 70% 38%;
+    --nick-6: 105 60% 25%;
+    --nick-7: 22 88% 38%;
+    --nick-8: 228 70% 40%;
   }
 
   .dark {
@@ -156,6 +156,22 @@
   body {
     @apply bg-background text-foreground font-body;
     -webkit-font-smoothing: antialiased;
+  }
+
+  .day body {
+    background-image: url("/day-bg.jpg");
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    background-repeat: no-repeat;
+  }
+
+  .day .page-shell {
+    background-color: transparent;
+  }
+
+  .day .bg-card {
+    background-color: hsl(var(--card) / 0.88);
   }
 
   h1,

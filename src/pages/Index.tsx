@@ -70,7 +70,7 @@ const PageBody = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="page-shell min-h-screen bg-background text-foreground">
       <div ref={topRef} id="topbar" className="sticky top-0 z-50">
         <ServerDownBanner />
         <Header onProfile={() => setProfileOpen(true)} />
