@@ -114,7 +114,7 @@ const PageBody = () => {
               <div className="relative z-10 -mt-[2px]">
                 <Ticker />
               </div>
-              <div className="relative z-10 flex flex-1 items-start md:items-center">
+              <div className="relative z-10 flex min-h-0 flex-1 items-center pb-[90px] md:pb-[160px]">
                 <Hero />
               </div>
             </div>
