@@ -220,6 +220,7 @@ const Header = ({ onProfile }: HeaderProps) => {
         )}
 
         <nav className="hidden items-center gap-7 md:flex">
+          {themeButton()}
           {links.map((l) => (
             <a
               key={l.href}
@@ -230,7 +231,6 @@ const Header = ({ onProfile }: HeaderProps) => {
               {l.label}
             </a>
           ))}
-          {themeButton()}
           {user ? (
             <>
               {mailButton()}
