@@ -29,24 +29,52 @@ const PageBody = () => {
   useLayoutEffect(() => {
     const el = topRef.current;
     if (!el) return;
-    const apply = () =>
-      document.documentElement.style.setProperty(
-        '--top-offset',
-        `${el.getBoundingClientRect().height}px`,
-      );
+    let frame = 0;
+    const apply = () => {
+      if (frame) return;
+      frame = requestAnimationFrame(() => {
+        frame = 0;
+        document.documentElement.style.setProperty(
+          '--top-offset',
+          `${el.getBoundingClientRect().height}px`,
+        );
+        const vh = window.visualViewport?.height ?? window.innerHeight;
+        document.documentElement.style.setProperty('--app-h', `${Math.round(vh)}px`);
+      });
+    };
     apply();
     const ro = new ResizeObserver(apply);
     ro.observe(el);
     window.addEventListener('resize', apply);
+    window.addEventListener('orientationchange', apply);
+    window.addEventListener('scroll', apply, { passive: true });
+    window.visualViewport?.addEventListener('resize', apply);
+    window.visualViewport?.addEventListener('scroll', apply);
     return () => {
       ro.disconnect();
       window.removeEventListener('resize', apply);
+      window.removeEventListener('orientationchange', apply);
+      window.removeEventListener('scroll', apply);
+      window.visualViewport?.removeEventListener('resize', apply);
+      window.visualViewport?.removeEventListener('scroll', apply);
+      if (frame) cancelAnimationFrame(frame);
     };
   }, []);
 
   useEffect(() => {
     if (user?.room) setActiveRoom(user.room);
   }, [user?.room]);
+
+  useEffect(() => {
+    if (!user) return;
+    const html = document.documentElement;
+    const prev = html.style.overflow;
+    window.scrollTo(0, 0);
+    html.style.overflow = 'hidden';
+    return () => {
+      html.style.overflow = prev;
+    };
+  }, [user]);
 
   const pickRoom = (id: string) => {
     if (!user) {
