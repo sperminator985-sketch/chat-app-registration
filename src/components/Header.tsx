@@ -29,7 +29,7 @@ const Header = ({ onProfile }: HeaderProps) => {
   const { theme, toggle } = useTheme();
   const links = user ? [] : guestLinks;
 
-  const themeLabel = theme === 'day' ? 'Ночной фон' : 'Дневной фон';
+  const themeLabel = theme === 'day' ? 'Ночной режим' : 'Дневной режим';
 
   const themeButton = (extra?: string) => (
     <button
