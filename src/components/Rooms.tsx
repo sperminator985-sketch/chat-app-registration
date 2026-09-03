@@ -36,6 +36,11 @@ const Rooms = ({ activeRoom, onPick }: RoomsProps) => {
       Девять этажей <span className="text-primary">— выбирай свой</span>
     </h2>
 
+    <p className="mx-auto mt-4 text-center text-[clamp(0.5rem,1.32vw,1.02rem)] leading-[1.45] text-muted-foreground md:whitespace-nowrap">
+      Пользователь при выборе своего вуза при регистрации может заселиться только на свой этаж, этажи
+      других вузов будут для него недоступными.
+    </p>
+
     <div className="mt-10 grid gap-px bg-foreground/25 sm:grid-cols-2 lg:grid-cols-3">
       {rooms.map((room, i) => {
         const active = room.id === activeRoom;
