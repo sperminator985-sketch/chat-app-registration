@@ -99,7 +99,7 @@ const Skyline = ({ className }: { className?: string }) => (
 
           <g
             fill="hsl(var(--window-on))"
-            fillOpacity="0.5"
+            fillOpacity="1"
             className="[.day_&]:fill-[hsl(var(--background))] [.day_&]:[fill-opacity:0.85]"
           >
             {Array.from({ length: rows }).map((_, ri) =>

@@ -126,9 +126,9 @@ export default {
 					'86%, 100%': { background: 'hsl(var(--window-on))' }
 				},
 				'window-flicker': {
-					'0%, 38%': { opacity: '0.5' },
+					'0%, 38%': { opacity: '1' },
 					'46%, 82%': { opacity: '0.06' },
-					'90%, 100%': { opacity: '0.5' }
+					'90%, 100%': { opacity: '1' }
 				},
 				marquee: {
 					from: { transform: 'translateX(0)' },
