@@ -88,8 +88,8 @@ const Facade = ({
 
         {entrance && (
           <div className="flex items-end justify-center gap-[5px] border-t-2 border-foreground/35 px-[9px] pb-0 pt-[7px]">
-            <span className="mb-[9px] h-[16px] flex-1 border border-foreground/25 bg-window-on md:h-[20px]" />
-            <span className="mb-[9px] h-[16px] flex-1 border border-foreground/25 bg-window-on md:h-[20px]" />
+            <span className="mb-[9px] h-[16px] flex-1 border border-foreground/25 bg-window-on md:h-[20px] [.day_&]:bg-window-off" />
+            <span className="mb-[9px] h-[16px] flex-1 border border-foreground/25 bg-window-on md:h-[20px] [.day_&]:bg-window-off" />
 
             <span className="flex w-[26%] flex-col items-center">
               <span className="h-[5px] w-full bg-foreground/30" />
@@ -97,7 +97,7 @@ const Facade = ({
                 <span
                   className={cn(
                     'h-[5px] w-[70%] transition-colors duration-500',
-                    alarm ? 'bg-primary' : 'bg-window-on',
+                    alarm ? 'bg-primary' : 'bg-window-on [.day_&]:bg-window-off',
                   )}
                 />
                 <span className="mt-[3px] h-[16px] w-full bg-foreground/70 md:h-[22px]" />
@@ -107,8 +107,8 @@ const Facade = ({
               <span className="h-[3px] w-full bg-foreground/25" />
             </span>
 
-            <span className="mb-[9px] h-[16px] flex-1 border border-foreground/25 bg-window-on md:h-[20px]" />
-            <span className="mb-[9px] h-[16px] flex-1 border border-foreground/25 bg-window-on md:h-[20px]" />
+            <span className="mb-[9px] h-[16px] flex-1 border border-foreground/25 bg-window-on md:h-[20px] [.day_&]:bg-window-off" />
+            <span className="mb-[9px] h-[16px] flex-1 border border-foreground/25 bg-window-on md:h-[20px] [.day_&]:bg-window-off" />
           </div>
         )}
       </div>
