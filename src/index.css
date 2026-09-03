@@ -66,6 +66,49 @@
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
 
+  .day {
+    /* ДНЕВНОЙ ФОН — тёплая бумага, тёмно-синий текст */
+    --background: 40 44% 93%;
+    --foreground: 240 55% 15%;
+
+    --card: 38 40% 88%;
+    --card-foreground: 240 55% 15%;
+
+    --popover: 38 40% 88%;
+    --popover-foreground: 240 55% 15%;
+
+    --primary: 13 88% 46%;
+    --primary-foreground: 40 60% 97%;
+
+    --secondary: 36 92% 38%;
+    --secondary-foreground: 40 60% 97%;
+
+    --muted: 38 32% 83%;
+    --muted-foreground: 234 28% 36%;
+
+    --accent: 36 92% 38%;
+    --accent-foreground: 40 60% 97%;
+
+    --destructive: 13 88% 46%;
+    --destructive-foreground: 40 60% 97%;
+
+    --border: 234 26% 58%;
+    --input: 38 32% 83%;
+    --ring: 13 88% 46%;
+
+    --window-off: 38 26% 78%;
+    --window-on: 43 92% 52%;
+
+    --nick-1: 36 92% 36%;
+    --nick-2: 13 88% 44%;
+    --nick-3: 165 72% 27%;
+    --nick-4: 197 82% 33%;
+    --nick-5: 320 68% 40%;
+    --nick-6: 100 55% 28%;
+    --nick-7: 24 88% 40%;
+    --nick-8: 231 62% 45%;
+  }
+
   .dark {
     --background: 240 52% 13%;
     --foreground: 39 100% 94%;

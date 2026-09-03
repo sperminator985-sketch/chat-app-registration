@@ -8,6 +8,7 @@ import { nickColorClass } from '@/data/chat';
 import { useDm } from '@/hooks/use-dm';
 import { useWeather, formatTemp, degreeWord } from '@/hooks/use-weather';
 import { useLiveStats } from '@/hooks/use-live-stats';
+import { useTheme } from '@/hooks/use-theme';
 
 const guestLinks = [
   { href: '#top', label: 'Главная' },
@@ -27,7 +28,24 @@ const Header = ({ onProfile }: HeaderProps) => {
   const { unread, openList, soundOn, toggleSound } = useDm();
   const temp = useWeather();
   const live = useLiveStats();
+  const { theme, toggle } = useTheme();
   const links = user ? [] : guestLinks;
+
+  const themeLabel = theme === 'day' ? 'Ночной фон' : 'Дневной фон';
+
+  const themeButton = (extra?: string) => (
+    <button
+      onClick={toggle}
+      aria-label={themeLabel}
+      title={themeLabel}
+      className={cn(
+        'flex h-10 w-10 items-center justify-center border-2 border-foreground/40 text-foreground transition-colors hover:border-secondary hover:text-secondary',
+        extra,
+      )}
+    >
+      <Icon name={theme === 'day' ? 'Moon' : 'Sun'} size={18} />
+    </button>
+  );
 
   const mailButton = (extra?: string) => (
     <button
@@ -212,6 +230,7 @@ const Header = ({ onProfile }: HeaderProps) => {
               {l.label}
             </a>
           ))}
+          {themeButton()}
           {user ? (
             <>
               {mailButton()}
@@ -318,6 +337,10 @@ const Header = ({ onProfile }: HeaderProps) => {
                 {live ? live.online : '—'}
               </span>
             </span>
+            <button onClick={toggle} className="btn-ghost-brut flex items-center justify-center gap-2">
+              <Icon name={theme === 'day' ? 'Moon' : 'Sun'} size={16} />
+              {themeLabel}
+            </button>
             {links.filter((l) => l.href !== '#top').map((l) => (
               <a
               key={l.href}
