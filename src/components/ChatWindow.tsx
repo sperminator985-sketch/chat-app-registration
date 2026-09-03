@@ -257,7 +257,8 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
                   key={m.key}
                   className={cn(
                     'animate-fade-in leading-[1.3]',
-                    m.private && 'border-l-4 border-sky-400 bg-sky-400/15 px-2 py-0.5',
+                    m.private &&
+                      'border-l-4 border-sky-400 bg-sky-400/25 px-2 py-1 [.day_&]:border-sky-600 [.day_&]:bg-sky-500/20',
                   )}
                 >
                   <p className="flex flex-wrap items-baseline gap-x-1.5">
@@ -265,7 +266,7 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
                       <button
                         type="button"
                         onClick={() => setPrivateTo(m.peer)}
-                        className="font-mono text-[0.6rem] uppercase tracking-[0.1em] text-sky-300 hover:underline sm:text-[0.68rem]"
+                        className="font-mono text-[0.62rem] font-bold uppercase tracking-[0.1em] text-sky-200 hover:underline sm:text-[0.7rem] [.day_&]:text-sky-800"
                       >
                         {m.outgoing ? `лично → ${m.peer}` : `лично от ${m.peer}`}
                       </button>
@@ -282,7 +283,11 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
                     <span
                       className={cn(
                         'text-[0.84rem] sm:text-[0.94rem]',
-                        user && m.nick === user.nick ? 'text-foreground' : 'text-foreground/90',
+                        m.private
+                          ? 'font-medium text-foreground'
+                          : user && m.nick === user.nick
+                            ? 'text-foreground'
+                            : 'text-foreground/90',
                       )}
                     >
                       {m.text}
