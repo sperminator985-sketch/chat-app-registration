@@ -110,12 +110,12 @@ const PageBody = () => {
         ) : (
           <>
             <div className="relative flex min-h-[calc(100svh-var(--top-offset,4.5rem))] flex-col overflow-hidden md:min-h-[calc(100vh-var(--top-offset,4.5rem))]">
-              <Skyline className="pointer-events-none absolute inset-x-0 bottom-0 z-0 h-[128px] md:h-[228px]" />
+              <Skyline className="pointer-events-none absolute inset-x-0 bottom-0 z-0 h-[90px] md:h-[160px]" />
+              <div className="relative z-10 -mt-[2px]">
+                <Ticker />
+              </div>
               <div className="relative z-10 flex flex-1 items-start md:items-center">
                 <Hero />
-              </div>
-              <div className="relative z-10">
-                <Ticker />
               </div>
             </div>
             <Rooms activeRoom={activeRoom} onPick={pickRoom} />

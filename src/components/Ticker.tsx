@@ -43,7 +43,7 @@ const Ticker = () => {
     : [liveLine, base[0], base[1], weatherLine, base[2], base[3], base[4], base[5]];
 
   return (
-    <div className="group mb-0 mt-1 overflow-hidden border-y-2 border-foreground/35 bg-card py-2.5 md:mb-[1cm] md:mt-[1cm] md:py-3">
+    <div className="group my-0 overflow-hidden border-y-2 border-foreground/35 bg-card py-2.5 md:py-3">
       <div className="flex w-max animate-marquee group-hover:[animation-play-state:paused]">
         {[0, 1].map((pass) => (
           <div key={pass} className="flex shrink-0">
