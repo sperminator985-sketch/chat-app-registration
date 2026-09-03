@@ -321,11 +321,12 @@ const Header = ({ onProfile }: HeaderProps) => {
             </button>
             {links.filter((l) => l.href !== '#top').map((l) => (
               <a
-              key={l.href}
-              href={l.href}
-              onClick={go(l.href)}
-              className={cn('nav-link', active === l.href && 'nav-link-active')}
-            >
+                key={l.href}
+                href={l.href}
+                onClick={go(l.href)}
+                className="btn-ghost-brut flex items-center justify-center gap-2"
+              >
+                <Icon name={l.href === '#etazhi' ? 'Building2' : 'ScrollText'} size={16} />
                 {l.label}
               </a>
             ))}
