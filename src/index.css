@@ -67,37 +67,37 @@
   }
 
   .day {
-    /* ДНЕВНОЙ ФОН — светло-розовый, тёмно-сливовый текст */
-    --background: 348 70% 95%;
-    --foreground: 330 45% 18%;
+    /* ДНЕВНОЙ ФОН — насыщенное небо, тёмно-синий текст */
+    --background: 200 85% 84%;
+    --foreground: 220 70% 15%;
 
-    --card: 347 55% 90%;
-    --card-foreground: 330 45% 18%;
+    --card: 199 70% 92%;
+    --card-foreground: 220 70% 15%;
 
-    --popover: 347 55% 90%;
-    --popover-foreground: 330 45% 18%;
+    --popover: 199 70% 92%;
+    --popover-foreground: 220 70% 15%;
 
-    --primary: 348 78% 46%;
-    --primary-foreground: 348 80% 97%;
+    --primary: 8 85% 47%;
+    --primary-foreground: 200 80% 97%;
 
-    --secondary: 330 55% 26%;
-    --secondary-foreground: 348 80% 95%;
+    --secondary: 220 82% 25%;
+    --secondary-foreground: 199 90% 92%;
 
-    --muted: 348 40% 87%;
-    --muted-foreground: 335 28% 36%;
+    --muted: 200 55% 88%;
+    --muted-foreground: 216 45% 28%;
 
-    --accent: 330 55% 26%;
-    --accent-foreground: 348 80% 95%;
+    --accent: 220 82% 25%;
+    --accent-foreground: 199 90% 92%;
 
-    --destructive: 348 78% 46%;
-    --destructive-foreground: 348 80% 97%;
+    --destructive: 8 85% 47%;
+    --destructive-foreground: 200 80% 97%;
 
-    --border: 340 32% 55%;
-    --input: 348 40% 90%;
-    --ring: 348 78% 46%;
+    --border: 211 48% 45%;
+    --input: 200 55% 90%;
+    --ring: 8 85% 47%;
 
-    --window-off: 345 28% 83%;
-    --window-on: 38 92% 58%;
+    --window-off: 203 40% 78%;
+    --window-on: 42 95% 55%;
 
     --nick-1: 32 92% 34%;
     --nick-2: 8 88% 44%;
@@ -161,9 +161,9 @@
   .day body {
     background-image: linear-gradient(
       170deg,
-      hsl(346 78% 92%) 0%,
-      hsl(348 70% 95%) 45%,
-      hsl(352 60% 97%) 100%
+      hsl(197 90% 78%) 0%,
+      hsl(200 85% 84%) 48%,
+      hsl(203 80% 90%) 100%
     );
     background-attachment: fixed;
     background-repeat: no-repeat;
