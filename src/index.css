@@ -230,16 +230,20 @@
     @apply inline-flex items-center justify-center gap-2 border-2 border-primary bg-primary px-6 py-3 font-display text-sm font-extrabold uppercase tracking-wide text-primary-foreground transition-all duration-150;
   }
 
-  .btn-brut:hover {
-    @apply -translate-x-[3px] -translate-y-[3px] border-secondary bg-secondary text-secondary-foreground;
+  @media (hover: hover) and (pointer: fine) {
+    .btn-brut:hover {
+      @apply -translate-x-[3px] -translate-y-[3px] border-secondary bg-secondary text-secondary-foreground;
+    }
   }
 
   .btn-ghost-brut {
     @apply inline-flex items-center justify-center gap-2 border-2 border-foreground/50 px-6 py-3 font-display text-sm font-extrabold uppercase tracking-wide text-foreground transition-all duration-150;
   }
 
-  .btn-ghost-brut:hover {
-    @apply -translate-x-[3px] -translate-y-[3px] border-secondary text-secondary;
+  @media (hover: hover) and (pointer: fine) {
+    .btn-ghost-brut:hover {
+      @apply -translate-x-[3px] -translate-y-[3px] border-secondary text-secondary;
+    }
   }
 
   .nav-link {

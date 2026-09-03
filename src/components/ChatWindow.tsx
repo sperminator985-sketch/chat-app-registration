@@ -106,19 +106,23 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
       openAuth('register');
       return;
     }
+    const isTouch = window.matchMedia('(hover: none), (pointer: coarse)').matches;
+    const afterSend = () => {
+      setDraft('');
+      if (isTouch) inputRef.current?.blur();
+      else inputRef.current?.focus();
+    };
     setSending(true);
     try {
       if (privateTo) {
         const res = await api.dmSend({ nick: privateTo, text });
         setPrivateMsgs((prev) => [...prev, { ...res.message, peer: privateTo, outgoing: true }]);
-        setDraft('');
-        inputRef.current?.focus();
+        afterSend();
         return;
       }
       const res = await api.send({ text, room: room.id });
       setMessages((prev) => [...prev, res.message]);
-      setDraft('');
-      inputRef.current?.focus();
+      afterSend();
     } catch (err) {
       toast({
         title: 'Сообщение не ушло',
