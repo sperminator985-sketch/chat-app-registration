@@ -43,7 +43,7 @@ function fmtTime(?string $utc = null): string
 }
 
 const ROOMS = ['kuhnya', 'kurilka', 'baraholka', 'ucheba', 'tomsk', 'znakomstva', 'flirt', 'sex', 'noch'];
-const ONLINE_SEC = 45;
+const ONLINE_SEC = 75;
 const OWNER_NICK = 'админ';
 const OWNER_NICKS = ['админ', 'комендант'];
 const UNI_LIST = ['ТГУ', 'ТУСУР', 'СибГМУ', 'ТПУ', 'ТГАСУ', 'ТГПУ'];

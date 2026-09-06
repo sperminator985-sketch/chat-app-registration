@@ -80,18 +80,19 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
   usePolling(load, 5000);
 
   useEffect(() => {
-    const onHide = () => {
-      if (document.visibilityState === 'hidden' && getToken()) {
-        api.away().catch(() => undefined);
-      }
+    const onLeave = () => {
+      if (getToken()) api.away().catch(() => undefined);
     };
-    document.addEventListener('visibilitychange', onHide);
-    window.addEventListener('pagehide', onHide);
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') load();
+    };
+    document.addEventListener('visibilitychange', onVisible);
+    window.addEventListener('pagehide', onLeave);
     return () => {
-      document.removeEventListener('visibilitychange', onHide);
-      window.removeEventListener('pagehide', onHide);
+      document.removeEventListener('visibilitychange', onVisible);
+      window.removeEventListener('pagehide', onLeave);
     };
-  }, []);
+  }, [load]);
 
   useEffect(() => {
     const el = feedRef.current;
