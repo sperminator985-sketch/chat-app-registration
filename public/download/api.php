@@ -306,7 +306,11 @@ function purgeUnverified(): void
         $rows = db()->query(
             "SELECT id FROM users
              WHERE email_verified_at IS NULL
-               AND created_at < UTC_TIMESTAMP() - INTERVAL 1 HOUR
+               AND email_code IS NOT NULL
+               AND email_code_at IS NOT NULL
+               AND email_code_at < UTC_TIMESTAMP() - INTERVAL 1 HOUR
+               AND created_at > UTC_TIMESTAMP() - INTERVAL 1 DAY
+               AND id NOT IN (SELECT DISTINCT user_id FROM messages WHERE user_id IS NOT NULL)
              LIMIT 50"
         )->fetchAll(PDO::FETCH_COLUMN);
         foreach ($rows as $id) {
@@ -662,7 +666,7 @@ try {
         if ($row['banned_at'] !== null) {
             fail(403, 'Ты выселен из общаги: ' . ($row['ban_reason'] ?: 'нарушение правил'));
         }
-        if (hasEmailColumns() && empty($row['email_verified_at'])) {
+        if (hasEmailColumns() && empty($row['email_verified_at']) && !empty($row['email_code'])) {
             fail(403, 'Вы не зарегистрированы в чате');
         }
         if (isOwnerNick(mb_strtolower((string) $row['nick'])) && !$row['is_admin']) {
@@ -702,8 +706,8 @@ try {
     if ($method === 'POST' && $action === 'send') {
         $user = requireUser('Сначала займи ник');
         if (hasEmailColumns()) {
-            $chk = one('SELECT email_verified_at FROM users WHERE id = ?', [$user['id']]);
-            if (empty($chk['email_verified_at'])) {
+            $chk = one('SELECT email_verified_at, email_code FROM users WHERE id = ?', [$user['id']]);
+            if (empty($chk['email_verified_at']) && !empty($chk['email_code'])) {
                 fail(403, 'Вы не зарегистрированы в чате');
             }
         }
