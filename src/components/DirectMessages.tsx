@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils';
 import { toast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/use-auth';
 import { api, ApiMessage } from '@/lib/api';
-import { nickColorClass, NickColor } from '@/data/chat';
+import { nickColorClass, NickColor, staffNickClass } from '@/data/chat';
 import { lastSeenText } from '@/lib/last-seen';
 import { useDm } from '@/hooks/use-dm';
 import { useCall } from '@/hooks/use-call';
@@ -87,7 +87,7 @@ const DirectMessages = () => {
           <div>
             <p className="font-display text-lg font-extrabold uppercase leading-none tracking-[-0.02em]">
               Личка с{' '}
-              <span className={cn(peer ? nickColorClass[peer.color] : 'text-foreground')}>{nick}</span>
+              <span className={cn(staffNickClass(nick, peer ? nickColorClass[peer.color] : 'text-foreground'))}>{nick}</span>
             </p>
             {peer && (
               <p className="mt-1 flex flex-wrap items-center gap-2 text-[0.85rem] text-muted-foreground">
@@ -166,7 +166,7 @@ const DirectMessages = () => {
                 )}
               >
                 <p className="flex items-center gap-2">
-                  <span className={cn('text-[0.84rem] font-semibold sm:text-[1rem]', nickColorClass[m.color])}>{m.nick}</span>
+                  <span className={cn('text-[0.84rem] font-semibold sm:text-[1rem]', staffNickClass(m.nick, nickColorClass[m.color]))}>{m.nick}</span>
                   <span className="font-mono text-[0.64rem] text-muted-foreground sm:text-[0.72rem]">{m.time}</span>
                 </p>
                 <p className="mt-1 text-[0.86rem] text-foreground/90 sm:text-[1rem]">{m.text}</p>

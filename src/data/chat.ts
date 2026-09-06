@@ -286,3 +286,6 @@ export const isStaffNick = (nick?: string | null): boolean => {
   const n = (nick ?? '').trim().toLowerCase();
   return n === 'админ' || n === 'комендант';
 };
+
+export const staffNickClass = (nick: string | null | undefined, fallback: string): string =>
+  isStaffNick(nick) ? 'font-bold text-red-500 [.day_&]:text-red-600' : fallback;

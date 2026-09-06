@@ -3,7 +3,7 @@ import Icon from '@/components/ui/icon';
 import { cn } from '@/lib/utils';
 import { useDm } from '@/hooks/use-dm';
 import { useCall } from '@/hooks/use-call';
-import { nickColorClass } from '@/data/chat';
+import { nickColorClass, staffNickClass } from '@/data/chat';
 import { lastSeenText } from '@/lib/last-seen';
 
 const DialogsList = () => {
@@ -62,7 +62,7 @@ const DialogsList = () => {
                     )}
                   />
                   <span className="min-w-0">
-                    <span className={cn('block truncate text-[0.86rem] font-semibold sm:text-[1rem]', nickColorClass[d.color])}>{d.nick}</span>
+                    <span className={cn('block truncate text-[0.86rem] font-semibold sm:text-[1rem]', staffNickClass(d.nick, nickColorClass[d.color]))}>{d.nick}</span>
                     <span className="block font-mono text-[0.62rem] uppercase tracking-[0.06em] text-muted-foreground sm:text-[0.7rem]">
                       {d.online ? 'в сети' : lastSeenText(d.seenAgo)}
                     </span>

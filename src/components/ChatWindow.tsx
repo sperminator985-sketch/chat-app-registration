@@ -5,7 +5,7 @@ import { usePolling } from '@/hooks/use-polling';
 import { useAuth } from '@/hooks/use-auth';
 import { getToken, api, ApiMessage } from '@/lib/api';
 import { toast } from '@/hooks/use-toast';
-import { nickColorClass, rooms, canEnterRoom, isStaffNick } from '@/data/chat';
+import { nickColorClass, rooms, canEnterRoom, isStaffNick, staffNickClass } from '@/data/chat';
 import { useDm } from '@/hooks/use-dm';
 import { useCall } from '@/hooks/use-call';
 import EmojiPicker from '@/components/EmojiPicker';
@@ -409,7 +409,7 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
                       className="w-full py-3 pl-4 pr-14 text-left transition-colors hover:bg-muted/50 disabled:cursor-default disabled:hover:bg-transparent"
                     >
                       <div className="flex items-center gap-2">
-                        <span className={cn('font-normal', nickColorClass[u.color as 1])}>{u.nick}</span>
+                        <span className={cn('font-normal', staffNickClass(u.nick, nickColorClass[u.color as 1]))}>{u.nick}</span>
                         {isMe ? (
                           <span className="ml-auto font-mono text-[0.7rem] uppercase text-secondary">это ты</span>
                         ) : unread[u.nick] ? (

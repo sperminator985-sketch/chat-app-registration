@@ -3,7 +3,7 @@ import { Dialog, DialogContent } from '@/components/ui/dialog';
 import Icon from '@/components/ui/icon';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/use-auth';
-import { AvatarId, NickColor, nickBgClass, nickColorClass, nickColors, rooms } from '@/data/chat';
+import { AvatarId, NickColor, nickBgClass, nickColorClass, nickColors, rooms, staffNickClass } from '@/data/chat';
 import { toast } from '@/hooks/use-toast';
 
 type ProfileDialogProps = {
@@ -59,7 +59,7 @@ const ProfileDialog = ({ open, onOpenChange }: ProfileDialogProps) => {
             <p className="text-[0.78rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
               Профиль жильца
             </p>
-            <h3 className={cn('mt-1 font-display text-2xl font-extrabold', nickColorClass[color])}>{user.nick}</h3>
+            <h3 className={cn('mt-1 font-display text-2xl font-extrabold', staffNickClass(user.nick, nickColorClass[color]))}>{user.nick}</h3>
           </div>
         </div>
 
