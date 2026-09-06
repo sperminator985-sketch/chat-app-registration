@@ -9,6 +9,22 @@ const Footer = () => (
         Все права защищены.
       </span>
 
+      <a
+        href="https://metrika.yandex.ru/stat/?id=112321183&amp;from=informer"
+        target="_blank"
+        rel="nofollow noreferrer"
+        className="order-4 shrink-0 border-2 border-foreground/35 bg-background p-1 transition-colors hover:border-secondary sm:order-none"
+        title="Яндекс.Метрика: данные за сегодня (просмотры, визиты и уникальные посетители)"
+      >
+        <img
+          src="https://informer.yandex.ru/informer/112321183/3_1_FFFFFFFF_EFEFEFFF_0_pageviews"
+          alt="Яндекс.Метрика"
+          width={88}
+          height={31}
+          className="block"
+        />
+      </a>
+
       <div className="order-2 flex shrink-0 flex-col items-center gap-1 text-center sm:order-none">
         <Link
           to="/privacy"
