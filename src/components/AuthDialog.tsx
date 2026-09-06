@@ -58,6 +58,7 @@ const AuthDialog = () => {
   const [email, setEmail] = useState('');
   const [emailFree, setEmailFree] = useState<'idle' | 'checking' | 'free' | 'taken'>('idle');
   const [nickFree, setNickFree] = useState<'idle' | 'checking' | 'free' | 'taken'>('idle');
+  const [nickTakenText, setNickTakenText] = useState('Такой ник уже занят');
   const [code, setCode] = useState('');
   const [codeError, setCodeError] = useState('');
   const [nick, setNick] = useState('');
@@ -98,7 +99,10 @@ const AuthDialog = () => {
     const t = window.setTimeout(() => {
       api
         .checkNick(value)
-        .then((res) => setNickFree(res.free ? 'free' : 'taken'))
+        .then((res) => {
+          setNickFree(res.free ? 'free' : 'taken');
+          if (!res.free) setNickTakenText(res.error || 'Такой ник уже занят');
+        })
         .catch(() => setNickFree('idle'));
     }, 500);
     return () => window.clearTimeout(t);
@@ -610,7 +614,7 @@ const AuthDialog = () => {
             {errors.nick || (isRegister && nickFree === 'taken') ? (
               <p className="mt-1.5 flex items-center gap-1.5 text-[0.85rem] text-primary">
                 <Icon name="TriangleAlert" size={14} />
-                {errors.nick || 'Такой ник уже занят'}
+                {errors.nick || nickTakenText}
               </p>
             ) : isRegister && nickFree === 'checking' ? (
               <p className="mt-1.5 text-[0.82rem] text-muted-foreground">Смотрим по журналу…</p>
