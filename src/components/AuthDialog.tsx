@@ -122,7 +122,7 @@ const AuthDialog = () => {
       if (!agree) next.agree = 'Правила общаги надо принять';
       const emailError = checkEmail(email);
       if (emailError) next.email = emailError;
-      else if (emailFree === 'taken') next.email = 'На эту почту уже кто-то заселился';
+      else if (emailFree === 'taken') next.email = 'Эту почту уже кто-то занял';
     }
     setErrors(next);
     return Object.keys(next).length === 0;
@@ -506,7 +506,7 @@ const AuthDialog = () => {
               {errors.email || emailFree === 'taken' ? (
                 <p className="mt-1.5 flex items-center gap-1.5 text-[0.85rem] text-primary">
                   <Icon name="TriangleAlert" size={14} />
-                  {errors.email || 'На эту почту уже кто-то заселился'}
+                  {errors.email || 'Эту почту уже кто-то занял'}
                 </p>
               ) : emailFree === 'checking' ? (
                 <p className="mt-1.5 text-[0.82rem] text-muted-foreground">Проверяем почту…</p>

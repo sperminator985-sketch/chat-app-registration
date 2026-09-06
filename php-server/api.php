@@ -458,7 +458,7 @@ try {
                 fail(400, 'Адрес почты указан с ошибкой');
             }
             if (one('SELECT id FROM users WHERE email = ?', [$email])) {
-                fail(409, 'На эту почту уже кто-то заселился');
+                fail(409, 'Эту почту уже кто-то занял');
             }
         }
 
@@ -513,7 +513,7 @@ try {
         }
         $taken = (bool) one('SELECT id FROM users WHERE email = ?', [$email]);
         out(200, $taken
-            ? ['free' => false, 'error' => 'На эту почту уже кто-то заселился']
+            ? ['free' => false, 'error' => 'Эту почту уже кто-то занял']
             : ['free' => true]);
     }
 
