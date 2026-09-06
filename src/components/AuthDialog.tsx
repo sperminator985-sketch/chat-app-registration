@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import Icon from '@/components/ui/icon';
@@ -64,6 +64,7 @@ const AuthDialog = () => {
   const [answer, setAnswer] = useState('');
 
   const [mode, setMode] = useState<'auth' | 'recover' | 'verify'>('auth');
+  const recPassRef = useRef<HTMLInputElement>(null);
   const [recWay, setRecWay] = useState<'mail' | 'question'>('mail');
   const [recCode, setRecCode] = useState('');
   const [recMail, setRecMail] = useState('');
@@ -184,6 +185,13 @@ const AuthDialog = () => {
       setBusy(false);
     }
   };
+
+  useEffect(() => {
+    if (mode !== 'verify' || busy || code.length !== 6) return;
+    const t = window.setTimeout(() => confirmCode(), 250);
+    return () => window.clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [code, mode]);
 
   const askQuestion = async () => {
     const n = recNick.trim();
@@ -326,6 +334,7 @@ const AuthDialog = () => {
                 value={code}
                 onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
                 inputMode="numeric"
+                autoFocus
                 placeholder="Введите код"
                 className={cn(
                   field,
@@ -416,8 +425,15 @@ const AuthDialog = () => {
                   </label>
                   <input
                     value={recCode}
-                    onChange={(e) => setRecCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                    onChange={(e) => {
+                      const v = e.target.value.replace(/\D/g, '').slice(0, 6);
+                      setRecCode(v);
+                      if (v.length === 6) {
+                        window.setTimeout(() => recPassRef.current?.focus(), 100);
+                      }
+                    }}
                     inputMode="numeric"
+                    autoFocus
                     placeholder="Введите код"
                     className={cn(
                       field,
@@ -432,9 +448,13 @@ const AuthDialog = () => {
                   </label>
                   <div className="relative">
                     <input
+                      ref={recPassRef}
                       type={recShow ? 'text' : 'password'}
                       value={recPass}
                       onChange={(e) => setRecPass(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && !busy) resetByMail();
+                      }}
                       placeholder="••••••"
                       className={cn(field, 'pr-11')}
                     />
