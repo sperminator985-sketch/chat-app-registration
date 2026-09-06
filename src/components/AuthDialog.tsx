@@ -272,14 +272,18 @@ const AuthDialog = () => {
   const field = 'w-full border-2 border-foreground/35 bg-input px-3 py-2.5 text-foreground outline-none transition-colors placeholder:text-muted-foreground/70 focus:border-secondary sm:py-1.5 sm:text-[0.92rem]';
 
   return (
-    <Dialog open={authOpen} onOpenChange={(v) => (v ? openAuth(authTab) : dismiss())}>
-      <DialogContent className="top-[5vh] max-h-[90vh] max-w-[520px] translate-y-0 overflow-y-auto border-2 border-foreground/40 bg-card p-0 text-card-foreground [&>button]:hidden">
+    <Dialog open={authOpen} onOpenChange={(v) => (v ? openAuth(authTab) : mode === 'verify' ? undefined : closeAuth())}>
+      <DialogContent
+        onPointerDownOutside={(e) => mode === 'verify' && e.preventDefault()}
+        onInteractOutside={(e) => mode === 'verify' && e.preventDefault()}
+        onEscapeKeyDown={(e) => mode === 'verify' && e.preventDefault()}
+        className="top-[5vh] max-h-[90vh] max-w-[520px] translate-y-0 overflow-y-auto border-2 border-foreground/40 bg-card p-0 text-card-foreground [&>button]:hidden">
         <div className="sticky top-0 z-20 flex border-b-2 border-foreground/35 bg-card">
           {(['register', 'login'] as const).map((tab) => (
             <button
               key={tab}
-              onClick={async () => {
-                if (mode === 'verify') await cancelRegister();
+              onClick={() => {
+                if (mode === 'verify') return;
                 setErrors({});
                 setMode('auth');
                 openAuth(tab);
