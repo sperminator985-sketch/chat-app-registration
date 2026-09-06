@@ -707,21 +707,6 @@ const AuthDialog = () => {
 
               <div>
                 <label className="mb-1.5 block text-[0.78rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground sm:mb-1 sm:text-[0.7rem]">
-                  Стартовый этаж
-                </label>
-                <select value={room} onChange={(e) => setRoom(e.target.value)} className={field}>
-                  {rooms
-                    .filter((r) => canEnterRoom(r.id, uni))
-                    .map((r) => (
-                      <option key={r.id} value={r.id} className="bg-card">
-                        {r.floor} — {r.title}
-                      </option>
-                    ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="mb-1.5 block text-[0.78rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground sm:mb-1 sm:text-[0.7rem]">
                   В каком Вузе Томска вы учитесь?
                 </label>
                 <select
@@ -744,6 +729,21 @@ const AuthDialog = () => {
                       {u}
                     </option>
                   ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="mb-1.5 block text-[0.78rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground sm:mb-1 sm:text-[0.7rem]">
+                  Стартовый этаж
+                </label>
+                <select value={room} onChange={(e) => setRoom(e.target.value)} className={field}>
+                  {rooms
+                    .filter((r) => canEnterRoom(r.id, uni))
+                    .map((r) => (
+                      <option key={r.id} value={r.id} className="bg-card">
+                        {r.floor} — {r.title}
+                      </option>
+                    ))}
                 </select>
               </div>
 
