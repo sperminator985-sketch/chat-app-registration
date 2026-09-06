@@ -540,7 +540,7 @@ const AuthDialog = () => {
                 </p>
               ) : (
                 <p className="mt-1.5 text-[0.82rem] text-muted-foreground">
-                  На неё придёт код подтверждения. Никакого спама.
+                  На неё придёт код подтверждения.
                 </p>
               )}
             </div>
