@@ -632,6 +632,9 @@ try {
         if ($row['banned_at'] !== null) {
             fail(403, 'Ты выселен из общаги: ' . ($row['ban_reason'] ?: 'нарушение правил'));
         }
+        if (hasEmailColumns() && empty($row['email_verified_at'])) {
+            fail(403, 'Вы не зарегистрированы в чате');
+        }
         if (isOwnerNick(mb_strtolower((string) $row['nick'])) && !$row['is_admin']) {
             q('UPDATE users SET is_admin = 1 WHERE id = ?', [(int) $row['id']]);
             $row['is_admin'] = 1;
@@ -668,6 +671,12 @@ try {
     // --- Отправка сообщения в комнату ---
     if ($method === 'POST' && $action === 'send') {
         $user = requireUser('Сначала займи ник');
+        if (hasEmailColumns()) {
+            $chk = one('SELECT email_verified_at FROM users WHERE id = ?', [$user['id']]);
+            if (empty($chk['email_verified_at'])) {
+                fail(403, 'Вы не зарегистрированы в чате');
+            }
+        }
         $text = mb_substr(trim((string) param('text', '')), 0, 500);
         $room = (string) param('room', $user['room']);
         if ($text === '') {
