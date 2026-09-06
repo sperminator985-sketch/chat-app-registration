@@ -163,6 +163,10 @@ export const api = {
     request<{ question: string }>('recover_question', { query: `&nick=${encodeURIComponent(nick)}` }),
   recoverReset: (body: { nick: string; answer: string; password: string }) =>
     request<{ ok: boolean }>('recover_reset', { method: 'POST', body }),
+  recoverMailCode: (nick: string) =>
+    request<{ ok: boolean; email: string }>('recover_mail_code', { method: 'POST', body: { nick } }),
+  recoverMailReset: (body: { nick: string; code: string; password: string }) =>
+    request<{ ok: boolean }>('recover_mail_reset', { method: 'POST', body }),
   register: (body: { nick: string; password: string; color: number; room: string; avatar: number; question?: string; answer?: string; uni?: string; email?: string }) =>
     request<{ user: ApiUser; token: string; needVerify?: boolean; mailSent?: boolean }>('register', { method: 'POST', body }),
   checkEmail: (email: string) =>

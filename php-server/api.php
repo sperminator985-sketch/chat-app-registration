@@ -250,13 +250,15 @@ function hasEmailColumns(): bool
     return $ok;
 }
 
-function sendCodeMail(string $email, string $nick, string $code): bool
+function sendCodeMail(string $email, string $nick, string $code, bool $isRecovery = false): bool
 {
     $host = $_SERVER['HTTP_HOST'] ?? 'chat-tom.ru';
     $from = 'noreply@' . preg_replace('/^www\./', '', $host);
-    $subject = '=?UTF-8?B?' . base64_encode('Код подтверждения — ЧАТ-ОБЩАГА') . '?=';
+    $title = $isRecovery ? 'Восстановление пароля — ЧАТ-ОБЩАГА' : 'Код подтверждения — ЧАТ-ОБЩАГА';
+    $line = $isRecovery ? 'Код для смены пароля' : 'Код подтверждения регистрации';
+    $subject = '=?UTF-8?B?' . base64_encode($title) . '?=';
     $message = '<p>Привет, ' . htmlspecialchars($nick, ENT_QUOTES, 'UTF-8') . '!</p>'
-        . '<p>Код подтверждения регистрации: <b style="font-size:22px">' . $code . '</b></p>'
+        . '<p>' . $line . ': <b style="font-size:22px">' . $code . '</b></p>'
         . '<p>Код действует 30 минут. Если это не ты — просто удали письмо.</p>';
     $headers = "MIME-Version: 1.0\r\n"
         . "Content-type: text/html; charset=utf-8\r\n"
@@ -264,11 +266,20 @@ function sendCodeMail(string $email, string $nick, string $code): bool
     return @mail($email, $subject, $message, $headers);
 }
 
-function issueEmailCode(int $userId, string $email, string $nick): bool
+function issueEmailCode(int $userId, string $email, string $nick, bool $isRecovery = false): bool
 {
     $code = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
     q('UPDATE users SET email_code = ?, email_code_at = UTC_TIMESTAMP() WHERE id = ?', [$code, $userId]);
-    return sendCodeMail($email, $nick, $code);
+    return sendCodeMail($email, $nick, $code, $isRecovery);
+}
+
+function maskEmail(string $email): string
+{
+    $parts = explode('@', $email);
+    $name = $parts[0] ?? '';
+    $domain = $parts[1] ?? '';
+    $visible = mb_substr($name, 0, min(2, mb_strlen($name)));
+    return $visible . str_repeat('*', max(2, mb_strlen($name) - 2)) . '@' . $domain;
 }
 
 function shapeMessage(array $r): array
@@ -535,6 +546,53 @@ try {
         }
         $sent = issueEmailCode((int) $me['id'], (string) $row['email'], (string) $me['nick']);
         out(200, ['ok' => true, 'mailSent' => $sent]);
+    }
+
+    // --- Восстановление по почте: выслать код ---
+    if ($method === 'POST' && $action === 'recover_mail_code') {
+        $nick = trim((string) param('nick', ''));
+        if (!hasEmailColumns()) {
+            fail(400, 'Восстановление по почте недоступно');
+        }
+        $row = one('SELECT id, nick, email, email_code_at FROM users WHERE nick_lower = ?', [mb_strtolower($nick)]);
+        if (!$row) {
+            fail(404, 'Такого жильца нет в журнале');
+        }
+        if (empty($row['email'])) {
+            fail(404, 'У этого ника не указана почта — восстанови по секретному вопросу');
+        }
+        if (!empty($row['email_code_at']) && strtotime((string) $row['email_code_at']) > time() - 60) {
+            fail(429, 'Код уже отправлен — подожди минуту');
+        }
+        issueEmailCode((int) $row['id'], (string) $row['email'], (string) $row['nick'], true);
+        out(200, ['ok' => true, 'email' => maskEmail((string) $row['email'])]);
+    }
+
+    // --- Восстановление по почте: сброс пароля кодом ---
+    if ($method === 'POST' && $action === 'recover_mail_reset') {
+        $nick = trim((string) param('nick', ''));
+        $code = preg_replace('/\D/', '', (string) param('code', ''));
+        $newPassword = (string) param('password', '');
+        if (!hasEmailColumns()) {
+            fail(400, 'Восстановление по почте недоступно');
+        }
+        if (mb_strlen($newPassword) < 5) {
+            fail(400, 'Пароль от 5 символов');
+        }
+        $row = one('SELECT id, email_code, email_code_at FROM users WHERE nick_lower = ?', [mb_strtolower($nick)]);
+        if (!$row || empty($row['email_code'])) {
+            fail(404, 'Сначала запроси код на почту');
+        }
+        if ($code === '' || !hash_equals((string) $row['email_code'], $code)) {
+            fail(400, 'Код не подошёл — проверь письмо');
+        }
+        if (strtotime((string) $row['email_code_at']) < time() - 1800) {
+            fail(400, 'Код устарел — запроси новый');
+        }
+        q('UPDATE users SET password_hash = ?, email_code = NULL, email_verified_at = COALESCE(email_verified_at, UTC_TIMESTAMP()) WHERE id = ?',
+          [password_hash($newPassword, PASSWORD_DEFAULT), (int) $row['id']]);
+        q('DELETE FROM sessions WHERE user_id = ?', [(int) $row['id']]);
+        out(200, ['ok' => true]);
     }
 
     // --- Восстановление: получить секретный вопрос ---
