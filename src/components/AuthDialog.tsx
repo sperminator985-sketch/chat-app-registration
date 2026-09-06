@@ -452,7 +452,7 @@ const AuthDialog = () => {
         <form onSubmit={submit} className="space-y-5 px-6 pb-6 pt-5 sm:space-y-3 sm:pb-4 sm:pt-4">
           <p className="text-[0.98rem] leading-[1.4] text-muted-foreground sm:text-[0.85rem]">
             {isRegister
-              ? 'Ник, пароль, почта — и комната твоя. На почту придёт код подтверждения.'
+              ? 'На почту придёт код подтверждения.'
               : 'Ник и пароль. Вахтёрша Зина проверит по журналу.'}
           </p>
 
