@@ -17,6 +17,8 @@ export type ApiUser = {
   avatarUrl?: string | null;
   isAdmin?: boolean;
   uni?: string | null;
+  email?: string | null;
+  emailVerified?: boolean;
 };
 
 export type AdminUser = {
@@ -161,8 +163,11 @@ export const api = {
     request<{ question: string }>('recover_question', { query: `&nick=${encodeURIComponent(nick)}` }),
   recoverReset: (body: { nick: string; answer: string; password: string }) =>
     request<{ ok: boolean }>('recover_reset', { method: 'POST', body }),
-  register: (body: { nick: string; password: string; color: number; room: string; avatar: number; question?: string; answer?: string; uni?: string }) =>
-    request<{ user: ApiUser; token: string }>('register', { method: 'POST', body }),
+  register: (body: { nick: string; password: string; color: number; room: string; avatar: number; question?: string; answer?: string; uni?: string; email?: string }) =>
+    request<{ user: ApiUser; token: string; needVerify?: boolean; mailSent?: boolean }>('register', { method: 'POST', body }),
+  verifyEmail: (code: string) =>
+    request<{ ok: boolean; user?: ApiUser }>('verify_email', { method: 'POST', body: { code } }),
+  resendCode: () => request<{ ok: boolean; mailSent?: boolean }>('resend_code', { method: 'POST' }),
   login: (body: { nick: string; password: string }) =>
     request<{ user: ApiUser; token: string }>('login', { method: 'POST', body }),
   typing: (room: string) => request<{ ok: boolean }>('typing', { method: 'POST', body: { room } }),

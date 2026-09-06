@@ -8,7 +8,7 @@ import { api } from '@/lib/api';
 import { AvatarId, NickColor, nickBgClass, nickColorClass, nickColors, rooms, canEnterRoom } from '@/data/chat';
 import { toast } from '@/hooks/use-toast';
 
-type Errors = { nick?: string; pass?: string; pass2?: string; agree?: string; answer?: string };
+type Errors = { nick?: string; pass?: string; pass2?: string; agree?: string; answer?: string; email?: string };
 
 const SECRET_QUESTIONS = [
   'Кличка первого питомца?',
@@ -22,9 +22,12 @@ const SECRET_QUESTIONS = [
 const UNI_LIST = ['ТГУ', 'ТУСУР', 'СибГМУ', 'ТПУ', 'ТГАСУ', 'ТГПУ'];
 
 const AuthDialog = () => {
-  const { authOpen, authTab, closeAuth, openAuth, register, login } = useAuth();
+  const { authOpen, authTab, closeAuth, openAuth, register, login, verifyEmail } = useAuth();
   const [busy, setBusy] = useState(false);
 
+  const [email, setEmail] = useState('');
+  const [code, setCode] = useState('');
+  const [codeError, setCodeError] = useState('');
   const [nick, setNick] = useState('');
   const [pass, setPass] = useState('');
   const [pass2, setPass2] = useState('');
@@ -38,7 +41,7 @@ const AuthDialog = () => {
   const [question, setQuestion] = useState(SECRET_QUESTIONS[0]);
   const [answer, setAnswer] = useState('');
 
-  const [mode, setMode] = useState<'auth' | 'recover'>('auth');
+  const [mode, setMode] = useState<'auth' | 'recover' | 'verify'>('auth');
   const [recNick, setRecNick] = useState('');
   const [recQuestion, setRecQuestion] = useState('');
   const [recAnswer, setRecAnswer] = useState('');
@@ -60,6 +63,7 @@ const AuthDialog = () => {
     if (isRegister) {
       if (pass2 !== pass) next.pass2 = 'Пароли не совпадают';
       if (!agree) next.agree = 'Правила общаги надо принять';
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) next.email = 'Введи настоящую почту — на неё придёт код';
       if (answer.trim().length < 2) next.answer = 'Ответ от 2 символов — пригодится при восстановлении';
     }
     setErrors(next);
@@ -73,7 +77,7 @@ const AuthDialog = () => {
     setBusy(true);
     try {
       if (isRegister) {
-        await register({
+        const needVerify = await register({
           nick: nick.trim(),
           password: pass,
           color,
@@ -82,7 +86,14 @@ const AuthDialog = () => {
           question,
           answer: answer.trim(),
           uni: uni || undefined,
+          email: email.trim(),
         });
+        if (needVerify) {
+          setCode('');
+          setCodeError('');
+          setMode('verify');
+          toast({ title: 'Письмо ушло', description: `Код отправлен на ${email.trim()}` });
+        }
       } else {
         await login({ nick: nick.trim(), password: pass });
       }
@@ -95,6 +106,37 @@ const AuthDialog = () => {
       } else {
         toast({ title: 'Вахтёрша не пустила', description: text, variant: 'destructive' });
       }
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const confirmCode = async () => {
+    if (code.trim().length < 4) {
+      setCodeError('Введи код из письма');
+      return;
+    }
+    setBusy(true);
+    setCodeError('');
+    try {
+      await verifyEmail(code.trim());
+      toast({ title: 'Почта подтверждена', description: 'Добро пожаловать в общагу' });
+      setMode('auth');
+    } catch (err) {
+      setCodeError(err instanceof Error ? err.message : 'Код не подошёл');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const resendCode = async () => {
+    setBusy(true);
+    setCodeError('');
+    try {
+      await api.resendCode();
+      toast({ title: 'Отправили ещё раз', description: 'Проверь почту и папку «Спам»' });
+    } catch (err) {
+      setCodeError(err instanceof Error ? err.message : 'Не получилось отправить');
     } finally {
       setBusy(false);
     }
@@ -176,7 +218,50 @@ const AuthDialog = () => {
           </button>
         </div>
 
-        {mode === 'recover' ? (
+        {mode === 'verify' ? (
+          <div className="space-y-5 px-6 pb-6 pt-5 sm:space-y-3 sm:pb-4 sm:pt-4">
+            <div>
+              <p className="font-display text-lg font-extrabold uppercase tracking-[0.06em]">
+                Подтверди почту
+              </p>
+              <p className="mt-1 text-[0.95rem] leading-[1.4] text-muted-foreground">
+                Мы отправили код на {email.trim()}. Загляни в письмо — и в папку «Спам» тоже.
+              </p>
+            </div>
+
+            <div>
+              <label className="mb-1.5 block text-[0.78rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground sm:mb-1 sm:text-[0.7rem]">
+                Код из письма
+              </label>
+              <input
+                value={code}
+                onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                inputMode="numeric"
+                placeholder="123456"
+                className={cn(field, 'text-center font-mono text-xl tracking-[0.4em]', codeError && 'border-primary')}
+              />
+              {codeError && <p className="mt-1.5 text-[0.85rem] text-primary">{codeError}</p>}
+            </div>
+
+            <button
+              type="button"
+              disabled={busy}
+              onClick={confirmCode}
+              className="btn-brut w-full justify-center disabled:opacity-60"
+            >
+              {busy ? 'Секунду…' : 'Подтвердить'}
+            </button>
+
+            <button
+              type="button"
+              disabled={busy}
+              onClick={resendCode}
+              className="w-full text-center text-[0.9rem] text-muted-foreground underline underline-offset-4 transition-colors hover:text-secondary"
+            >
+              Отправить код ещё раз
+            </button>
+          </div>
+        ) : mode === 'recover' ? (
           <div className="space-y-5 px-6 pb-6 pt-5 sm:space-y-3 sm:pb-4 sm:pt-4">
             <div>
               <p className="font-display text-lg font-extrabold uppercase tracking-[0.06em]">
@@ -268,7 +353,7 @@ const AuthDialog = () => {
         <form onSubmit={submit} className="space-y-5 px-6 pb-6 pt-5 sm:space-y-3 sm:pb-4 sm:pt-4">
           <p className="text-[0.98rem] leading-[1.4] text-muted-foreground sm:text-[0.85rem]">
             {isRegister
-              ? 'Ник, пароль, цвет — и комната твоя. Почту не спрашиваем.'
+              ? 'Ник, пароль, почта — и комната твоя. На почту придёт код подтверждения.'
               : 'Ник и пароль. Вахтёрша Зина проверит по журналу.'}
           </p>
 
@@ -289,6 +374,31 @@ const AuthDialog = () => {
               </p>
             )}
           </div>
+
+          {isRegister && (
+            <div>
+              <label className="mb-1.5 block text-[0.78rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground sm:mb-1 sm:text-[0.7rem]">
+                Почта
+              </label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="student@mail.ru"
+                className={cn(field, errors.email && 'border-primary')}
+              />
+              {errors.email ? (
+                <p className="mt-1.5 flex items-center gap-1.5 text-[0.85rem] text-primary">
+                  <Icon name="TriangleAlert" size={14} />
+                  {errors.email}
+                </p>
+              ) : (
+                <p className="mt-1.5 text-[0.82rem] text-muted-foreground">
+                  На неё придёт код подтверждения. Никакого спама.
+                </p>
+              )}
+            </div>
+          )}
 
           <div className="grid gap-4 sm:grid-cols-2 sm:gap-3">
             <div>

@@ -12,8 +12,9 @@ type AuthState = {
   closeWelcome: () => void;
   openAuth: (tab?: 'register' | 'login') => void;
   closeAuth: () => void;
-  register: (body: { nick: string; password: string; color: number; room: string; avatar: number; question?: string; answer?: string; uni?: string }) => Promise<void>;
+  register: (body: { nick: string; password: string; color: number; room: string; avatar: number; question?: string; answer?: string; uni?: string; email?: string }) => Promise<boolean>;
   login: (body: { nick: string; password: string }) => Promise<void>;
+  verifyEmail: (code: string) => Promise<void>;
   signOut: () => void;
   saveProfile: (body: { status: string; color: number; avatar: number; image?: string; removeImage?: boolean }) => Promise<void>;
 };
@@ -48,10 +49,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const closeWelcome = useCallback(() => setWelcomeOpen(false), []);
 
-  const register = useCallback(async (body: { nick: string; password: string; color: number; room: string; avatar: number; question?: string; answer?: string; uni?: string }) => {
+  const register = useCallback(async (body: { nick: string; password: string; color: number; room: string; avatar: number; question?: string; answer?: string; uni?: string; email?: string }) => {
     const res = await api.register(body);
     setToken(res.token);
     setUser(res.user);
+    const needVerify = Boolean(res.needVerify) && !res.user.emailVerified;
+    if (!needVerify) setAuthOpen(false);
+    return needVerify;
+  }, []);
+
+  const verifyEmail = useCallback(async (code: string) => {
+    const res = await api.verifyEmail(code);
+    if (res.user) setUser(res.user);
     setAuthOpen(false);
   }, []);
 
@@ -84,9 +93,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const value = useMemo(
     () => ({
       user, loading, authOpen, authTab, welcomeOpen, closeWelcome,
-      openAuth, closeAuth, register, login, signOut, saveProfile,
+      openAuth, closeAuth, register, login, verifyEmail, signOut, saveProfile,
     }),
-    [user, loading, authOpen, authTab, welcomeOpen, closeWelcome, openAuth, closeAuth, register, login, signOut, saveProfile],
+    [user, loading, authOpen, authTab, welcomeOpen, closeWelcome, openAuth, closeAuth, register, login, verifyEmail, signOut, saveProfile],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

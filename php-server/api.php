@@ -128,6 +128,8 @@ function shapeUser(array $r): array
         'avatarUrl' => $r['avatar_url'],
         'isAdmin' => (bool) ($r['is_admin'] ?? false),
         'uni' => $r['uni'] ?? null,
+        'email' => $r['email'] ?? null,
+        'emailVerified' => !empty($r['email_verified_at']),
     ];
 }
 
@@ -215,6 +217,58 @@ function hasUniColumn(): bool
         $ok = false;
     }
     return $ok;
+}
+
+function hasEmailColumns(): bool
+{
+    static $ok = null;
+    if ($ok !== null) {
+        return $ok;
+    }
+    try {
+        $found = (int) scalar(
+            "SELECT COUNT(*) FROM information_schema.COLUMNS
+             WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users'
+               AND COLUMN_NAME IN ('email', 'email_verified_at', 'email_code', 'email_code_at')"
+        );
+        if ($found < 4) {
+            try {
+                db()->exec("ALTER TABLE users
+                    ADD COLUMN email VARCHAR(120) NULL,
+                    ADD COLUMN email_verified_at DATETIME NULL,
+                    ADD COLUMN email_code VARCHAR(8) NULL,
+                    ADD COLUMN email_code_at DATETIME NULL");
+                $found = 4;
+            } catch (Throwable $e) {
+                // нет прав на ALTER — работаем без почты
+            }
+        }
+        $ok = $found >= 4;
+    } catch (Throwable $e) {
+        $ok = false;
+    }
+    return $ok;
+}
+
+function sendCodeMail(string $email, string $nick, string $code): bool
+{
+    $host = $_SERVER['HTTP_HOST'] ?? 'chat-tom.ru';
+    $from = 'noreply@' . preg_replace('/^www\./', '', $host);
+    $subject = '=?UTF-8?B?' . base64_encode('Код подтверждения — ЧАТ-ОБЩАГА') . '?=';
+    $message = '<p>Привет, ' . htmlspecialchars($nick, ENT_QUOTES, 'UTF-8') . '!</p>'
+        . '<p>Код подтверждения регистрации: <b style="font-size:22px">' . $code . '</b></p>'
+        . '<p>Код действует 30 минут. Если это не ты — просто удали письмо.</p>';
+    $headers = "MIME-Version: 1.0\r\n"
+        . "Content-type: text/html; charset=utf-8\r\n"
+        . 'From: =?UTF-8?B?' . base64_encode('ЧАТ-ОБЩАГА') . "?= <{$from}>\r\n";
+    return @mail($email, $subject, $message, $headers);
+}
+
+function issueEmailCode(int $userId, string $email, string $nick): bool
+{
+    $code = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+    q('UPDATE users SET email_code = ?, email_code_at = UTC_TIMESTAMP() WHERE id = ?', [$code, $userId]);
+    return sendCodeMail($email, $nick, $code);
 }
 
 function shapeMessage(array $r): array
@@ -379,6 +433,17 @@ try {
             $uni = null;
         }
 
+        $email = mb_strtolower(trim((string) param('email', '')));
+        $useEmail = hasEmailColumns();
+        if ($useEmail) {
+            if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                fail(400, 'Введи настоящую почту — на неё придёт код');
+            }
+            if (one('SELECT id FROM users WHERE email = ?', [$email])) {
+                fail(409, 'На эту почту уже кто-то заселился');
+            }
+        }
+
         if (hasUniColumn()) {
             q(
                 'INSERT INTO users (nick, nick_lower, password_hash, color, status, room, avatar, is_admin, secret_question, secret_answer_hash, uni, created_at, last_seen)
@@ -394,11 +459,58 @@ try {
                  isOwnerNick($lower) ? 1 : 0, $question !== '' ? $question : null, $ansHash]
             );
         }
-        $user = shapeUser(one('SELECT * FROM users WHERE id = ?', [(int) db()->lastInsertId()]));
+        $newId = (int) db()->lastInsertId();
+        $mailSent = false;
+        if ($useEmail) {
+            q('UPDATE users SET email = ? WHERE id = ?', [$email, $newId]);
+            $mailSent = issueEmailCode($newId, $email, $nick);
+        }
+        $user = shapeUser(one('SELECT * FROM users WHERE id = ?', [$newId]));
 
         $new = bin2hex(random_bytes(24));
         q('INSERT INTO sessions (token, user_id, created_at) VALUES (?, ?, UTC_TIMESTAMP())', [$new, $user['id']]);
-        out(200, ['user' => $user, 'token' => $new]);
+        out(200, ['user' => $user, 'token' => $new, 'needVerify' => $useEmail, 'mailSent' => $mailSent]);
+    }
+
+    // --- Подтверждение почты кодом ---
+    if ($method === 'POST' && $action === 'verify_email') {
+        $me = requireUser();
+        if (!hasEmailColumns()) {
+            out(200, ['ok' => true]);
+        }
+        $code = preg_replace('/\D/', '', (string) param('code', ''));
+        $row = one('SELECT email_code, email_code_at, email_verified_at FROM users WHERE id = ?', [$me['id']]);
+        if (!empty($row['email_verified_at'])) {
+            out(200, ['ok' => true]);
+        }
+        if (empty($row['email_code']) || $code === '' || !hash_equals((string) $row['email_code'], $code)) {
+            fail(400, 'Код не подошёл — проверь письмо');
+        }
+        if (strtotime((string) $row['email_code_at']) < time() - 1800) {
+            fail(400, 'Код устарел — запроси новый');
+        }
+        q('UPDATE users SET email_verified_at = UTC_TIMESTAMP(), email_code = NULL WHERE id = ?', [$me['id']]);
+        out(200, ['ok' => true, 'user' => shapeUser(one('SELECT * FROM users WHERE id = ?', [$me['id']]))]);
+    }
+
+    // --- Повторная отправка кода ---
+    if ($method === 'POST' && $action === 'resend_code') {
+        $me = requireUser();
+        if (!hasEmailColumns()) {
+            out(200, ['ok' => true]);
+        }
+        $row = one('SELECT email, email_verified_at, email_code_at FROM users WHERE id = ?', [$me['id']]);
+        if (!empty($row['email_verified_at'])) {
+            out(200, ['ok' => true]);
+        }
+        if (empty($row['email'])) {
+            fail(400, 'Почта не указана');
+        }
+        if (!empty($row['email_code_at']) && strtotime((string) $row['email_code_at']) > time() - 60) {
+            fail(429, 'Код уже отправлен — подожди минуту');
+        }
+        $sent = issueEmailCode((int) $me['id'], (string) $row['email'], (string) $me['nick']);
+        out(200, ['ok' => true, 'mailSent' => $sent]);
     }
 
     // --- Восстановление: получить секретный вопрос ---
