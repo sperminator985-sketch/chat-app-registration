@@ -286,9 +286,9 @@ const AuthDialog = () => {
 
         {mode === 'verify' ? (
           <div className="space-y-5 px-6 pb-6 pt-5 sm:space-y-3 sm:pb-4 sm:pt-4">
-            <div>
+            <div className="text-center">
               <p className="font-display text-lg font-extrabold uppercase tracking-[0.06em]">
-                Подтверди почту
+                Подтвердите почту
               </p>
               <p className="mt-1 text-[0.95rem] leading-[1.4] text-muted-foreground">
                 Мы отправили код на {email.trim()}. Загляни в письмо — и в папку «Спам» тоже.
