@@ -169,6 +169,8 @@ export const api = {
     request<{ ok: boolean }>('recover_mail_reset', { method: 'POST', body }),
   register: (body: { nick: string; password: string; color: number; room: string; avatar: number; question?: string; answer?: string; uni?: string; email?: string }) =>
     request<{ user: ApiUser; token: string; needVerify?: boolean; mailSent?: boolean }>('register', { method: 'POST', body }),
+  checkNick: (nick: string) =>
+    request<{ free: boolean; error?: string }>('check_nick', { query: `&nick=${encodeURIComponent(nick)}` }),
   checkEmail: (email: string) =>
     request<{ free: boolean; error?: string }>('check_email', { query: `&email=${encodeURIComponent(email)}` }),
   verifyEmail: (code: string) =>

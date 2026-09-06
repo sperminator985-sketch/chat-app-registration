@@ -496,6 +496,18 @@ try {
         out(200, ['user' => $user, 'token' => $new, 'needVerify' => $useEmail, 'mailSent' => $mailSent]);
     }
 
+    // --- Проверка, свободен ли ник ---
+    if ($method === 'GET' && $action === 'check_nick') {
+        $nick = trim((string) param('nick', ''));
+        if (!preg_match('/^[a-zA-Zа-яА-ЯёЁ0-9_]{3,18}$/u', $nick)) {
+            out(200, ['free' => false, 'error' => 'Ник указан с ошибкой']);
+        }
+        $taken = (bool) one('SELECT id FROM users WHERE nick_lower = ?', [mb_strtolower($nick)]);
+        out(200, $taken
+            ? ['free' => false, 'error' => 'Такой ник уже занят']
+            : ['free' => true]);
+    }
+
     // --- Проверка, свободна ли почта ---
     if ($method === 'GET' && $action === 'check_email') {
         $email = mb_strtolower(trim((string) param('email', '')));

@@ -21,6 +21,15 @@ const SECRET_QUESTIONS = [
 
 const UNI_LIST = ['ТГУ', 'ТУСУР', 'СибГМУ', 'ТПУ', 'ТГАСУ', 'ТГПУ'];
 
+const checkNick = (raw: string): string | null => {
+  const n = raw.trim();
+  if (!n) return 'Придумай ник — под ним тебя увидят соседи';
+  if (n.length < 3) return 'Ник от 3 символов — короче не пускают';
+  if (n.length > 18) return 'Ник до 18 символов';
+  if (!/^[a-zA-Zа-яА-ЯёЁ0-9_]+$/.test(n)) return 'Только буквы, цифры и подчёркивание';
+  return null;
+};
+
 const checkEmail = (raw: string): string | null => {
   const value = raw.trim();
   if (!value) return 'Без почты не заселим — на неё придёт код';
@@ -48,6 +57,7 @@ const AuthDialog = () => {
 
   const [email, setEmail] = useState('');
   const [emailFree, setEmailFree] = useState<'idle' | 'checking' | 'free' | 'taken'>('idle');
+  const [nickFree, setNickFree] = useState<'idle' | 'checking' | 'free' | 'taken'>('idle');
   const [code, setCode] = useState('');
   const [codeError, setCodeError] = useState('');
   const [nick, setNick] = useState('');
@@ -79,6 +89,22 @@ const AuthDialog = () => {
   const isRegister = authTab === 'register';
 
   useEffect(() => {
+    if (!isRegister || checkNick(nick)) {
+      setNickFree('idle');
+      return;
+    }
+    setNickFree('checking');
+    const value = nick.trim();
+    const t = window.setTimeout(() => {
+      api
+        .checkNick(value)
+        .then((res) => setNickFree(res.free ? 'free' : 'taken'))
+        .catch(() => setNickFree('idle'));
+    }, 500);
+    return () => window.clearTimeout(t);
+  }, [nick, isRegister]);
+
+  useEffect(() => {
     if (!isRegister || checkEmail(email)) {
       setEmailFree('idle');
       return;
@@ -96,13 +122,12 @@ const AuthDialog = () => {
 
   const validate = () => {
     const next: Errors = {};
-    const n = nick.trim();
-    if (n.length < 3) next.nick = 'Ник от 3 символов — короче не пускают';
-    else if (n.length > 18) next.nick = 'Ник до 18 символов';
-    else if (!/^[a-zA-Zа-яА-ЯёЁ0-9_]+$/.test(n)) next.nick = 'Только буквы, цифры и подчёркивание';
+    const nickError = checkNick(nick);
+    if (nickError) next.nick = nickError;
 
     if (pass.length < 5) next.pass = 'Пароль от 5 символов';
     if (isRegister) {
+      if (!nickError && nickFree === 'taken') next.nick = 'Такой ник уже занят';
       if (pass2 !== pass) next.pass2 = 'Пароли не совпадают';
       if (!agree) next.agree = 'Правила общаги надо принять';
       const emailError = checkEmail(email);
@@ -576,14 +601,25 @@ const AuthDialog = () => {
               value={nick}
               onChange={(e) => setNick(e.target.value)}
               placeholder="например, ночной_сторож"
-              className={cn(field, errors.nick && 'border-primary')}
+              className={cn(
+                field,
+                (errors.nick || (isRegister && nickFree === 'taken')) && 'border-primary',
+                isRegister && !errors.nick && nickFree === 'free' && 'border-secondary',
+              )}
             />
-            {errors.nick && (
+            {errors.nick || (isRegister && nickFree === 'taken') ? (
               <p className="mt-1.5 flex items-center gap-1.5 text-[0.85rem] text-primary">
                 <Icon name="TriangleAlert" size={14} />
-                {errors.nick}
+                {errors.nick || 'Такой ник уже занят'}
               </p>
-            )}
+            ) : isRegister && nickFree === 'checking' ? (
+              <p className="mt-1.5 text-[0.82rem] text-muted-foreground">Смотрим по журналу…</p>
+            ) : isRegister && nickFree === 'free' ? (
+              <p className="mt-1.5 flex items-center gap-1.5 text-[0.85rem] text-secondary">
+                <Icon name="Check" size={14} />
+                Ник свободен
+              </p>
+            ) : null}
           </div>
 
           {isRegister && (
