@@ -264,7 +264,7 @@ const Header = ({ onProfile }: HeaderProps) => {
               </button>
               <button
                 onClick={() => openAuth('register')}
-                className="nav-link border-2 border-primary px-4 py-2 text-primary transition-colors hover:bg-primary hover:text-primary-foreground"
+                className="nav-link"
               >
                 Регистрация
               </button>
