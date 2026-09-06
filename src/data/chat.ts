@@ -282,3 +282,7 @@ export const stats = [
   { value: '—', label: 'сообщений за сутки' },
   { value: '9', label: 'этажей с комнатами' },
 ];
+export const isStaffNick = (nick?: string | null): boolean => {
+  const n = (nick ?? '').trim().toLowerCase();
+  return n === 'админ' || n === 'комендант';
+};

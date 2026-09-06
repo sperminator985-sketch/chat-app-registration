@@ -5,7 +5,7 @@ import { usePolling } from '@/hooks/use-polling';
 import { useAuth } from '@/hooks/use-auth';
 import { getToken, api, ApiMessage } from '@/lib/api';
 import { toast } from '@/hooks/use-toast';
-import { nickColorClass, rooms, canEnterRoom } from '@/data/chat';
+import { nickColorClass, rooms, canEnterRoom, isStaffNick } from '@/data/chat';
 import { useDm } from '@/hooks/use-dm';
 import { useCall } from '@/hooks/use-call';
 import EmojiPicker from '@/components/EmojiPicker';
@@ -285,7 +285,10 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
                       type="button"
                       onClick={() => user && m.nick !== user.nick && setPrivateTo(m.nick)}
                       title={`Написать лично: ${m.nick}`}
-                      className={cn('text-[0.82rem] font-normal hover:underline sm:text-[0.92rem]', nickColorClass[m.color])}
+                      className={cn(
+                        'text-[0.82rem] font-normal hover:underline sm:text-[0.92rem]',
+                        isStaffNick(m.nick) ? 'font-bold text-red-500 [.day_&]:text-red-600' : nickColorClass[m.color],
+                      )}
                     >
                       &lt;{m.nick}&gt;
                     </button>
