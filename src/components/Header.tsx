@@ -389,7 +389,7 @@ const Header = ({ onProfile }: HeaderProps) => {
                     setOpen(false);
                     openAuth('register');
                   }}
-                  className="btn-brut"
+                  className="btn-ghost-brut"
                 >
                   Регистрация
                 </button>
