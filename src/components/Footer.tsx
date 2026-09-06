@@ -24,11 +24,8 @@ const Footer = () => (
         </Link>
       </div>
 
-      <a
-        href="https://metrika.yandex.ru/stat/?id=112321183&amp;from=informer"
-        target="_blank"
-        rel="nofollow noreferrer"
-        className="order-4 hidden shrink-0 border-2 border-foreground/35 bg-background p-1 transition-colors hover:border-secondary sm:order-none sm:block"
+      <div
+        className="order-4 hidden shrink-0 border-2 border-foreground/35 bg-background p-1 sm:order-none sm:block"
         title="Яндекс.Метрика: данные за сегодня (просмотры, визиты и уникальные посетители)"
       >
         <img
@@ -38,7 +35,7 @@ const Footer = () => (
           height={31}
           className="block"
         />
-      </a>
+      </div>
     </div>
   </footer>
 );
