@@ -111,7 +111,6 @@ const request = async <T>(action: string, options: { method?: string; body?: unk
       headers: {
         'Content-Type': 'application/json',
         'X-Auth-Token': getToken(),
-        'Cache-Control': 'no-cache',
       },
       body: method === 'POST' ? JSON.stringify(options.body ?? {}) : undefined,
     });
