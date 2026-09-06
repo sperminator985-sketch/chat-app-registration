@@ -102,14 +102,16 @@ const setServerDown = (v: boolean) => {
 
 const request = async <T>(action: string, options: { method?: string; body?: unknown; query?: string } = {}): Promise<T> => {
   const method = options.method ?? 'GET';
-  const url = `${API_URL}?action=${action}${options.query ?? ''}`;
+  const url = `${API_URL}?action=${action}${options.query ?? ''}&_=${Date.now()}`;
   let res: Response;
   try {
     res = await fetch(url, {
       method,
+      cache: 'no-store',
       headers: {
         'Content-Type': 'application/json',
         'X-Auth-Token': getToken(),
+        'Cache-Control': 'no-cache',
       },
       body: method === 'POST' ? JSON.stringify(options.body ?? {}) : undefined,
     });
