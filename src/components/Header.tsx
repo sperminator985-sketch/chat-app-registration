@@ -4,7 +4,7 @@ import Icon from '@/components/ui/icon';
 import Logo from '@/components/Logo';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/use-auth';
-import { nickColorClass } from '@/data/chat';
+import { nickColorClass, staffNickClass } from '@/data/chat';
 import { useDm } from '@/hooks/use-dm';
 import { useWeather, formatTemp, degreeWord } from '@/hooks/use-weather';
 import { useTheme } from '@/hooks/use-theme';
@@ -254,7 +254,7 @@ const Header = ({ onProfile }: HeaderProps) => {
                 onClick={onProfile}
                 className="flex items-center gap-2 border-2 border-foreground/40 px-4 py-2 text-[0.8rem] font-semibold uppercase tracking-[0.12em] transition-colors hover:border-secondary"
               >
-                <span className={nickColorClass[user.color]}>{user.nick}</span>
+                <span className={staffNickClass(user.nick, nickColorClass[user.color])}>{user.nick}</span>
               </button>
             </>
           ) : (
