@@ -109,13 +109,18 @@ const PageBody = () => {
           <ChatWindow activeRoom={activeRoom} onPick={pickRoom} />
         ) : (
           <>
-            <div className="relative flex min-h-[calc(100svh-var(--top-offset,4.5rem))] flex-col overflow-hidden md:min-h-[calc(100vh-var(--top-offset,4.5rem))]">
-              <Skyline className="pointer-events-none absolute inset-x-0 bottom-0 z-0 hidden h-[160px] md:block" />
-              <div className="relative z-10 -mt-[2px]">
+            <div className="relative flex min-h-[calc(100svh-var(--top-offset,4.5rem))] flex-col overflow-hidden md:min-h-[calc(100vh-var(--top-offset,4.5rem))] md:justify-between">
+              <div className="relative z-10 -mt-[2px] md:hidden">
                 <Ticker />
               </div>
               <div className="relative z-10 flex min-h-0 flex-1 items-center pb-0 md:pb-[160px]">
-                <Hero />
+                <Skyline className="pointer-events-none absolute inset-x-0 bottom-0 z-0 hidden h-[160px] md:block" />
+                <div className="relative z-10 w-full">
+                  <Hero />
+                </div>
+              </div>
+              <div className="relative z-10 hidden md:block">
+                <Ticker />
               </div>
             </div>
             <Rooms activeRoom={activeRoom} onPick={pickRoom} />
