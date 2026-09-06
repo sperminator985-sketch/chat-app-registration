@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import Icon from '@/components/ui/icon';
@@ -21,11 +21,33 @@ const SECRET_QUESTIONS = [
 
 const UNI_LIST = ['ТГУ', 'ТУСУР', 'СибГМУ', 'ТПУ', 'ТГАСУ', 'ТГПУ'];
 
+const checkEmail = (raw: string): string | null => {
+  const value = raw.trim();
+  if (!value) return 'Без почты не заселим — на неё придёт код';
+  if (/\s/.test(value)) return 'В адресе не должно быть пробелов';
+  if (/[а-яА-ЯёЁ]/.test(value)) return 'Только латинские буквы — переключи раскладку';
+  if (!value.includes('@')) return 'В адресе не хватает знака @';
+  if ((value.match(/@/g) || []).length > 1) return 'В адресе только один знак @';
+
+  const [name, domain] = value.split('@');
+  if (!name) return 'Перед @ должно быть имя ящика';
+  if (!domain) return 'После @ нужен адрес почты, например mail.ru';
+  if (!domain.includes('.')) return 'В домене не хватает точки, например mail.ru';
+  if (domain.startsWith('.') || domain.endsWith('.') || domain.includes('..')) {
+    return 'Домен указан с ошибкой';
+  }
+  if (!/^[a-zA-Z0-9._%+-]+$/.test(name)) return 'В имени ящика есть недопустимые символы';
+  if (!/^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(domain)) return 'Домен указан с ошибкой, например mail.ru';
+  if (value.length > 120) return 'Слишком длинный адрес';
+  return null;
+};
+
 const AuthDialog = () => {
   const { authOpen, authTab, closeAuth, openAuth, register, login, verifyEmail } = useAuth();
   const [busy, setBusy] = useState(false);
 
   const [email, setEmail] = useState('');
+  const [emailFree, setEmailFree] = useState<'idle' | 'checking' | 'free' | 'taken'>('idle');
   const [code, setCode] = useState('');
   const [codeError, setCodeError] = useState('');
   const [nick, setNick] = useState('');
@@ -52,6 +74,22 @@ const AuthDialog = () => {
 
   const isRegister = authTab === 'register';
 
+  useEffect(() => {
+    if (!isRegister || checkEmail(email)) {
+      setEmailFree('idle');
+      return;
+    }
+    setEmailFree('checking');
+    const value = email.trim().toLowerCase();
+    const t = window.setTimeout(() => {
+      api
+        .checkEmail(value)
+        .then((res) => setEmailFree(res.free ? 'free' : 'taken'))
+        .catch(() => setEmailFree('idle'));
+    }, 500);
+    return () => window.clearTimeout(t);
+  }, [email, isRegister]);
+
   const validate = () => {
     const next: Errors = {};
     const n = nick.trim();
@@ -63,7 +101,9 @@ const AuthDialog = () => {
     if (isRegister) {
       if (pass2 !== pass) next.pass2 = 'Пароли не совпадают';
       if (!agree) next.agree = 'Правила общаги надо принять';
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) next.email = 'Введи настоящую почту — на неё придёт код';
+      const emailError = checkEmail(email);
+      if (emailError) next.email = emailError;
+      else if (emailFree === 'taken') next.email = 'На эту почту уже кто-то заселился';
       if (answer.trim().length < 2) next.answer = 'Ответ от 2 символов — пригодится при восстановлении';
     }
     setErrors(next);
@@ -385,12 +425,25 @@ const AuthDialog = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="student@mail.ru"
-                className={cn(field, errors.email && 'border-primary')}
+                autoComplete="email"
+                spellCheck={false}
+                className={cn(
+                  field,
+                  (errors.email || emailFree === 'taken') && 'border-primary',
+                  !errors.email && emailFree === 'free' && 'border-secondary',
+                )}
               />
-              {errors.email ? (
+              {errors.email || emailFree === 'taken' ? (
                 <p className="mt-1.5 flex items-center gap-1.5 text-[0.85rem] text-primary">
                   <Icon name="TriangleAlert" size={14} />
-                  {errors.email}
+                  {errors.email || 'На эту почту уже кто-то заселился'}
+                </p>
+              ) : emailFree === 'checking' ? (
+                <p className="mt-1.5 text-[0.82rem] text-muted-foreground">Проверяем почту…</p>
+              ) : emailFree === 'free' ? (
+                <p className="mt-1.5 flex items-center gap-1.5 text-[0.85rem] text-secondary">
+                  <Icon name="Check" size={14} />
+                  Почта свободна
                 </p>
               ) : (
                 <p className="mt-1.5 text-[0.82rem] text-muted-foreground">

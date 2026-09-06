@@ -436,8 +436,17 @@ try {
         $email = mb_strtolower(trim((string) param('email', '')));
         $useEmail = hasEmailColumns();
         if ($useEmail) {
-            if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
-                fail(400, 'Введи настоящую почту — на неё придёт код');
+            if ($email === '') {
+                fail(400, 'Без почты не заселим — на неё придёт код');
+            }
+            if (preg_match('/[а-яё]/ui', $email)) {
+                fail(400, 'Только латинские буквы — переключи раскладку');
+            }
+            if (mb_strpos($email, '@') === false) {
+                fail(400, 'В адресе не хватает знака @');
+            }
+            if (!filter_var($email, FILTER_VALIDATE_EMAIL) || mb_strlen($email) > 120) {
+                fail(400, 'Адрес почты указан с ошибкой');
             }
             if (one('SELECT id FROM users WHERE email = ?', [$email])) {
                 fail(409, 'На эту почту уже кто-то заселился');
@@ -470,6 +479,21 @@ try {
         $new = bin2hex(random_bytes(24));
         q('INSERT INTO sessions (token, user_id, created_at) VALUES (?, ?, UTC_TIMESTAMP())', [$new, $user['id']]);
         out(200, ['user' => $user, 'token' => $new, 'needVerify' => $useEmail, 'mailSent' => $mailSent]);
+    }
+
+    // --- Проверка, свободна ли почта ---
+    if ($method === 'GET' && $action === 'check_email') {
+        $email = mb_strtolower(trim((string) param('email', '')));
+        if (!hasEmailColumns()) {
+            out(200, ['free' => true]);
+        }
+        if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL) || preg_match('/[а-яё]/ui', $email)) {
+            out(200, ['free' => false, 'error' => 'Адрес почты указан с ошибкой']);
+        }
+        $taken = (bool) one('SELECT id FROM users WHERE email = ?', [$email]);
+        out(200, $taken
+            ? ['free' => false, 'error' => 'На эту почту уже кто-то заселился']
+            : ['free' => true]);
     }
 
     // --- Подтверждение почты кодом ---
