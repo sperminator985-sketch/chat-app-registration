@@ -326,8 +326,13 @@ const AuthDialog = () => {
                 value={code}
                 onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
                 inputMode="numeric"
-                placeholder="123456"
-                className={cn(field, 'text-center font-mono text-xl tracking-[0.4em]', codeError && 'border-primary')}
+                placeholder="Введите код"
+                className={cn(
+                  field,
+                  'text-center font-mono text-xl',
+                  code ? 'tracking-[0.4em]' : 'tracking-normal',
+                  codeError && 'border-primary',
+                )}
               />
               {codeError && <p className="mt-1.5 text-[0.85rem] text-primary">{codeError}</p>}
             </div>
@@ -413,8 +418,12 @@ const AuthDialog = () => {
                     value={recCode}
                     onChange={(e) => setRecCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
                     inputMode="numeric"
-                    placeholder="123456"
-                    className={cn(field, 'text-center font-mono text-xl tracking-[0.4em]')}
+                    placeholder="Введите код"
+                    className={cn(
+                      field,
+                      'text-center font-mono text-xl',
+                      recCode ? 'tracking-[0.4em]' : 'tracking-normal',
+                    )}
                   />
                 </div>
                 <div>
