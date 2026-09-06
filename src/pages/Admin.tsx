@@ -4,7 +4,7 @@ import Icon from '@/components/ui/icon';
 import { cn } from '@/lib/utils';
 import { AuthProvider, useAuth } from '@/hooks/use-auth';
 import { api, type AdminMessage, type AdminUser } from '@/lib/api';
-import { nickColorClass, rooms } from '@/data/chat';
+import { nickColorClass, rooms, staffNickClass } from '@/data/chat';
 import { useToast } from '@/hooks/use-toast';
 
 const seenText = (u: AdminUser) => {
@@ -276,7 +276,7 @@ const AdminPanel = () => {
                 >
                   <div className="min-w-0 flex-1">
                     <p className="flex flex-wrap items-center gap-2">
-                      <span className={cn('font-semibold', nickColorClass[u.color])}>{u.nick}</span>
+                      <span className={cn('font-semibold', staffNickClass(u.nick, nickColorClass[u.color]))}>{u.nick}</span>
                       {u.isAdmin && (
                         <span className="bg-secondary px-1.5 py-0.5 font-mono text-[0.62rem] font-bold uppercase text-secondary-foreground">
                           владелец
@@ -371,7 +371,7 @@ const AdminPanel = () => {
                       <span className="font-mono text-[0.68rem] uppercase tracking-[0.1em] text-secondary">
                         {rooms.find((r) => r.id === m.room)?.title ?? m.room}
                       </span>
-                      <span className={cn('font-semibold', nickColorClass[m.color])}>&lt;{m.nick}&gt;</span>
+                      <span className={cn('font-semibold', staffNickClass(m.nick, nickColorClass[m.color]))}>&lt;{m.nick}&gt;</span>
                     </p>
                     <p className="break-words text-[1rem] text-foreground/90">{m.text}</p>
                   </div>

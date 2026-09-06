@@ -284,7 +284,7 @@ export const stats = [
 ];
 export const isStaffNick = (nick?: string | null): boolean => {
   const n = (nick ?? '').trim().toLowerCase();
-  return n === 'админ' || n === 'комендант';
+  return n === 'админ' || n === 'комендант' || n === 'admin';
 };
 
 export const staffNickClass = (nick: string | null | undefined, fallback: string): string =>

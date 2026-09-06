@@ -2,7 +2,7 @@ import { Dialog, DialogContent } from '@/components/ui/dialog';
 import Icon from '@/components/ui/icon';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/use-auth';
-import { nickColorClass, rooms } from '@/data/chat';
+import { nickColorClass, rooms, staffNickClass } from '@/data/chat';
 import Avatar from '@/components/Avatar';
 
 const points = [
@@ -28,7 +28,7 @@ const WelcomeDialog = () => {
           </p>
           <p className="mt-2 flex items-center gap-3 font-display text-[1.7rem] font-extrabold leading-none tracking-[-0.03em]">
             <Avatar avatar={user.avatar} avatarUrl={user.avatarUrl} color={user.color} size={38} />
-            Заселили, <span className={cn(nickColorClass[user.color], 'drop-shadow-[1px_1px_0_rgba(0,0,0,0.35)]')}>{user.nick}</span>
+            Заселили, <span className={cn(staffNickClass(user.nick, nickColorClass[user.color]), 'drop-shadow-[1px_1px_0_rgba(0,0,0,0.35)]')}>{user.nick}</span>
           </p>
           <p className="mt-2 text-[0.95rem] leading-[1.4] opacity-90">
             Ключи выданы, свет включён. Пара правил, чтобы соседи были рады.
