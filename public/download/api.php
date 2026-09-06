@@ -517,6 +517,22 @@ try {
             : ['free' => true]);
     }
 
+    // --- Отмена незавершённой регистрации ---
+    if ($method === 'POST' && $action === 'cancel_register') {
+        $me = requireUser();
+        if (hasEmailColumns()) {
+            $row = one('SELECT email_verified_at FROM users WHERE id = ?', [$me['id']]);
+            if (empty($row['email_verified_at'])) {
+                $uid = (int) $me['id'];
+                q('DELETE FROM sessions WHERE user_id = ?', [$uid]);
+                q('DELETE FROM messages WHERE user_id = ?', [$uid]);
+                q('DELETE FROM users WHERE id = ?', [$uid]);
+                out(200, ['ok' => true, 'deleted' => true]);
+            }
+        }
+        out(200, ['ok' => true, 'deleted' => false]);
+    }
+
     // --- Подтверждение почты кодом ---
     if ($method === 'POST' && $action === 'verify_email') {
         $me = requireUser();

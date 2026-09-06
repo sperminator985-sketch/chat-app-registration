@@ -43,7 +43,7 @@ const checkEmail = (raw: string): string | null => {
 };
 
 const AuthDialog = () => {
-  const { authOpen, authTab, closeAuth, openAuth, register, login, verifyEmail } = useAuth();
+  const { authOpen, authTab, closeAuth, openAuth, register, login, verifyEmail, cancelRegister } = useAuth();
   const [busy, setBusy] = useState(false);
 
   const [email, setEmail] = useState('');
@@ -251,16 +251,35 @@ const AuthDialog = () => {
     }
   };
 
+  const dismiss = async () => {
+    if (mode === 'verify') {
+      await cancelRegister();
+      setCode('');
+      setCodeError('');
+      setPass('');
+      setPass2('');
+      setMode('auth');
+      openAuth('register');
+      toast({
+        title: 'Регистрация не завершена',
+        description: 'Без кода из письма заселить не можем — попробуй ещё раз',
+      });
+      return;
+    }
+    closeAuth();
+  };
+
   const field = 'w-full border-2 border-foreground/35 bg-input px-3 py-2.5 text-foreground outline-none transition-colors placeholder:text-muted-foreground/70 focus:border-secondary sm:py-1.5 sm:text-[0.92rem]';
 
   return (
-    <Dialog open={authOpen} onOpenChange={(v) => (v ? openAuth(authTab) : closeAuth())}>
+    <Dialog open={authOpen} onOpenChange={(v) => (v ? openAuth(authTab) : dismiss())}>
       <DialogContent className="top-[5vh] max-h-[90vh] max-w-[520px] translate-y-0 overflow-y-auto border-2 border-foreground/40 bg-card p-0 text-card-foreground [&>button]:hidden">
         <div className="sticky top-0 z-20 flex border-b-2 border-foreground/35 bg-card">
           {(['register', 'login'] as const).map((tab) => (
             <button
               key={tab}
-              onClick={() => {
+              onClick={async () => {
+                if (mode === 'verify') await cancelRegister();
                 setErrors({});
                 setMode('auth');
                 openAuth(tab);
@@ -276,7 +295,7 @@ const AuthDialog = () => {
             </button>
           ))}
           <button
-            onClick={closeAuth}
+            onClick={dismiss}
             aria-label="Закрыть"
             className="flex w-14 shrink-0 items-center justify-center border-l-2 border-foreground/35 text-muted-foreground transition-colors hover:bg-foreground/10 hover:text-foreground"
           >

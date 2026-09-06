@@ -15,6 +15,7 @@ type AuthState = {
   register: (body: { nick: string; password: string; color: number; room: string; avatar: number; uni?: string; email?: string }) => Promise<boolean>;
   login: (body: { nick: string; password: string }) => Promise<void>;
   verifyEmail: (code: string) => Promise<void>;
+  cancelRegister: () => Promise<void>;
   signOut: () => void;
   saveProfile: (body: { status: string; color: number; avatar: number; image?: string; removeImage?: boolean }) => Promise<void>;
 };
@@ -64,6 +65,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setAuthOpen(false);
   }, []);
 
+  const cancelRegister = useCallback(async () => {
+    await api.cancelRegister().catch(() => undefined);
+    clearToken();
+    setUser(null);
+  }, []);
+
   const login = useCallback(async (body: { nick: string; password: string }) => {
     const res = await api.login(body);
     setToken(res.token);
@@ -93,9 +100,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const value = useMemo(
     () => ({
       user, loading, authOpen, authTab, welcomeOpen, closeWelcome,
-      openAuth, closeAuth, register, login, verifyEmail, signOut, saveProfile,
+      openAuth, closeAuth, register, login, verifyEmail, cancelRegister, signOut, saveProfile,
     }),
-    [user, loading, authOpen, authTab, welcomeOpen, closeWelcome, openAuth, closeAuth, register, login, verifyEmail, signOut, saveProfile],
+    [user, loading, authOpen, authTab, welcomeOpen, closeWelcome, openAuth, closeAuth, register, login, verifyEmail, cancelRegister, signOut, saveProfile],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

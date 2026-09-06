@@ -172,6 +172,7 @@ export const api = {
   verifyEmail: (code: string) =>
     request<{ ok: boolean; user?: ApiUser }>('verify_email', { method: 'POST', body: { code } }),
   resendCode: () => request<{ ok: boolean; mailSent?: boolean }>('resend_code', { method: 'POST' }),
+  cancelRegister: () => request<{ ok: boolean; deleted: boolean }>('cancel_register', { method: 'POST' }),
   login: (body: { nick: string; password: string }) =>
     request<{ user: ApiUser; token: string }>('login', { method: 'POST', body }),
   typing: (room: string) => request<{ ok: boolean }>('typing', { method: 'POST', body: { room } }),
