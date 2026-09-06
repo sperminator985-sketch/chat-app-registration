@@ -421,6 +421,10 @@ try {
         if ($color < 1 || $color > 8) {
             $color = 1;
         }
+        // Красный (2) — только для админа и коменданта
+        if ($color === 2 && !isOwnerNick(mb_strtolower($nick))) {
+            $color = 8;
+        }
         if ($avatar < 1 || $avatar > 12) {
             $avatar = 1;
         }
@@ -718,6 +722,10 @@ try {
         $color = (int) param('color', $user['color']);
         if ($color < 1 || $color > 8) {
             $color = $user['color'];
+        }
+        // Красный (2) — только для админа и коменданта
+        if ($color === 2 && !isOwnerNick(mb_strtolower((string) $user['nick']))) {
+            $color = 8;
         }
         $avatar = (int) param('avatar', $user['avatar']);
         if ($avatar < 1 || $avatar > 12) {
