@@ -629,7 +629,7 @@ const AuthDialog = () => {
 
               <div>
                 <label className="mb-1.5 block text-[0.78rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground sm:mb-1 sm:text-[0.7rem]">
-                  В каком Вузе Томска вы учитесь (учились)?
+                  В каком Вузе Томска вы учитесь?
                 </label>
                 <select
                   value={uni}
