@@ -8,16 +8,7 @@ import { api } from '@/lib/api';
 import { AvatarId, NickColor, nickBgClass, nickColorClass, nickColors, rooms, canEnterRoom } from '@/data/chat';
 import { toast } from '@/hooks/use-toast';
 
-type Errors = { nick?: string; pass?: string; pass2?: string; agree?: string; answer?: string; email?: string };
-
-const SECRET_QUESTIONS = [
-  'Кличка первого питомца?',
-  'Девичья фамилия мамы?',
-  'Название твоей школы?',
-  'Любимое блюдо в детстве?',
-  'Город, где ты родился?',
-  'Имя лучшего друга детства?',
-];
+type Errors = { nick?: string; pass?: string; pass2?: string; agree?: string; email?: string };
 
 const UNI_LIST = ['ТГУ', 'ТУСУР', 'СибГМУ', 'ТПУ', 'ТГАСУ', 'ТГПУ'];
 
@@ -71,17 +62,12 @@ const AuthDialog = () => {
   const [showPass, setShowPass] = useState(false);
   const [showPass2, setShowPass2] = useState(false);
   const [uni, setUni] = useState('');
-  const [question, setQuestion] = useState(SECRET_QUESTIONS[0]);
-  const [answer, setAnswer] = useState('');
 
   const [mode, setMode] = useState<'auth' | 'recover' | 'verify'>('auth');
   const recPassRef = useRef<HTMLInputElement>(null);
-  const [recWay, setRecWay] = useState<'mail' | 'question'>('mail');
   const [recCode, setRecCode] = useState('');
   const [recMail, setRecMail] = useState('');
   const [recNick, setRecNick] = useState('');
-  const [recQuestion, setRecQuestion] = useState('');
-  const [recAnswer, setRecAnswer] = useState('');
   const [recPass, setRecPass] = useState('');
   const [recShow, setRecShow] = useState(false);
   const [recError, setRecError] = useState('');
@@ -137,7 +123,6 @@ const AuthDialog = () => {
       const emailError = checkEmail(email);
       if (emailError) next.email = emailError;
       else if (emailFree === 'taken') next.email = 'На эту почту уже кто-то заселился';
-      if (answer.trim().length < 2) next.answer = 'Ответ от 2 символов — пригодится при восстановлении';
     }
     setErrors(next);
     return Object.keys(next).length === 0;
@@ -156,8 +141,6 @@ const AuthDialog = () => {
           color,
           room: chosen.id,
           avatar,
-          question,
-          answer: answer.trim(),
           uni: uni || undefined,
           email: email.trim(),
         });
@@ -222,24 +205,6 @@ const AuthDialog = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [code, mode]);
 
-  const askQuestion = async () => {
-    const n = recNick.trim();
-    if (n.length < 3) {
-      setRecError('Введи ник');
-      return;
-    }
-    setBusy(true);
-    setRecError('');
-    try {
-      const res = await api.recoverQuestion(n);
-      setRecQuestion(res.question);
-    } catch (err) {
-      setRecError(err instanceof Error ? err.message : 'Не получилось');
-    } finally {
-      setBusy(false);
-    }
-  };
-
   const sendRecoverCode = async () => {
     const n = recNick.trim();
     if (n.length < 3) {
@@ -277,31 +242,6 @@ const AuthDialog = () => {
       setPass('');
       setRecCode('');
       setRecMail('');
-      setMode('auth');
-      openAuth('login');
-    } catch (err) {
-      setRecError(err instanceof Error ? err.message : 'Не получилось');
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  const resetPassword = async () => {
-    if (recAnswer.trim().length < 2) {
-      setRecError('Введи ответ');
-      return;
-    }
-    if (recPass.length < 5) {
-      setRecError('Новый пароль от 5 символов');
-      return;
-    }
-    setBusy(true);
-    setRecError('');
-    try {
-      await api.recoverReset({ nick: recNick.trim(), answer: recAnswer.trim(), password: recPass });
-      toast({ title: 'Пароль обновлён', description: 'Теперь войди с новым паролем' });
-      setNick(recNick.trim());
-      setPass('');
       setMode('auth');
       openAuth('login');
     } catch (err) {
@@ -400,34 +340,8 @@ const AuthDialog = () => {
                 Восстановление доступа
               </p>
               <p className="mt-1 text-[0.95rem] leading-[1.4] text-muted-foreground">
-                {recWay === 'mail'
-                  ? 'Введи ник — вышлем код на почту, указанную при заселении.'
-                  : 'Введи ник — вахтёрша задаст твой секретный вопрос.'}
+                Введи ник — вышлем код на почту, указанную при заселении.
               </p>
-            </div>
-
-            <div className="flex border-2 border-foreground/35">
-              {(['mail', 'question'] as const).map((w) => (
-                <button
-                  key={w}
-                  type="button"
-                  onClick={() => {
-                    setRecWay(w);
-                    setRecError('');
-                    setRecQuestion('');
-                    setRecMail('');
-                    setRecCode('');
-                  }}
-                  className={cn(
-                    'flex-1 px-3 py-2 text-[0.8rem] font-semibold uppercase tracking-[0.1em] transition-colors',
-                    recWay === w
-                      ? 'bg-secondary text-secondary-foreground'
-                      : 'text-muted-foreground hover:text-foreground',
-                  )}
-                >
-                  {w === 'mail' ? 'По почте' : 'По вопросу'}
-                </button>
-              ))}
             </div>
 
             <div>
@@ -438,7 +352,6 @@ const AuthDialog = () => {
                 value={recNick}
                 onChange={(e) => {
                   setRecNick(e.target.value);
-                  setRecQuestion('');
                   setRecMail('');
                 }}
                 placeholder="твой ник"
@@ -446,7 +359,7 @@ const AuthDialog = () => {
               />
             </div>
 
-            {recWay === 'mail' && recMail && (
+            {recMail && (
               <>
                 <div>
                   <label className="mb-1.5 block text-[0.78rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground sm:mb-1 sm:text-[0.7rem]">
@@ -500,44 +413,6 @@ const AuthDialog = () => {
               </>
             )}
 
-            {recWay === 'question' && recQuestion && (
-              <>
-                <div>
-                  <label className="mb-1.5 block text-[0.78rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground sm:mb-1 sm:text-[0.7rem]">
-                    {recQuestion}
-                  </label>
-                  <input
-                    value={recAnswer}
-                    onChange={(e) => setRecAnswer(e.target.value)}
-                    placeholder="ответ"
-                    className={field}
-                  />
-                </div>
-                <div>
-                  <label className="mb-1.5 block text-[0.78rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground sm:mb-1 sm:text-[0.7rem]">
-                    Новый пароль
-                  </label>
-                  <div className="relative">
-                    <input
-                      type={recShow ? 'text' : 'password'}
-                      value={recPass}
-                      onChange={(e) => setRecPass(e.target.value)}
-                      placeholder="••••••"
-                      className={cn(field, 'pr-11')}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setRecShow((v) => !v)}
-                      aria-label={recShow ? 'Скрыть пароль' : 'Показать пароль'}
-                      className="absolute right-1 top-1/2 -translate-y-1/2 p-2 text-muted-foreground transition-colors hover:text-foreground"
-                    >
-                      <Icon name={recShow ? 'EyeOff' : 'Eye'} size={18} />
-                    </button>
-                  </div>
-                </div>
-              </>
-            )}
-
             {recError && (
               <p className="flex items-center gap-1.5 text-[0.85rem] text-primary">
                 <Icon name="TriangleAlert" size={14} />
@@ -548,29 +423,13 @@ const AuthDialog = () => {
             <button
               type="button"
               disabled={busy}
-              onClick={
-                recWay === 'mail'
-                  ? recMail
-                    ? resetByMail
-                    : sendRecoverCode
-                  : recQuestion
-                    ? resetPassword
-                    : askQuestion
-              }
+              onClick={recMail ? resetByMail : sendRecoverCode}
               className="btn-brut w-full disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {busy
-                ? 'Секунду…'
-                : recWay === 'mail'
-                  ? recMail
-                    ? 'Сменить пароль'
-                    : 'Выслать код на почту'
-                  : recQuestion
-                    ? 'Сменить пароль'
-                    : 'Показать вопрос'}
+              {busy ? 'Секунду…' : recMail ? 'Сменить пароль' : 'Выслать код на почту'}
             </button>
 
-            {recWay === 'mail' && recMail && (
+            {recMail && (
               <button
                 type="button"
                 disabled={busy}
@@ -787,32 +646,6 @@ const AuthDialog = () => {
                 </select>
               </div>
 
-              <div>
-                <label className="mb-1.5 block text-[0.78rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground sm:mb-1 sm:text-[0.7rem]">
-                  Секретный вопрос (для восстановления пароля)
-                </label>
-                <select
-                  value={question}
-                  onChange={(e) => setQuestion(e.target.value)}
-                  className={cn(field, 'mb-2')}
-                >
-                  {SECRET_QUESTIONS.map((q) => (
-                    <option key={q} value={q} className="bg-card">
-                      {q}
-                    </option>
-                  ))}
-                </select>
-                <input
-                  value={answer}
-                  onChange={(e) => setAnswer(e.target.value)}
-                  placeholder="твой ответ"
-                  className={cn(field, errors.answer && 'border-primary')}
-                />
-                {errors.answer && (
-                  <p className="mt-1.5 text-[0.85rem] text-primary">{errors.answer}</p>
-                )}
-              </div>
-
               <label
                 className={cn(
                   'flex cursor-pointer items-start gap-3 border-2 px-3 py-2.5 text-[0.95rem] leading-[1.4] transition-colors sm:py-2 sm:text-[0.82rem]',
@@ -862,8 +695,6 @@ const AuthDialog = () => {
               type="button"
               onClick={() => {
                 setRecNick(nick.trim());
-                setRecQuestion('');
-                setRecAnswer('');
                 setRecPass('');
                 setRecError('');
                 setMode('recover');

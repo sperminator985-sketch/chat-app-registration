@@ -437,12 +437,6 @@ try {
             fail(409, 'Такой ник уже занят');
         }
 
-        $question = mb_substr(trim((string) param('question', '')), 0, 120);
-        $answer = trim((string) param('answer', ''));
-        $ansHash = ($question !== '' && $answer !== '')
-            ? password_hash(mb_strtolower($answer), PASSWORD_DEFAULT)
-            : null;
-
         $uni = trim((string) param('uni', ''));
         if (!in_array($uni, UNI_LIST, true)) {
             $uni = null;
@@ -470,17 +464,17 @@ try {
 
         if (hasUniColumn()) {
             q(
-                'INSERT INTO users (nick, nick_lower, password_hash, color, status, room, avatar, is_admin, secret_question, secret_answer_hash, uni, created_at, last_seen)
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, UTC_TIMESTAMP(), UTC_TIMESTAMP())',
+                'INSERT INTO users (nick, nick_lower, password_hash, color, status, room, avatar, is_admin, uni, created_at, last_seen)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, UTC_TIMESTAMP(), UTC_TIMESTAMP())',
                 [$nick, $lower, password_hash($password, PASSWORD_DEFAULT), $color, 'только заселился', $room, $avatar,
-                 isOwnerNick($lower) ? 1 : 0, $question !== '' ? $question : null, $ansHash, $uni]
+                 isOwnerNick($lower) ? 1 : 0, $uni]
             );
         } else {
             q(
-                'INSERT INTO users (nick, nick_lower, password_hash, color, status, room, avatar, is_admin, secret_question, secret_answer_hash, created_at, last_seen)
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, UTC_TIMESTAMP(), UTC_TIMESTAMP())',
+                'INSERT INTO users (nick, nick_lower, password_hash, color, status, room, avatar, is_admin, created_at, last_seen)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, UTC_TIMESTAMP(), UTC_TIMESTAMP())',
                 [$nick, $lower, password_hash($password, PASSWORD_DEFAULT), $color, 'только заселился', $room, $avatar,
-                 isOwnerNick($lower) ? 1 : 0, $question !== '' ? $question : null, $ansHash]
+                 isOwnerNick($lower) ? 1 : 0]
             );
         }
         $newId = (int) db()->lastInsertId();
@@ -606,40 +600,6 @@ try {
             fail(400, 'Код устарел — запроси новый');
         }
         q('UPDATE users SET password_hash = ?, email_code = NULL, email_verified_at = COALESCE(email_verified_at, UTC_TIMESTAMP()) WHERE id = ?',
-          [password_hash($newPassword, PASSWORD_DEFAULT), (int) $row['id']]);
-        q('DELETE FROM sessions WHERE user_id = ?', [(int) $row['id']]);
-        out(200, ['ok' => true]);
-    }
-
-    // --- Восстановление: получить секретный вопрос ---
-    if ($method === 'GET' && $action === 'recover_question') {
-        $nick = trim((string) param('nick', ''));
-        $row = one('SELECT secret_question FROM users WHERE nick_lower = ?', [mb_strtolower($nick)]);
-        if (!$row) {
-            fail(404, 'Такого жильца нет в журнале');
-        }
-        if (empty($row['secret_question'])) {
-            fail(404, 'У этого ника не задан секретный вопрос. Напиши админу в общаге');
-        }
-        out(200, ['question' => $row['secret_question']]);
-    }
-
-    // --- Восстановление: сброс пароля по ответу ---
-    if ($method === 'POST' && $action === 'recover_reset') {
-        $nick = trim((string) param('nick', ''));
-        $answer = trim((string) param('answer', ''));
-        $newPassword = (string) param('password', '');
-        if (mb_strlen($newPassword) < 5) {
-            fail(400, 'Пароль от 5 символов');
-        }
-        $row = one('SELECT id, secret_answer_hash FROM users WHERE nick_lower = ?', [mb_strtolower($nick)]);
-        if (!$row || empty($row['secret_answer_hash'])) {
-            fail(404, 'Восстановление недоступно для этого ника');
-        }
-        if (!password_verify(mb_strtolower($answer), $row['secret_answer_hash'])) {
-            fail(401, 'Ответ не совпадает');
-        }
-        q('UPDATE users SET password_hash = ? WHERE id = ?',
           [password_hash($newPassword, PASSWORD_DEFAULT), (int) $row['id']]);
         q('DELETE FROM sessions WHERE user_id = ?', [(int) $row['id']]);
         out(200, ['ok' => true]);
