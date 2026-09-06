@@ -403,7 +403,7 @@ const AuthDialog = () => {
                   className={field}
                 >
                   <option value="" className="bg-card">
-                    Ни в каком
+                    Ни в каком! Я - дебил.
                   </option>
                   {UNI_LIST.map((u) => (
                     <option key={u} value={u} className="bg-card">

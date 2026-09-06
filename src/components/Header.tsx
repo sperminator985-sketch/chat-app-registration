@@ -204,7 +204,13 @@ const Header = ({ onProfile }: HeaderProps) => {
 
         <div className="mx-auto hidden items-center gap-3 md:flex">
           {temp !== null && (
-            <span className="hidden items-center gap-2 border-2 border-foreground/30 px-3 py-1.5 text-[0.76rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground lg:flex">
+            <a
+              href="https://yandex.ru/pogoda/ru/tomsk"
+              target="_blank"
+              rel="noopener noreferrer"
+              title="Погода в Томске"
+              className="hidden items-center gap-2 border-2 border-foreground/30 px-3 py-1.5 text-[0.76rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground transition-colors hover:border-secondary hover:text-foreground lg:flex"
+            >
               <Icon
                 name={temp <= 0 ? 'Snowflake' : 'Sun'}
                 size={14}
@@ -215,7 +221,7 @@ const Header = ({ onProfile }: HeaderProps) => {
                 {formatTemp(temp)}
               </span>{' '}
               {degreeWord(temp)}
-            </span>
+            </a>
           )}
           {themeButton()}
         </div>
@@ -268,7 +274,13 @@ const Header = ({ onProfile }: HeaderProps) => {
 
         <div className="flex shrink-0 items-center gap-2.5 md:hidden">
           {temp !== null && !user && (
-            <span className="flex min-w-0 items-center gap-1 border-2 border-foreground/30 px-2 py-1 text-[0.55rem] font-semibold uppercase leading-tight tracking-[0.04em] text-muted-foreground">
+            <a
+              href="https://yandex.ru/pogoda/ru/tomsk"
+              target="_blank"
+              rel="noopener noreferrer"
+              title="Погода в Томске"
+              className="flex min-w-0 items-center gap-1 border-2 border-foreground/30 px-2 py-1 text-[0.55rem] font-semibold uppercase leading-tight tracking-[0.04em] text-muted-foreground"
+            >
               <Icon
                 name={temp <= 0 ? 'Snowflake' : 'Sun'}
                 size={13}
@@ -278,7 +290,7 @@ const Header = ({ onProfile }: HeaderProps) => {
               <span className={cn('text-[0.72rem] font-bold', temp < 0 ? 'text-primary' : 'text-secondary')}>
                 {formatTemp(temp)}°
               </span>
-            </span>
+            </a>
           )}
           {user && mailButton()}
           {user && soundButton()}
