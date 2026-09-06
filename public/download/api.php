@@ -295,10 +295,39 @@ function shapeMessage(array $r): array
     ];
 }
 
+function purgeUnverified(): void
+{
+    static $done = false;
+    if ($done || !hasEmailColumns()) {
+        return;
+    }
+    $done = true;
+    try {
+        $rows = db()->query(
+            "SELECT id FROM users
+             WHERE email_verified_at IS NULL
+               AND created_at < UTC_TIMESTAMP() - INTERVAL 1 HOUR
+             LIMIT 50"
+        )->fetchAll(PDO::FETCH_COLUMN);
+        foreach ($rows as $id) {
+            $id = (int) $id;
+            q('DELETE FROM sessions WHERE user_id = ?', [$id]);
+            q('DELETE FROM messages WHERE user_id = ?', [$id]);
+            q('DELETE FROM users WHERE id = ?', [$id]);
+        }
+    } catch (Throwable $e) {
+        // молча: чистка не должна ломать запрос
+    }
+}
+
 $method = $_SERVER['REQUEST_METHOD'];
 $action = (string) param('action', '');
 
 try {
+    if (in_array($action, ['feed', 'login', 'register', 'check_nick', 'check_email', 'recover_mail_code'], true)) {
+        purgeUnverified();
+    }
+
     // --- Лента комнаты, список онлайн и общая статистика ---
     if ($method === 'GET' && $action === 'feed') {
         $room = (string) param('room', 'kurilka');
