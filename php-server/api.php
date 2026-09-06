@@ -894,32 +894,55 @@ try {
         }
     }
 
-    // --- Новости Томска (обновляются раз в сутки) ---
+    // --- Новости Томска (обновляются каждые 15 минут) ---
     if ($method === 'GET' && $action === 'news') {
         $cacheFile = sys_get_temp_dir() . '/obshaga_news.json';
         $todayKey = date('Y-m-d');
-        $fresh = false;
+        $ttl = 900;
 
         if (is_readable($cacheFile)) {
             $cached = json_decode((string) file_get_contents($cacheFile), true);
-            if (is_array($cached) && !empty($cached['items']) && ($cached['day'] ?? '') === $todayKey) {
+            $age = time() - (int) ($cached['ts'] ?? 0);
+            if (is_array($cached) && !empty($cached['items']) && $age >= 0 && $age < $ttl) {
                 out(200, ['news' => $cached['items']]);
             }
         }
 
+        $fetch = static function (string $url): ?string {
+            if (function_exists('curl_init')) {
+                $ch = curl_init($url);
+                curl_setopt_array($ch, [
+                    CURLOPT_RETURNTRANSFER => true,
+                    CURLOPT_FOLLOWLOCATION => true,
+                    CURLOPT_TIMEOUT => 6,
+                    CURLOPT_CONNECTTIMEOUT => 4,
+                    CURLOPT_SSL_VERIFYPEER => false,
+                    CURLOPT_USERAGENT => 'ObshagaChat/1.0',
+                ]);
+                $res = curl_exec($ch);
+                $code = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
+                curl_close($ch);
+                if (is_string($res) && $res !== '' && $code < 400) {
+                    return $res;
+                }
+            }
+            $ctx = stream_context_create(['http' => [
+                'timeout' => 6,
+                'header' => "User-Agent: ObshagaChat/1.0\r\n",
+            ], 'ssl' => ['verify_peer' => false, 'verify_peer_name' => false]]);
+            $res = @file_get_contents($url, false, $ctx);
+            return is_string($res) && $res !== '' ? $res : null;
+        };
+
         $items = [];
-        $ctx = stream_context_create(['http' => [
-            'timeout' => 4,
-            'header' => "User-Agent: ObshagaChat/1.0\r\n",
-        ]]);
         $feeds = [
             'https://news.vtomske.ru/rss',
             'https://tomsk.gov.ru/rss',
             'https://www.tvtomsk.ru/rss.xml',
         ];
         foreach ($feeds as $feed) {
-            $xml = @file_get_contents($feed, false, $ctx);
-            if ($xml === false) {
+            $xml = $fetch($feed);
+            if ($xml === null) {
                 continue;
             }
             $doc = @simplexml_load_string($xml);
@@ -938,16 +961,14 @@ try {
             }
         }
         if (count($items) > 1) {
-            mt_srand((int) date('Ymd'));
             shuffle($items);
-            mt_srand();
         }
         $items = array_slice($items, 0, 12);
 
         if ($items) {
             @file_put_contents(
                 $cacheFile,
-                json_encode(['day' => $todayKey, 'items' => $items], JSON_UNESCAPED_UNICODE)
+                json_encode(['day' => $todayKey, 'ts' => time(), 'items' => $items], JSON_UNESCAPED_UNICODE)
             );
         } elseif (is_readable($cacheFile)) {
             $old = json_decode((string) file_get_contents($cacheFile), true);
