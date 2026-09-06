@@ -537,7 +537,7 @@ try {
         if (empty($row['email_code']) || $code === '' || !hash_equals((string) $row['email_code'], $code)) {
             fail(400, 'Код не подошёл — проверь письмо');
         }
-        if (strtotime((string) $row['email_code_at']) < time() - 1800) {
+        if (strtotime((string) $row['email_code_at'] . ' UTC') < time() - 1800) {
             fail(400, 'Код устарел — запроси новый');
         }
         q('UPDATE users SET email_verified_at = UTC_TIMESTAMP(), email_code = NULL WHERE id = ?', [$me['id']]);
@@ -557,7 +557,7 @@ try {
         if (empty($row['email'])) {
             fail(400, 'Почта не указана');
         }
-        if (!empty($row['email_code_at']) && strtotime((string) $row['email_code_at']) > time() - 60) {
+        if (!empty($row['email_code_at']) && strtotime((string) $row['email_code_at'] . ' UTC') > time() - 60) {
             fail(429, 'Код уже отправлен — подожди минуту');
         }
         $sent = issueEmailCode((int) $me['id'], (string) $row['email'], (string) $me['nick']);
@@ -578,7 +578,7 @@ try {
         if (empty($row['email'])) {
             fail(404, 'У этого ника не указана почта — восстанови по секретному вопросу');
         }
-        if (!empty($row['email_code_at']) && strtotime((string) $row['email_code_at']) > time() - 60) {
+        if (!empty($row['email_code_at']) && strtotime((string) $row['email_code_at'] . ' UTC') > time() - 60) {
             fail(429, 'Код уже отправлен — подожди минуту');
         }
         issueEmailCode((int) $row['id'], (string) $row['email'], (string) $row['nick'], true);
@@ -603,7 +603,7 @@ try {
         if ($code === '' || !hash_equals((string) $row['email_code'], $code)) {
             fail(400, 'Код не подошёл — проверь письмо');
         }
-        if (strtotime((string) $row['email_code_at']) < time() - 1800) {
+        if (strtotime((string) $row['email_code_at'] . ' UTC') < time() - 1800) {
             fail(400, 'Код устарел — запроси новый');
         }
         q('UPDATE users SET password_hash = ?, email_code = NULL, email_verified_at = COALESCE(email_verified_at, UTC_TIMESTAMP()) WHERE id = ?',
