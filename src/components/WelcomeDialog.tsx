@@ -6,12 +6,14 @@ import { nickColorClass, rooms, staffNickClass } from '@/data/chat';
 import Avatar from '@/components/Avatar';
 
 const points = [
-  { icon: 'UserCheck', text: 'Ник теперь твой навсегда — по нему тебя узнают на всех этажах.' },
-  { icon: 'VolumeX', text: 'После 23:00 капсом не орут. КРИК вахтёрша Зина мутит на час.' },
-  { icon: 'Tag', text: 'Объявления и продажи — только на этаже 03, Барахолка.' },
-  { icon: 'Mail', text: 'Кликни по нику соседа — откроется личка. Разборки решают там.' },
-  { icon: 'TriangleAlert', text: 'Уважай соседей: без травли, чужих фото и личных данных.' },
+  { icon: 'UserCheck', title: 'Ник закреплён', text: 'Теперь он твой навсегда — по нему узнают на всех этажах.' },
+  { icon: 'VolumeX', title: 'Тихий час', text: 'После 23:00 капсом не орут. КРИК вахтёрша Зина мутит на час.' },
+  { icon: 'Tag', title: 'Барахолка', text: 'Объявления и продажи — только на этаже 03.' },
+  { icon: 'Mail', title: 'Личка', text: 'Кликни по нику соседа — откроется личка. Разборки решают там.' },
+  { icon: 'TriangleAlert', title: 'Уважение', text: 'Без травли, чужих фото и личных данных.' },
 ];
+
+const windows = [1, 1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 0];
 
 const WelcomeDialog = () => {
   const { welcomeOpen, closeWelcome, user } = useAuth();
@@ -21,38 +23,102 @@ const WelcomeDialog = () => {
 
   return (
     <Dialog open={welcomeOpen} onOpenChange={(open) => !open && closeWelcome()}>
-      <DialogContent className="max-w-[520px] border-2 border-foreground/40 bg-background p-0">
-        <div className="border-b-2 border-foreground/35 bg-secondary px-6 py-5 text-secondary-foreground">
-          <p className="font-mono text-[0.74rem] font-semibold uppercase tracking-[0.18em] opacity-80">
-            Комната {room.floor} · {room.title}
+      <DialogContent className="top-[4vh] max-h-[92vh] max-w-[560px] translate-y-0 overflow-y-auto border-2 border-foreground/45 bg-card p-0 text-card-foreground shadow-[10px_10px_0_0_hsl(var(--foreground)/0.25)] [&>button]:hidden">
+        <div className="relative overflow-hidden border-b-2 border-foreground/40 bg-secondary px-6 pb-6 pt-5 text-secondary-foreground">
+          <div className="pointer-events-none absolute -right-4 -top-3 grid grid-cols-4 gap-[3px] opacity-30">
+            {windows.map((on, i) => (
+              <span
+                key={i}
+                style={{ animationDelay: `${i * 0.9}s` }}
+                className={cn(
+                  'h-5 w-5 border border-secondary-foreground/40',
+                  on ? 'animate-blink bg-secondary-foreground/70' : 'bg-secondary-foreground/15',
+                )}
+              />
+            ))}
+          </div>
+
+          <p className="relative font-mono text-[0.7rem] font-bold uppercase tracking-[0.22em] opacity-70">
+            Ордер на заселение №{String(user.id).padStart(4, '0')}
           </p>
-          <p className="mt-2 flex items-center gap-3 font-display text-[1.7rem] font-extrabold leading-none tracking-[-0.03em]">
-            <Avatar avatar={user.avatar} avatarUrl={user.avatarUrl} color={user.color} size={38} />
-            Заселили, <span className={cn(staffNickClass(user.nick, nickColorClass[user.color]), 'drop-shadow-[1px_1px_0_rgba(0,0,0,0.35)]')}>{user.nick}</span>
-          </p>
-          <p className="mt-2 text-[0.95rem] leading-[1.4] opacity-90">
-            Ключи выданы, свет включён. Пара правил, чтобы соседи были рады.
+
+          <div className="relative mt-4 flex items-center gap-4">
+            <span className="relative shrink-0 border-2 border-secondary-foreground/60 bg-secondary-foreground/10 p-1.5">
+              <Avatar avatar={user.avatar} avatarUrl={user.avatarUrl} color={user.color} size={54} />
+            </span>
+            <div className="min-w-0">
+              <p className="font-display text-[0.82rem] font-extrabold uppercase tracking-[0.16em] opacity-75">
+                Добро пожаловать
+              </p>
+              <p className="mt-0.5 truncate font-display text-[2rem] font-extrabold leading-none tracking-[-0.04em]">
+                <span className={cn(staffNickClass(user.nick, nickColorClass[user.color]), 'drop-shadow-[2px_2px_0_rgba(0,0,0,0.35)]')}>
+                  {user.nick}
+                </span>
+              </p>
+            </div>
+          </div>
+
+          <div className="relative mt-5 flex flex-wrap items-stretch gap-2">
+            <span className="flex items-center gap-2 border-2 border-secondary-foreground/50 bg-secondary-foreground/10 px-3 py-1.5">
+              <Icon name="KeyRound" size={15} />
+              <span className="font-mono text-[0.78rem] font-bold uppercase tracking-[0.12em]">
+                Комната {room.floor}
+              </span>
+            </span>
+            <span className="flex items-center gap-2 border-2 border-secondary-foreground/50 bg-secondary-foreground/10 px-3 py-1.5">
+              <Icon name="Building2" size={15} />
+              <span className="font-mono text-[0.78rem] font-bold uppercase tracking-[0.12em]">
+                {room.title}
+              </span>
+            </span>
+            {user.uni && (
+              <span className="flex items-center gap-2 border-2 border-secondary-foreground/50 bg-secondary-foreground/10 px-3 py-1.5">
+                <Icon name="GraduationCap" size={15} />
+                <span className="font-mono text-[0.78rem] font-bold uppercase tracking-[0.12em]">
+                  {user.uni}
+                </span>
+              </span>
+            )}
+          </div>
+        </div>
+
+        <div className="border-b-2 border-foreground/25 bg-muted px-6 py-2.5">
+          <p className="font-mono text-[0.7rem] font-bold uppercase tracking-[0.2em] text-muted-foreground">
+            Памятка жильца · 5 пунктов
           </p>
         </div>
 
-        <ul className="divide-y divide-foreground/15 px-6">
-          {points.map((p) => (
-            <li key={p.text} className="flex items-start gap-3 py-3">
-              <Icon name={p.icon} size={17} className="mt-0.5 shrink-0 text-primary" />
-              <span className="text-[0.97rem] leading-[1.45] text-foreground/90">{p.text}</span>
+        <ul className="px-6 py-1">
+          {points.map((p, i) => (
+            <li
+              key={p.title}
+              style={{ animationDelay: `${0.05 + i * 0.06}s` }}
+              className="flex animate-fade-in items-start gap-3.5 border-b border-foreground/12 py-3 last:border-b-0"
+            >
+              <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center border-2 border-foreground/30 bg-primary/15 text-primary">
+                <Icon name={p.icon} size={16} />
+              </span>
+              <span className="min-w-0">
+                <span className="block font-display text-[0.86rem] font-extrabold uppercase tracking-[0.1em] text-foreground">
+                  {p.title}
+                </span>
+                <span className="mt-0.5 block text-[0.92rem] leading-[1.4] text-muted-foreground">
+                  {p.text}
+                </span>
+              </span>
             </li>
           ))}
         </ul>
 
-        <div className="flex flex-col gap-2 border-t-2 border-foreground/35 px-6 py-4 sm:flex-row">
+        <div className="flex flex-col gap-2 border-t-2 border-foreground/40 bg-muted/60 px-6 py-4 sm:flex-row">
           <button onClick={closeWelcome} className="btn-brut flex-1">
             <Icon name="DoorOpen" size={16} />
-            Понял, заселяюсь
+            Заселяюсь
           </button>
           <a
             href="#pravila"
             onClick={closeWelcome}
-            className="flex flex-1 items-center justify-center gap-2 border-2 border-foreground/35 px-4 py-2 text-[0.95rem] font-semibold transition-colors hover:border-secondary hover:text-secondary"
+            className="btn-ghost-brut flex-1"
           >
             Все правила
           </a>
