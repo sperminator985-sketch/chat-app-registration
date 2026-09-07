@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, ReactNode } from 'react';
-import { onBanned, api, clearToken, getToken, setToken, ApiUser } from '@/lib/api';
+import { onBanned, api, clearToken, getToken, setToken, setTempToken, persistToken, ApiUser } from '@/lib/api';
 
 export type Account = ApiUser;
 
@@ -36,7 +36,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
     api
       .me()
-      .then((res) => setUser(res.user))
+      .then((res) => {
+        if (res.user.email && res.user.emailVerified === false) {
+          clearToken();
+          return;
+        }
+        setUser(res.user);
+      })
       .catch(() => clearToken())
       .finally(() => setLoading(false));
   }, []);
@@ -52,15 +58,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const register = useCallback(async (body: { nick: string; password: string; color: number; room: string; avatar: number; uni?: string; email?: string }) => {
     const res = await api.register(body);
-    setToken(res.token);
-    setUser(res.user);
     const needVerify = Boolean(res.needVerify) && !res.user.emailVerified;
-    if (!needVerify) setAuthOpen(false);
+    if (needVerify) {
+      setTempToken(res.token);
+    } else {
+      setToken(res.token);
+      setUser(res.user);
+      setAuthOpen(false);
+    }
     return needVerify;
   }, []);
 
   const verifyEmail = useCallback(async (code: string) => {
     const res = await api.verifyEmail(code);
+    persistToken();
     if (res.user) setUser(res.user);
     setAuthOpen(false);
   }, []);

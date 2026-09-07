@@ -69,9 +69,27 @@ export type FeedResponse = {
   dayMessages: number;
 };
 
-export const getToken = () => localStorage.getItem(TOKEN_KEY) ?? '';
-export const setToken = (token: string) => localStorage.setItem(TOKEN_KEY, token);
-export const clearToken = () => localStorage.removeItem(TOKEN_KEY);
+let memToken = '';
+
+export const getToken = () => memToken || localStorage.getItem(TOKEN_KEY) || '';
+export const setToken = (token: string) => {
+  memToken = '';
+  localStorage.setItem(TOKEN_KEY, token);
+};
+export const setTempToken = (token: string) => {
+  localStorage.removeItem(TOKEN_KEY);
+  memToken = token;
+};
+export const persistToken = () => {
+  if (memToken) {
+    localStorage.setItem(TOKEN_KEY, memToken);
+    memToken = '';
+  }
+};
+export const clearToken = () => {
+  memToken = '';
+  localStorage.removeItem(TOKEN_KEY);
+};
 
 let banned: string | null = null;
 const banListeners = new Set<(v: string | null) => void>();
