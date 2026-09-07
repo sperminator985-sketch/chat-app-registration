@@ -38,6 +38,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       .me()
       .then((res) => {
         if (res.user.email && res.user.emailVerified === false) {
+          api.cancelRegister().catch(() => undefined);
           clearToken();
           return;
         }
