@@ -69,25 +69,32 @@ export type FeedResponse = {
   dayMessages: number;
 };
 
+const PENDING_KEY = 'obshaga_pending_verify';
+
 let memToken = '';
 
 export const getToken = () => memToken || localStorage.getItem(TOKEN_KEY) || '';
 export const setToken = (token: string) => {
   memToken = '';
+  localStorage.removeItem(PENDING_KEY);
   localStorage.setItem(TOKEN_KEY, token);
 };
 export const setTempToken = (token: string) => {
   localStorage.removeItem(TOKEN_KEY);
+  localStorage.setItem(PENDING_KEY, '1');
   memToken = token;
 };
 export const persistToken = () => {
+  localStorage.removeItem(PENDING_KEY);
   if (memToken) {
     localStorage.setItem(TOKEN_KEY, memToken);
     memToken = '';
   }
 };
+export const hasPendingVerify = () => localStorage.getItem(PENDING_KEY) === '1';
 export const clearToken = () => {
   memToken = '';
+  localStorage.removeItem(PENDING_KEY);
   localStorage.removeItem(TOKEN_KEY);
 };
 

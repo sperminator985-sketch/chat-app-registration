@@ -1,10 +1,11 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, ReactNode } from 'react';
-import { onBanned, api, clearToken, getToken, setToken, setTempToken, persistToken, ApiUser } from '@/lib/api';
+import { onBanned, api, clearToken, getToken, setToken, setTempToken, persistToken, hasPendingVerify, ApiUser } from '@/lib/api';
 
 export type Account = ApiUser;
 
 type AuthState = {
   user: Account | null;
+  pendingVerify: boolean;
   loading: boolean;
   authOpen: boolean;
   authTab: 'register' | 'login';
@@ -24,12 +25,19 @@ const AuthContext = createContext<AuthState | null>(null);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<Account | null>(null);
+  const [pendingVerify, setPendingVerify] = useState(false);
   const [loading, setLoading] = useState(true);
   const [authOpen, setAuthOpen] = useState(false);
   const [authTab, setAuthTab] = useState<'register' | 'login'>('register');
   const [welcomeOpen, setWelcomeOpen] = useState(false);
 
   useEffect(() => {
+    if (hasPendingVerify()) {
+      clearToken();
+      setUser(null);
+      setLoading(false);
+      return;
+    }
     if (!getToken()) {
       setLoading(false);
       return;
@@ -37,9 +45,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     api
       .me()
       .then((res) => {
-        if (res.user.email && res.user.emailVerified === false) {
+        if (res.user.emailVerified === false) {
           api.cancelRegister().catch(() => undefined);
           clearToken();
+          setUser(null);
           return;
         }
         setUser(res.user);
@@ -62,6 +71,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const needVerify = Boolean(res.needVerify) && !res.user.emailVerified;
     if (needVerify) {
       setTempToken(res.token);
+      setPendingVerify(true);
+      setUser(null);
     } else {
       setToken(res.token);
       setUser(res.user);
@@ -73,13 +84,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const verifyEmail = useCallback(async (code: string) => {
     const res = await api.verifyEmail(code);
     persistToken();
+    setPendingVerify(false);
     if (res.user) setUser(res.user);
+    else await api.me().then((r) => setUser(r.user)).catch(() => undefined);
     setAuthOpen(false);
   }, []);
 
   const cancelRegister = useCallback(async () => {
     await api.cancelRegister().catch(() => undefined);
     clearToken();
+    setPendingVerify(false);
     setUser(null);
   }, []);
 
@@ -111,10 +125,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const value = useMemo(
     () => ({
-      user, loading, authOpen, authTab, welcomeOpen, closeWelcome,
+      user, pendingVerify, loading, authOpen, authTab, welcomeOpen, closeWelcome,
       openAuth, closeAuth, register, login, verifyEmail, cancelRegister, signOut, saveProfile,
     }),
-    [user, loading, authOpen, authTab, welcomeOpen, closeWelcome, openAuth, closeAuth, register, login, verifyEmail, cancelRegister, signOut, saveProfile],
+    [user, pendingVerify, loading, authOpen, authTab, welcomeOpen, closeWelcome, openAuth, closeAuth, register, login, verifyEmail, cancelRegister, signOut, saveProfile],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
