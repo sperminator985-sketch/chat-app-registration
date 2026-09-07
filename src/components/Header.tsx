@@ -190,17 +190,10 @@ const Header = ({ onProfile }: HeaderProps) => {
       )}
     >
       <div className="mx-auto flex max-w-[1400px] items-center justify-between gap-2 rule-bottom py-4 pl-2.5 pr-5 md:gap-4 md:px-10">
-        {user ? (
-          <>
-            <Logo size="xs" iconAsLetter className="md:hidden" />
-            <Logo size="sm" iconAsLetter className="hidden md:flex" />
-          </>
-        ) : (
-          <a href="#top" onClick={go('#top')} className="min-w-0">
-            <Logo size="xs" iconAsLetter className="md:hidden" />
-            <Logo size="sm" iconAsLetter className="hidden md:flex" />
-          </a>
-        )}
+        <>
+          <Logo size="xs" iconAsLetter className="md:hidden" />
+          <Logo size="sm" iconAsLetter className="hidden md:flex" />
+        </>
 
         <div className="mx-auto hidden items-center gap-3 md:flex">
           {temp !== null && (
