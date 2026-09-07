@@ -77,6 +77,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setToken(res.token);
       setUser(res.user);
       setAuthOpen(false);
+      setWelcomeOpen(true);
     }
     return needVerify;
   }, []);
@@ -88,6 +89,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (res.user) setUser(res.user);
     else await api.me().then((r) => setUser(r.user)).catch(() => undefined);
     setAuthOpen(false);
+    setWelcomeOpen(true);
   }, []);
 
   const cancelRegister = useCallback(async () => {
