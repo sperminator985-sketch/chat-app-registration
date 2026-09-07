@@ -313,7 +313,6 @@ function purgeUnverified(): void
                AND email_code_at < UTC_TIMESTAMP() - INTERVAL 1 HOUR
                AND created_at > UTC_TIMESTAMP() - INTERVAL 1 DAY
                AND id NOT IN (SELECT DISTINCT user_id FROM messages WHERE user_id IS NOT NULL)
-               AND id NOT IN (SELECT DISTINCT user_id FROM sessions WHERE user_id IS NOT NULL)
              LIMIT 50"
         )->fetchAll(PDO::FETCH_COLUMN);
         foreach ($rows as $id) {
@@ -331,7 +330,7 @@ $method = $_SERVER['REQUEST_METHOD'];
 $action = (string) param('action', '');
 
 try {
-    if (in_array($action, ['register', 'check_nick', 'check_email'], true)) {
+    if (in_array($action, ['register', 'check_nick', 'check_email', 'login', 'me', 'feed'], true)) {
         purgeUnverified();
     }
 
