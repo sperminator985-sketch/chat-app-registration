@@ -25,7 +25,7 @@ const PageBody = () => {
   const [activeRoom, setActiveRoom] = useState(rooms[0].id);
   const [profileOpen, setProfileOpen] = useState(false);
   const topRef = useRef<HTMLDivElement>(null);
-  const { user, openAuth } = useAuth();
+  const { user, openAuth, loading } = useAuth();
 
   useLayoutEffect(() => {
     const el = topRef.current;
@@ -105,7 +105,9 @@ const PageBody = () => {
         <Header onProfile={() => setProfileOpen(true)} />
       </div>
       <main>
-        {user ? (
+        {loading ? (
+          <div className="flex min-h-[calc(100svh-var(--top-offset,4.5rem))] items-center justify-center" />
+        ) : user ? (
           <ChatWindow activeRoom={activeRoom} onPick={pickRoom} />
         ) : (
           <>
