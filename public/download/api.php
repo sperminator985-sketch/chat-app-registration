@@ -157,6 +157,15 @@ function requireUser(string $message = 'Не авторизован'): array
     return $u;
 }
 
+function verifiedCond(string $alias = ''): string
+{
+    if (!hasEmailColumns()) {
+        return '';
+    }
+    $p = $alias === '' ? '' : $alias . '.';
+    return " AND ({$p}email_verified_at IS NOT NULL OR {$p}email_code IS NULL)";
+}
+
 function touch_user(int $id, ?string $room = null): void
 {
     if ($room !== null) {
@@ -363,7 +372,8 @@ try {
             ];
         }, q(
             'SELECT nick, color, status, avatar, avatar_url, is_admin FROM users
-             WHERE last_seen > UTC_TIMESTAMP() - INTERVAL ? SECOND AND room = ? AND is_admin = 0
+             WHERE last_seen > UTC_TIMESTAMP() - INTERVAL ? SECOND AND room = ? AND is_admin = 0'
+             . verifiedCond() . '
              ORDER BY last_seen DESC LIMIT 40',
             [ONLINE_SEC, $room]
         )->fetchAll());
@@ -386,7 +396,8 @@ try {
         $counts = [];
         foreach (q(
             'SELECT room, COUNT(*) AS c FROM users
-             WHERE last_seen > UTC_TIMESTAMP() - INTERVAL ? SECOND AND is_admin = 0 GROUP BY room',
+             WHERE last_seen > UTC_TIMESTAMP() - INTERVAL ? SECOND AND is_admin = 0'
+             . verifiedCond() . ' GROUP BY room',
             [ONLINE_SEC]
         )->fetchAll() as $r) {
             $counts[$r['room']] = (int) $r['c'];
@@ -394,7 +405,7 @@ try {
 
         $allOnline = q(
             'SELECT SUM(is_admin = 0) AS c, MAX(is_admin) AS a FROM users
-             WHERE last_seen > UTC_TIMESTAMP() - INTERVAL ? SECOND',
+             WHERE last_seen > UTC_TIMESTAMP() - INTERVAL ? SECOND' . verifiedCond(),
             [ONLINE_SEC]
         )->fetch();
 
@@ -405,7 +416,7 @@ try {
             'adminOnline' => (bool) ($allOnline['a'] ?? 0),
             'typing' => $typing,
             'roomCounts' => (object) $counts,
-            'totalUsers' => (int) scalar('SELECT COUNT(*) FROM users'),
+            'totalUsers' => (int) scalar('SELECT COUNT(*) FROM users WHERE 1' . verifiedCond()),
             'dayMessages' => (int) scalar(
                 'SELECT COUNT(*) FROM messages WHERE hidden_at IS NULL AND created_at > UTC_TIMESTAMP() - INTERVAL 24 HOUR'
             ),
@@ -515,7 +526,7 @@ try {
         $newId = (int) db()->lastInsertId();
         $mailSent = false;
         if ($useEmail) {
-            q('UPDATE users SET email = ? WHERE id = ?', [$email, $newId]);
+            q('UPDATE users SET email = ?, last_seen = UTC_TIMESTAMP() - INTERVAL 1 HOUR WHERE id = ?', [$email, $newId]);
             $mailSent = issueEmailCode($newId, $email, $nick);
         }
         $user = shapeUser(one('SELECT * FROM users WHERE id = ?', [$newId]));
@@ -585,7 +596,7 @@ try {
         if (strtotime((string) $row['email_code_at'] . ' UTC') < time() - 1800) {
             fail(400, 'Код устарел — запроси новый');
         }
-        q('UPDATE users SET email_verified_at = UTC_TIMESTAMP(), email_code = NULL WHERE id = ?', [$me['id']]);
+        q('UPDATE users SET email_verified_at = UTC_TIMESTAMP(), email_code = NULL, last_seen = UTC_TIMESTAMP() WHERE id = ?', [$me['id']]);
         out(200, ['ok' => true, 'user' => shapeUser(one('SELECT * FROM users WHERE id = ?', [$me['id']]))]);
     }
 
