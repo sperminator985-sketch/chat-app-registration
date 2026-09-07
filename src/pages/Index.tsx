@@ -22,7 +22,9 @@ import ProfileDialog from '@/components/ProfileDialog';
 import { rooms, canEnterRoom, roomUni } from '@/data/chat';
 
 const PageBody = () => {
-  const [activeRoom, setActiveRoom] = useState(rooms[0].id);
+  const [activeRoom, setActiveRoom] = useState(
+    () => localStorage.getItem('lastRoom') ?? rooms[0].id,
+  );
   const [profileOpen, setProfileOpen] = useState(false);
   const topRef = useRef<HTMLDivElement>(null);
   const { user, openAuth, loading } = useAuth();
@@ -65,6 +67,10 @@ const PageBody = () => {
   useEffect(() => {
     if (user?.room) setActiveRoom(user.room);
   }, [user?.room]);
+
+  useEffect(() => {
+    localStorage.setItem('lastRoom', activeRoom);
+  }, [activeRoom]);
 
   useEffect(() => {
     if (!user) return;
