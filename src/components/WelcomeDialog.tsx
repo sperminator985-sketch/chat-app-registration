@@ -2,7 +2,7 @@ import { Dialog, DialogContent } from '@/components/ui/dialog';
 import Icon from '@/components/ui/icon';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/use-auth';
-import { nickColorClass, rooms, staffNickClass } from '@/data/chat';
+import { rooms } from '@/data/chat';
 import Avatar from '@/components/Avatar';
 
 const points = [
@@ -50,10 +50,8 @@ const WelcomeDialog = () => {
               <p className="font-display text-[0.82rem] font-extrabold uppercase tracking-[0.16em] opacity-75">
                 Добро пожаловать
               </p>
-              <p className="mt-0.5 truncate font-display text-[2rem] font-extrabold leading-none tracking-[-0.04em]">
-                <span className={cn(staffNickClass(user.nick, nickColorClass[user.color]), 'drop-shadow-[2px_2px_0_rgba(0,0,0,0.35)]')}>
-                  {user.nick}
-                </span>
+              <p className="mt-0.5 truncate font-display text-[2rem] font-extrabold leading-none tracking-[-0.04em] text-secondary-foreground">
+                {user.nick}
               </p>
             </div>
           </div>
