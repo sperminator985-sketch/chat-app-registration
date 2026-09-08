@@ -5,7 +5,7 @@ import Icon from '@/components/ui/icon';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/use-auth';
 import { api } from '@/lib/api';
-import { AvatarId, NickColor, nickBgClass, nickColorClass, nickColors, rooms, canEnterRoom } from '@/data/chat';
+import { AvatarId, NickColor, nickBgClass, nickColorClass, nickColors, rooms, canEnterRoom, roomUni } from '@/data/chat';
 import { toast } from '@/hooks/use-toast';
 
 type Errors = { nick?: string; pass?: string; pass2?: string; agree?: string; email?: string };
@@ -43,7 +43,7 @@ const checkEmail = (raw: string): string | null => {
 };
 
 const AuthDialog = () => {
-  const { authOpen, authTab, closeAuth, openAuth, register, login, verifyEmail, cancelRegister } = useAuth();
+  const { authOpen, authTab, authRoom, closeAuth, openAuth, register, login, verifyEmail, cancelRegister } = useAuth();
   const [busy, setBusy] = useState(false);
 
   const [email, setEmail] = useState('');
@@ -74,6 +74,12 @@ const AuthDialog = () => {
   const [errors, setErrors] = useState<Errors>({});
 
   const isRegister = authTab === 'register';
+
+  useEffect(() => {
+    if (!authOpen || !authRoom) return;
+    setRoom(authRoom);
+    setUni(roomUni[authRoom] ?? '');
+  }, [authOpen, authRoom]);
 
   useEffect(() => {
     if (!isRegister || checkNick(nick)) {

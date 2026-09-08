@@ -9,9 +9,10 @@ type AuthState = {
   loading: boolean;
   authOpen: boolean;
   authTab: 'register' | 'login';
+  authRoom: string | null;
   welcomeOpen: boolean;
   closeWelcome: () => void;
-  openAuth: (tab?: 'register' | 'login') => void;
+  openAuth: (tab?: 'register' | 'login', room?: string) => void;
   closeAuth: () => void;
   register: (body: { nick: string; password: string; color: number; room: string; avatar: number; uni?: string; email?: string }) => Promise<boolean>;
   login: (body: { nick: string; password: string }) => Promise<void>;
@@ -29,6 +30,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
   const [authOpen, setAuthOpen] = useState(false);
   const [authTab, setAuthTab] = useState<'register' | 'login'>('register');
+  const [authRoom, setAuthRoom] = useState<string | null>(null);
   const [welcomeOpen, setWelcomeOpen] = useState(false);
 
   useEffect(() => {
@@ -57,8 +59,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       .finally(() => setLoading(false));
   }, []);
 
-  const openAuth = useCallback((tab: 'register' | 'login' = 'register') => {
+  const openAuth = useCallback((tab: 'register' | 'login' = 'register', room?: string) => {
     setAuthTab(tab);
+    setAuthRoom(room ?? null);
     setAuthOpen(true);
   }, []);
 
@@ -127,10 +130,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const value = useMemo(
     () => ({
-      user, pendingVerify, loading, authOpen, authTab, welcomeOpen, closeWelcome,
+      user, pendingVerify, loading, authOpen, authTab, authRoom, welcomeOpen, closeWelcome,
       openAuth, closeAuth, register, login, verifyEmail, cancelRegister, signOut, saveProfile,
     }),
-    [user, pendingVerify, loading, authOpen, authTab, welcomeOpen, closeWelcome, openAuth, closeAuth, register, login, verifyEmail, cancelRegister, signOut, saveProfile],
+    [user, pendingVerify, loading, authOpen, authTab, authRoom, welcomeOpen, closeWelcome, openAuth, closeAuth, register, login, verifyEmail, cancelRegister, signOut, saveProfile],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

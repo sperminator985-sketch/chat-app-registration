@@ -86,7 +86,7 @@ const PageBody = () => {
   const pickRoom = (id: string) => {
     if (!user) {
       setActiveRoom(id);
-      openAuth('register');
+      openAuth('register', id);
       return;
     }
     if (!canEnterRoom(id, user.uni, user.isAdmin)) {
