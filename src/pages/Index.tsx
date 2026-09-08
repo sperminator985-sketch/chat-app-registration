@@ -98,10 +98,6 @@ const PageBody = () => {
       return;
     }
     setActiveRoom(id);
-    setTimeout(
-      () => document.querySelector('#chat')?.scrollIntoView({ behavior: 'smooth', block: 'start' }),
-      50,
-    );
   };
 
   return (
