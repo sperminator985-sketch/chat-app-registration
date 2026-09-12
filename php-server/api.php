@@ -178,6 +178,48 @@ function hasAttemptTable(): bool
     return $ok;
 }
 
+function hasSecurityTable(): bool
+{
+    static $ok = null;
+    if ($ok !== null) {
+        return $ok;
+    }
+    try {
+        db()->exec("CREATE TABLE IF NOT EXISTS security_log (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            event VARCHAR(24) NOT NULL,
+            nick VARCHAR(32) NULL,
+            ip VARCHAR(45) NOT NULL,
+            note VARCHAR(160) NULL,
+            at DATETIME NOT NULL,
+            INDEX idx_at (at),
+            INDEX idx_event (event)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+        $ok = true;
+    } catch (Throwable $e) {
+        $ok = false;
+    }
+    return $ok;
+}
+
+function logSecurity(string $event, ?string $nick, string $note = ''): void
+{
+    if (!hasSecurityTable()) {
+        return;
+    }
+    try {
+        q('DELETE FROM security_log WHERE at < UTC_TIMESTAMP() - INTERVAL 30 DAY');
+        q('INSERT INTO security_log (event, nick, ip, note, at) VALUES (?, ?, ?, ?, UTC_TIMESTAMP())', [
+            mb_substr($event, 0, 24),
+            $nick !== null && $nick !== '' ? mb_substr($nick, 0, 32) : null,
+            clientIp(),
+            mb_substr($note, 0, 160),
+        ]);
+    } catch (Throwable $e) {
+        // журнал не должен ломать основную работу
+    }
+}
+
 function loginGuard(string $nick): void
 {
     if (!hasAttemptTable()) {
@@ -190,6 +232,7 @@ function loginGuard(string $nick): void
         [clientIp(), mb_strtolower($nick)]
     );
     if ((int) ($row['n'] ?? 0) >= 10) {
+        logSecurity('login_blocked', $nick, 'Вход заблокирован на 15 минут');
         fail(429, 'Слишком много попыток входа. Подожди 15 минут.');
     }
 }
@@ -201,6 +244,7 @@ function loginFailed(string $nick): void
     }
     q('INSERT INTO login_attempts (ip, nick, at) VALUES (?, ?, UTC_TIMESTAMP())',
       [clientIp(), mb_substr(mb_strtolower($nick), 0, 32)]);
+    logSecurity('login_fail', $nick, 'Неверный ник или пароль');
 }
 
 function loginPassed(string $nick): void
@@ -902,6 +946,7 @@ try {
                 [$user['id']]
             );
             if ((int) ($flood['n'] ?? 0) >= 8) {
+                logSecurity('flood', $user['nick'], 'Больше 8 сообщений за 10 секунд');
                 fail(429, 'Не части — переведи дух на пару секунд');
             }
             $dup = one(
@@ -911,6 +956,7 @@ try {
                 [$user['id'], $text]
             );
             if ($dup) {
+                logSecurity('spam', $user['nick'], 'Повтор одного и того же сообщения');
                 fail(429, 'Это уже было — не повторяйся');
             }
         }
@@ -1426,6 +1472,32 @@ try {
                     'Твоё объявление в бегущую строку отклонено: «' . $post['text'] . '».'
                         . ($reason !== '' ? ' Причина: ' . $reason : ' Причина не указана.')
                 );
+            }
+            out(200, ['ok' => true]);
+        }
+
+        if ($method === 'GET' && $action === 'admin_security') {
+            if (!hasSecurityTable()) {
+                out(200, ['events' => []]);
+            }
+            $rows = q(
+                'SELECT * FROM security_log ORDER BY id DESC LIMIT 200'
+            )->fetchAll();
+            out(200, ['events' => array_map(static function (array $r): array {
+                return [
+                    'id' => (int) $r['id'],
+                    'event' => (string) $r['event'],
+                    'nick' => $r['nick'],
+                    'ip' => (string) $r['ip'],
+                    'note' => (string) ($r['note'] ?? ''),
+                    'time' => gmdate('d.m.Y H:i', tomskTs($r['at'])),
+                ];
+            }, $rows)]);
+        }
+
+        if ($method === 'POST' && $action === 'admin_security_clear') {
+            if (hasSecurityTable()) {
+                q('DELETE FROM security_log');
             }
             out(200, ['ok' => true]);
         }

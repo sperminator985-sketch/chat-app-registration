@@ -72,6 +72,15 @@ export type AdminTickerPost = TickerPost & {
   expired?: boolean;
 };
 
+export type SecurityEvent = {
+  id: number;
+  event: 'login_fail' | 'login_blocked' | 'flood' | 'spam' | string;
+  nick?: string | null;
+  ip: string;
+  note: string;
+  time: string;
+};
+
 export type ApiMessage = {
   id: number;
   nick: string;
@@ -256,6 +265,8 @@ export const api = {
       method: 'POST',
       body: { id, decision, days, reason },
     }),
+  adminSecurity: () => request<{ events: SecurityEvent[] }>('admin_security'),
+  adminSecurityClear: () => request<{ ok: boolean }>('admin_security_clear', { method: 'POST' }),
   adminUsers: () => request<{ users: AdminUser[] }>('admin_users'),
   adminMessages: (room?: string) =>
     request<{ messages: AdminMessage[] }>('admin_messages', { query: room ? `&room=${room}` : '' }),

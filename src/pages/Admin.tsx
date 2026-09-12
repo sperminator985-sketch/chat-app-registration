@@ -3,13 +3,29 @@ import { useNavigate } from 'react-router-dom';
 import Icon from '@/components/ui/icon';
 import { cn } from '@/lib/utils';
 import { AuthProvider, useAuth } from '@/hooks/use-auth';
-import { api, type AdminMessage, type AdminTickerPost, type AdminUser } from '@/lib/api';
+import { api, type AdminMessage, type AdminTickerPost, type AdminUser, type SecurityEvent } from '@/lib/api';
 import { nickColorClass, rooms, staffNickClass } from '@/data/chat';
 import { useToast } from '@/hooks/use-toast';
 
 const DAY_OPTIONS = [1, 3, 7, 14, 30, 0];
 
 const daysLabel = (d: number) => (d === 0 ? 'бессрочно' : `${d} дн`);
+
+const EVENT_LABEL: Record<string, string> = {
+  login_fail: 'Неверный пароль',
+  login_blocked: 'Блокировка входа',
+  flood: 'Флуд',
+  spam: 'Спам',
+};
+
+const eventLabel = (e: string) => EVENT_LABEL[e] ?? e;
+
+const eventStyle = (e: string) =>
+  e === 'login_blocked'
+    ? 'border-primary bg-primary/15 text-primary'
+    : e === 'login_fail'
+      ? 'border-amber-500 bg-amber-500/15 text-amber-500'
+      : 'border-foreground/35 text-muted-foreground';
 
 const seenText = (u: AdminUser) => {
   if (u.online) return 'в сети';
@@ -26,7 +42,8 @@ const AdminPanel = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const [tab, setTab] = useState<'users' | 'messages' | 'ticker'>('users');
+  const [tab, setTab] = useState<'security' | 'users' | 'messages' | 'ticker'>('users');
+  const [events, setEvents] = useState<SecurityEvent[]>([]);
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [messages, setMessages] = useState<AdminMessage[]>([]);
   const [ticker, setTicker] = useState<AdminTickerPost[]>([]);
@@ -63,6 +80,17 @@ const AdminPanel = () => {
     }
   }, [room, toast]);
 
+  const loadSecurity = useCallback(async () => {
+    try {
+      const res = await api.adminSecurity();
+      setEvents(res.events);
+      setDenied(false);
+    } catch (e) {
+      setDenied(true);
+      toast({ title: (e as Error).message, variant: 'destructive' });
+    }
+  }, [toast]);
+
   const loadTicker = useCallback(async () => {
     try {
       const res = await api.adminTicker();
@@ -82,8 +110,34 @@ const AdminPanel = () => {
     }
     if (tab === 'users') loadUsers();
     else if (tab === 'ticker') loadTicker();
+    else if (tab === 'security') loadSecurity();
     else loadMessages();
-  }, [user, loading, tab, room, navigate, loadUsers, loadMessages, loadTicker]);
+  }, [user, loading, tab, room, navigate, loadUsers, loadMessages, loadTicker, loadSecurity]);
+
+  const clearSecurity = async () => {
+    if (busy) return;
+    setBusy(true);
+    try {
+      await api.adminSecurityClear();
+      setEvents([]);
+      toast({ title: 'Журнал очищен' });
+    } catch (e) {
+      toast({ title: (e as Error).message, variant: 'destructive' });
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const filteredEvents = events.filter((ev) => {
+    const s = search.trim().toLowerCase();
+    if (!s) return true;
+    return (
+      (ev.nick ?? '').toLowerCase().includes(s) ||
+      ev.ip.toLowerCase().includes(s) ||
+      eventLabel(ev.event).toLowerCase().includes(s) ||
+      ev.note.toLowerCase().includes(s)
+    );
+  });
 
   const refresh = async () => {
     if (refreshing) return;
@@ -91,6 +145,7 @@ const AdminPanel = () => {
     try {
       if (tab === 'users') await loadUsers();
       else if (tab === 'ticker') await loadTicker();
+      else if (tab === 'security') await loadSecurity();
       else await loadMessages();
       toast({ title: 'Данные обновлены' });
     } finally {
@@ -297,11 +352,22 @@ const AdminPanel = () => {
           <span className="pointer-events-none absolute left-1/2 hidden -translate-x-1/2 font-display text-lg font-extrabold uppercase tracking-[0.04em] md:block">
             Комендантская
           </span>
-          <div className="flex items-center justify-end gap-1.5 md:ml-auto md:gap-2">
+          <div className="flex items-center justify-end gap-1 md:ml-auto md:gap-2">
+            <button
+              onClick={() => setTab('security')}
+              className={cn(
+                'border-2 px-1.5 py-1.5 text-[0.55rem] font-bold uppercase tracking-[0.02em] transition-colors md:px-3 md:text-[0.72rem] md:tracking-[0.1em]',
+                tab === 'security'
+                  ? 'border-secondary bg-secondary text-secondary-foreground'
+                  : 'border-foreground/35 text-muted-foreground hover:border-secondary',
+              )}
+            >
+              Журнал
+            </button>
             <button
               onClick={() => setTab('users')}
               className={cn(
-                'border-2 px-2 py-1.5 text-[0.62rem] font-bold uppercase tracking-[0.04em] transition-colors md:px-3 md:text-[0.72rem] md:tracking-[0.1em]',
+                'border-2 px-1.5 py-1.5 text-[0.55rem] font-bold uppercase tracking-[0.02em] transition-colors md:px-3 md:text-[0.72rem] md:tracking-[0.1em]',
                 tab === 'users'
                   ? 'border-secondary bg-secondary text-secondary-foreground'
                   : 'border-foreground/35 text-muted-foreground hover:border-secondary',
@@ -312,7 +378,7 @@ const AdminPanel = () => {
             <button
               onClick={() => setTab('messages')}
               className={cn(
-                'border-2 px-2 py-1.5 text-[0.62rem] font-bold uppercase tracking-[0.04em] transition-colors md:px-3 md:text-[0.72rem] md:tracking-[0.1em]',
+                'border-2 px-1.5 py-1.5 text-[0.55rem] font-bold uppercase tracking-[0.02em] transition-colors md:px-3 md:text-[0.72rem] md:tracking-[0.1em]',
                 tab === 'messages'
                   ? 'border-secondary bg-secondary text-secondary-foreground'
                   : 'border-foreground/35 text-muted-foreground hover:border-secondary',
@@ -323,7 +389,7 @@ const AdminPanel = () => {
             <button
               onClick={() => setTab('ticker')}
               className={cn(
-                'border-2 px-2 py-1.5 text-[0.62rem] font-bold uppercase tracking-[0.04em] transition-colors md:px-3 md:text-[0.72rem] md:tracking-[0.1em]',
+                'border-2 px-1.5 py-1.5 text-[0.55rem] font-bold uppercase tracking-[0.02em] transition-colors md:px-3 md:text-[0.72rem] md:tracking-[0.1em]',
                 tab === 'ticker'
                   ? 'border-secondary bg-secondary text-secondary-foreground'
                   : 'border-foreground/35 text-muted-foreground hover:border-secondary',
@@ -331,7 +397,7 @@ const AdminPanel = () => {
             >
               Строка
               {ticker.filter((p) => p.status === 'pending').length > 0 && (
-                <span className="ml-1.5 bg-primary px-1 font-mono text-[0.62rem] text-primary-foreground">
+                <span className="ml-1 bg-primary px-1 font-mono text-[0.55rem] text-primary-foreground md:text-[0.62rem]">
                   {ticker.filter((p) => p.status === 'pending').length}
                 </span>
               )}
@@ -340,9 +406,9 @@ const AdminPanel = () => {
               onClick={refresh}
               disabled={refreshing}
               title="Обновить данные"
-              className="flex items-center gap-1.5 border-2 border-foreground/35 px-2 py-1.5 text-[0.62rem] font-bold uppercase tracking-[0.04em] text-muted-foreground transition-colors hover:border-secondary hover:text-secondary disabled:opacity-50 md:px-3 md:text-[0.72rem] md:tracking-[0.1em]"
+              className="flex items-center gap-1.5 border-2 border-foreground/35 px-1.5 py-1.5 text-[0.55rem] font-bold uppercase tracking-[0.02em] text-muted-foreground transition-colors hover:border-secondary hover:text-secondary disabled:opacity-50 md:px-3 md:text-[0.72rem] md:tracking-[0.1em]"
             >
-              <Icon name="RefreshCw" size={14} className={refreshing ? 'animate-spin' : ''} />
+              <Icon name="RefreshCw" size={13} className={refreshing ? 'animate-spin' : ''} />
               <span className="hidden sm:inline">Обновить</span>
             </button>
           </div>
@@ -359,7 +425,13 @@ const AdminPanel = () => {
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder={tab === 'users' ? 'Поиск по нику или статусу' : 'Поиск по нику или тексту'}
+            placeholder={
+              tab === 'users'
+                ? 'Поиск по нику или статусу'
+                : tab === 'security'
+                  ? 'Поиск по нику, адресу или событию'
+                  : 'Поиск по нику или тексту'
+            }
             className="w-full border-2 border-foreground/35 bg-card py-2.5 pl-9 pr-9 text-[0.95rem] outline-none transition-colors placeholder:text-muted-foreground/70 focus:border-secondary"
           />
           {search && (
@@ -372,7 +444,50 @@ const AdminPanel = () => {
             </button>
           )}
         </div>
-        {tab === 'ticker' ? (
+        {tab === 'security' ? (
+          <div className="space-y-3">
+            <div className="flex flex-wrap items-center justify-between gap-2 border-2 border-foreground/35 bg-card px-4 py-3">
+              <p className="text-[0.85rem] leading-snug text-muted-foreground">
+                Здесь видно, кто подбирал пароль, флудил или спамил. Записи хранятся 30 дней.
+              </p>
+              <button
+                onClick={clearSecurity}
+                disabled={busy || events.length === 0}
+                className="border-2 border-foreground/35 px-3 py-1.5 text-[0.68rem] font-bold uppercase tracking-[0.1em] text-muted-foreground transition-colors hover:border-primary hover:text-primary disabled:opacity-50"
+              >
+                Очистить журнал
+              </button>
+            </div>
+
+            {filteredEvents.length === 0 ? (
+              <p className="border-2 border-foreground/35 bg-card px-4 py-6 text-center text-[0.9rem] text-muted-foreground">
+                Пока тихо — подозрительной активности не было
+              </p>
+            ) : (
+              filteredEvents.map((ev) => (
+                <div
+                  key={ev.id}
+                  className="flex flex-wrap items-center gap-x-3 gap-y-1 border-2 border-foreground/35 bg-card px-4 py-3"
+                >
+                  <span
+                    className={cn(
+                      'border-2 px-2 py-0.5 text-[0.6rem] font-bold uppercase tracking-[0.08em]',
+                      eventStyle(ev.event),
+                    )}
+                  >
+                    {eventLabel(ev.event)}
+                  </span>
+                  <span className="font-semibold">{ev.nick || '—'}</span>
+                  <span className="font-mono text-[0.8rem] text-muted-foreground">{ev.ip}</span>
+                  <span className="text-[0.85rem] text-muted-foreground">{ev.note}</span>
+                  <span className="ml-auto font-mono text-[0.78rem] text-muted-foreground/80">
+                    {ev.time}
+                  </span>
+                </div>
+              ))
+            )}
+          </div>
+        ) : tab === 'ticker' ? (
           <>
           <form onSubmit={addOwn} className="mb-5 border-2 border-foreground/35 bg-card px-4 py-3">
             <p className="mb-2 text-[0.7rem] font-bold uppercase tracking-[0.14em] text-muted-foreground">
