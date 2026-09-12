@@ -246,9 +246,25 @@ function hasTickerTable(): bool
             status VARCHAR(10) NOT NULL DEFAULT 'pending',
             created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
             decided_at DATETIME NULL,
+            expires_at DATETIME NULL,
+            live_days INT NOT NULL DEFAULT 7,
             INDEX idx_status (status, created_at),
             INDEX idx_user (user_id)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+        $found = (int) scalar(
+            "SELECT COUNT(*) FROM information_schema.COLUMNS
+             WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'ticker_posts'
+               AND COLUMN_NAME IN ('expires_at', 'live_days')"
+        );
+        if ($found < 2) {
+            try {
+                db()->exec("ALTER TABLE ticker_posts
+                    ADD COLUMN expires_at DATETIME NULL,
+                    ADD COLUMN live_days INT NOT NULL DEFAULT 7");
+            } catch (Throwable $e) {
+                // колонки уже есть или нет прав
+            }
+        }
         $ok = true;
     } catch (Throwable $e) {
         $ok = false;
@@ -1052,7 +1068,8 @@ try {
         $rows = q(
             "SELECT t.text, COALESCE(u.is_admin, 0) AS by_admin
              FROM ticker_posts t LEFT JOIN users u ON u.id = t.user_id
-             WHERE t.status = 'approved' ORDER BY t.decided_at DESC, t.id DESC LIMIT 10"
+             WHERE t.status = 'approved' AND (t.expires_at IS NULL OR t.expires_at > UTC_TIMESTAMP())
+             ORDER BY t.decided_at DESC, t.id DESC LIMIT 10"
         )->fetchAll();
         out(200, ['ticker' => array_map(static function (array $r): string {
             return (!empty($r['by_admin']) ? 'ОТ КОМЕНДАНТА: ' : '') . $r['text'];
@@ -1115,7 +1132,7 @@ try {
     }
 
     // --- Комендантская: только для владельца ---
-    if (in_array($action, ['admin_users', 'admin_messages', 'admin_ban', 'admin_hide', 'admin_delete', 'admin_ticker', 'admin_ticker_decide', 'admin_ticker_edit', 'admin_ticker_add'], true)) {
+    if (in_array($action, ['admin_users', 'admin_messages', 'admin_ban', 'admin_hide', 'admin_delete', 'admin_ticker', 'admin_ticker_decide', 'admin_ticker_edit', 'admin_ticker_add', 'admin_ticker_days'], true)) {
         $user = requireUser();
         $row = one('SELECT is_admin FROM users WHERE id = ?', [$user['id']]);
         if (!$row || !$row['is_admin']) {
@@ -1140,9 +1157,39 @@ try {
                     'text' => $r['text'],
                     'status' => $r['status'],
                     'byAdmin' => !empty($r['by_admin']),
+                    'liveDays' => (int) ($r['live_days'] ?? 7),
+                    'expired' => !empty($r['expires_at']) && strtotime($r['expires_at'] . ' UTC') <= time(),
+                    'expires' => empty($r['expires_at']) ? null : fmtTime($r['expires_at']),
                     'time' => fmtTime($r['created_at']),
                 ];
             }, $rows)]);
+        }
+
+        if ($method === 'POST' && $action === 'admin_ticker_days') {
+            if (!hasTickerTable()) {
+                fail(500, 'Бегущая строка пока недоступна');
+            }
+            $id = (int) param('id', 0);
+            $days = max(0, min(365, (int) param('days', 0)));
+            if ($id <= 0) {
+                fail(400, 'Не указано объявление');
+            }
+            if ($days > 0) {
+                q(
+                    'UPDATE ticker_posts SET live_days = ?,
+                        expires_at = COALESCE(decided_at, created_at) + INTERVAL ' . $days . ' DAY WHERE id = ?',
+                    [$days, $id]
+                );
+            } else {
+                q('UPDATE ticker_posts SET live_days = 0, expires_at = NULL WHERE id = ?', [$id]);
+            }
+            $row = one('SELECT expires_at FROM ticker_posts WHERE id = ?', [$id]);
+            out(200, [
+                'ok' => true,
+                'liveDays' => $days,
+                'expires' => empty($row['expires_at']) ? null : fmtTime($row['expires_at']),
+                'expired' => !empty($row['expires_at']) && strtotime($row['expires_at'] . ' UTC') <= time(),
+            ]);
         }
 
         if ($method === 'POST' && $action === 'admin_ticker_add') {
@@ -1153,11 +1200,20 @@ try {
             if (mb_strlen($text) < 3) {
                 fail(400, 'Слишком короткий текст');
             }
-            q(
-                "INSERT INTO ticker_posts (user_id, nick, uni, text, status, created_at, decided_at)
-                 VALUES (?, ?, ?, ?, 'approved', UTC_TIMESTAMP(), UTC_TIMESTAMP())",
-                [$user['id'], $user['nick'], $user['uni'] ?? null, $text]
-            );
+            $days = max(0, min(365, (int) param('days', 7)));
+            if ($days > 0) {
+                q(
+                    "INSERT INTO ticker_posts (user_id, nick, uni, text, status, created_at, decided_at, live_days, expires_at)
+                     VALUES (?, ?, ?, ?, 'approved', UTC_TIMESTAMP(), UTC_TIMESTAMP(), ?, UTC_TIMESTAMP() + INTERVAL " . $days . " DAY)",
+                    [$user['id'], $user['nick'], $user['uni'] ?? null, $text, $days]
+                );
+            } else {
+                q(
+                    "INSERT INTO ticker_posts (user_id, nick, uni, text, status, created_at, decided_at, live_days, expires_at)
+                     VALUES (?, ?, ?, ?, 'approved', UTC_TIMESTAMP(), UTC_TIMESTAMP(), 0, NULL)",
+                    [$user['id'], $user['nick'], $user['uni'] ?? null, $text]
+                );
+            }
             out(200, ['ok' => true, 'id' => (int) db()->lastInsertId()]);
         }
 
@@ -1193,8 +1249,23 @@ try {
             if (!in_array($decision, ['approved', 'rejected', 'pending'], true)) {
                 fail(400, 'Неизвестное решение');
             }
+            if ($decision === 'approved') {
+                $days = (int) param('days', 0);
+                if ($days <= 0) {
+                    $row = one('SELECT live_days FROM ticker_posts WHERE id = ?', [$id]);
+                    $days = (int) ($row['live_days'] ?? 7);
+                }
+                $days = max(0, min(365, $days));
+                q(
+                    'UPDATE ticker_posts SET status = ?, decided_at = UTC_TIMESTAMP(), live_days = ?,
+                        expires_at = ' . ($days > 0 ? 'UTC_TIMESTAMP() + INTERVAL ' . $days . ' DAY' : 'NULL') . '
+                     WHERE id = ?',
+                    [$decision, $days, $id]
+                );
+                out(200, ['ok' => true]);
+            }
             q(
-                'UPDATE ticker_posts SET status = ?, decided_at = UTC_TIMESTAMP() WHERE id = ?',
+                'UPDATE ticker_posts SET status = ?, decided_at = UTC_TIMESTAMP(), expires_at = NULL WHERE id = ?',
                 [$decision, $id]
             );
             out(200, ['ok' => true]);

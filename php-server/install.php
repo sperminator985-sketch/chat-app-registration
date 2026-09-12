@@ -95,6 +95,8 @@ $sql[] = "CREATE TABLE IF NOT EXISTS ticker_posts (
     status VARCHAR(10) NOT NULL DEFAULT 'pending',
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     decided_at DATETIME NULL,
+    expires_at DATETIME NULL,
+    live_days INT NOT NULL DEFAULT 7,
     INDEX idx_status (status, created_at),
     INDEX idx_user (user_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci";

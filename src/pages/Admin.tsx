@@ -7,6 +7,10 @@ import { api, type AdminMessage, type AdminTickerPost, type AdminUser } from '@/
 import { nickColorClass, rooms, staffNickClass } from '@/data/chat';
 import { useToast } from '@/hooks/use-toast';
 
+const DAY_OPTIONS = [1, 3, 7, 14, 30, 0];
+
+const daysLabel = (d: number) => (d === 0 ? 'бессрочно' : `${d} дн`);
+
 const seenText = (u: AdminUser) => {
   if (u.online) return 'в сети';
   if (u.seenAgo == null) return 'давно';
@@ -29,6 +33,7 @@ const AdminPanel = () => {
   const [editId, setEditId] = useState<number | null>(null);
   const [editText, setEditText] = useState('');
   const [newText, setNewText] = useState('');
+  const [newDays, setNewDays] = useState(7);
   const [room, setRoom] = useState('');
   const [busy, setBusy] = useState(false);
   const [search, setSearch] = useState('');
@@ -147,13 +152,19 @@ const AdminPanel = () => {
     if (busy) return;
     setBusy(true);
     try {
-      await api.adminTickerDecide(p.id, decision);
+      await api.adminTickerDecide(p.id, decision, p.liveDays ?? 7);
       if (decision === 'delete') {
         setTicker((prev) => prev.filter((x) => x.id !== p.id));
         toast({ title: 'Объявление удалено' });
       } else {
         setTicker((prev) => prev.map((x) => (x.id === p.id ? { ...x, status: decision } : x)));
-        toast({ title: decision === 'approved' ? 'Объявление в эфире' : 'Объявление отклонено' });
+        if (decision === 'approved') loadTicker();
+        toast({
+          title:
+            decision === 'approved'
+              ? `В эфире${(p.liveDays ?? 7) > 0 ? ` на ${p.liveDays ?? 7} дн` : ' бессрочно'}`
+              : 'Объявление отклонено',
+        });
       }
     } catch (e) {
       toast({ title: (e as Error).message, variant: 'destructive' });
@@ -186,13 +197,32 @@ const AdminPanel = () => {
     }
   };
 
+  const setDays = async (p: AdminTickerPost, days: number) => {
+    setTicker((prev) => prev.map((x) => (x.id === p.id ? { ...x, liveDays: days } : x)));
+    if (p.status !== 'approved') return;
+    try {
+      const res = await api.adminTickerDays(p.id, days);
+      setTicker((prev) =>
+        prev.map((x) =>
+          x.id === p.id
+            ? { ...x, liveDays: res.liveDays, expires: res.expires, expired: res.expired }
+            : x,
+        ),
+      );
+      toast({ title: days === 0 ? 'Висит бессрочно' : `Снимется через ${days} дн` });
+    } catch (e) {
+      toast({ title: (e as Error).message, variant: 'destructive' });
+      loadTicker();
+    }
+  };
+
   const addOwn = async (e: React.FormEvent) => {
     e.preventDefault();
     const value = newText.trim();
     if (busy || value.length < 3) return;
     setBusy(true);
     try {
-      await api.adminTickerAdd(value);
+      await api.adminTickerAdd(value, newDays);
       setNewText('');
       await loadTicker();
       toast({ title: 'Объявление в эфире' });
@@ -344,6 +374,17 @@ const AdminPanel = () => {
                 placeholder="Текст сразу уйдёт в бегущую строку"
                 className="w-full border-2 border-foreground/35 bg-input px-3 py-2 text-foreground outline-none transition-colors placeholder:text-muted-foreground/70 focus:border-secondary"
               />
+              <select
+                value={newDays}
+                onChange={(e) => setNewDays(Number(e.target.value))}
+                className="shrink-0 border-2 border-foreground/35 bg-input px-2 py-2 text-[0.8rem] text-foreground outline-none focus:border-secondary"
+              >
+                {DAY_OPTIONS.map((d) => (
+                  <option key={d} value={d} className="bg-card">
+                    {daysLabel(d)}
+                  </option>
+                ))}
+              </select>
               <button
                 type="submit"
                 disabled={busy || newText.trim().length < 3}
@@ -380,6 +421,14 @@ const AdminPanel = () => {
                       {p.status === 'pending' ? 'ждёт' : p.status === 'approved' ? 'в эфире' : 'отклонено'}
                     </span>
                     <span>{p.time}</span>
+                    {p.status === 'approved' &&
+                      (p.expired ? (
+                        <span className="border border-primary px-1.5 py-0.5 text-primary">снято</span>
+                      ) : p.expires ? (
+                        <span className="border border-foreground/30 px-1.5 py-0.5">до {p.expires}</span>
+                      ) : (
+                        <span className="border border-foreground/30 px-1.5 py-0.5">бессрочно</span>
+                      ))}
                     {p.byAdmin ? (
                       <span className="border border-sky-400 px-1.5 py-0.5 text-sky-400">от коменданта</span>
                     ) : (
@@ -423,6 +472,19 @@ const AdminPanel = () => {
                   )}
                 </div>
                 <div className="flex shrink-0 items-center gap-1.5">
+                  <select
+                    value={p.liveDays ?? 7}
+                    onChange={(e) => setDays(p, Number(e.target.value))}
+                    disabled={busy}
+                    title="Сколько дней висит в бегущей строке"
+                    className="h-8 border-2 border-foreground/35 bg-input px-1.5 font-mono text-[0.68rem] text-foreground outline-none focus:border-secondary"
+                  >
+                    {DAY_OPTIONS.map((d) => (
+                      <option key={d} value={d} className="bg-card">
+                        {daysLabel(d)}
+                      </option>
+                    ))}
+                  </select>
                   {editId !== p.id && (
                     <button
                       onClick={() => {

@@ -60,6 +60,9 @@ export type AdminTickerPost = TickerPost & {
   nick: string;
   uni?: string | null;
   byAdmin?: boolean;
+  liveDays?: number;
+  expires?: string | null;
+  expired?: boolean;
 };
 
 export type ApiMessage = {
@@ -227,12 +230,20 @@ export const api = {
   tickerSend: (text: string) =>
     request<{ ok: boolean }>('ticker_send', { method: 'POST', body: { text } }),
   adminTicker: () => request<{ posts: AdminTickerPost[] }>('admin_ticker'),
-  adminTickerAdd: (text: string) =>
-    request<{ ok: boolean; id: number }>('admin_ticker_add', { method: 'POST', body: { text } }),
+  adminTickerAdd: (text: string, days: number) =>
+    request<{ ok: boolean; id: number }>('admin_ticker_add', { method: 'POST', body: { text, days } }),
+  adminTickerDays: (id: number, days: number) =>
+    request<{ ok: boolean; liveDays: number; expires: string | null; expired: boolean }>(
+      'admin_ticker_days',
+      { method: 'POST', body: { id, days } },
+    ),
   adminTickerEdit: (id: number, text: string) =>
     request<{ ok: boolean; text: string }>('admin_ticker_edit', { method: 'POST', body: { id, text } }),
-  adminTickerDecide: (id: number, decision: 'approved' | 'rejected' | 'pending' | 'delete') =>
-    request<{ ok: boolean }>('admin_ticker_decide', { method: 'POST', body: { id, decision } }),
+  adminTickerDecide: (
+    id: number,
+    decision: 'approved' | 'rejected' | 'pending' | 'delete',
+    days?: number,
+  ) => request<{ ok: boolean }>('admin_ticker_decide', { method: 'POST', body: { id, decision, days } }),
   adminUsers: () => request<{ users: AdminUser[] }>('admin_users'),
   adminMessages: (room?: string) =>
     request<{ messages: AdminMessage[] }>('admin_messages', { query: room ? `&room=${room}` : '' }),
