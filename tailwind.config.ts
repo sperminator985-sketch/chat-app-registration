@@ -134,6 +134,10 @@ export default {
 					from: { transform: 'translateX(0)' },
 					to: { transform: 'translateX(-50%)' }
 				},
+				'marquee-solo': {
+					from: { transform: 'translateX(var(--marquee-from))' },
+					to: { transform: 'translateX(var(--marquee-to))' }
+				},
 				caret: {
 					'0%, 49%': { opacity: '1' },
 					'50%, 100%': { opacity: '0' }
@@ -149,6 +153,7 @@ export default {
 				blink: 'blink 14s ease-in-out infinite',
 				'window-flicker': 'window-flicker 18s ease-in-out infinite',
 				marquee: 'marquee 45s linear infinite',
+				'marquee-solo': 'marquee-solo 30s linear infinite',
 				caret: 'caret 1s steps(1,end) infinite'
 			}
 		}

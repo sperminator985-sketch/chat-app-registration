@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react';
 import { useWeather, formatTemp } from '@/hooks/use-weather';
 import { useLiveStats } from '@/hooks/use-live-stats';
 import { useNews } from '@/hooks/use-news';
@@ -71,28 +72,28 @@ const Ticker = () => {
     ? core.flatMap((t, i) => (postLines[i] ? [t, postLines[i]] : [t])).concat(postLines.slice(core.length))
     : core;
 
-  const items =
-    mode === 'news'
-      ? core
-      : mode === 'posts'
-        ? postLines.length
-          ? [plain(liveLine), ...postLines, plain(weatherLine)]
-          : fallback
-        : mixed;
+  const items = mode === 'news' ? core : mode === 'posts' ? postLines : mixed;
 
-  if (mode === 'off') return null;
+  if (mode === 'off' || items.length === 0) return null;
 
+  const solo = items.length === 1;
   const chars = items.reduce((sum, t) => sum + t.nick.length + t.text.length + 6, 0);
-  const baseDuration = Math.max(18, Math.round(chars / 11));
+  const baseDuration = Math.max(18, Math.round((solo ? chars + 90 : chars) / 11));
   const duration = Math.max(6, Math.round((baseDuration * 100) / (speed || 100)));
 
   return (
     <div className="group my-0 overflow-hidden border-y-2 border-foreground/35 bg-card py-2.5 md:py-3">
       <div
-        className="flex w-max animate-marquee"
-        style={{ animationDuration: `${duration}s` }}
+        className={cn('flex w-max', solo ? 'animate-marquee-solo' : 'animate-marquee')}
+        style={
+          {
+            animationDuration: `${duration}s`,
+            '--marquee-from': '100vw',
+            '--marquee-to': '-100%',
+          } as CSSProperties
+        }
       >
-        {[0, 1].map((pass) => (
+        {(solo ? [0] : [0, 1]).map((pass) => (
           <div key={pass} className="flex shrink-0">
             {items.map((t, idx) => (
               <span
@@ -108,7 +109,9 @@ const Ticker = () => {
                   </>
                 )}
                 {t.text}
-                <span className="mx-5 h-[5px] w-[5px] shrink-0 rounded-full bg-primary md:mx-7 md:h-1.5 md:w-1.5" />
+                {!solo && (
+                  <span className="mx-5 h-[5px] w-[5px] shrink-0 rounded-full bg-primary md:mx-7 md:h-1.5 md:w-1.5" />
+                )}
               </span>
             ))}
           </div>
