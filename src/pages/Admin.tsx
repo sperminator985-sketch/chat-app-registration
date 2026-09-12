@@ -35,6 +35,13 @@ type AdminTab = 'vault' | 'security' | 'users' | 'messages' | 'ticker';
 
 const TABS: AdminTab[] = ['vault', 'security', 'users', 'messages', 'ticker'];
 
+const MODE_ORDER: Record<TickerMode, string> = {
+  news: 'order-1',
+  mix: 'order-2',
+  off: 'order-3',
+  posts: 'order-4',
+};
+
 const MODE_OPTIONS: { value: TickerMode; label: string; hint: string }[] = [
   {
     value: 'news',
@@ -645,14 +652,15 @@ const AdminPanel = () => {
             <p className="mb-2 text-[0.7rem] font-bold uppercase tracking-[0.14em] text-muted-foreground">
               Что крутится в строке
             </p>
-            <div className="flex flex-wrap gap-2">
+            <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
               {MODE_OPTIONS.map((m) => (
                 <button
                   key={m.value}
                   onClick={() => changeMode(m.value)}
                   disabled={busy}
                   className={cn(
-                    'border-2 px-3 py-2 text-[0.72rem] font-bold uppercase tracking-[0.08em] transition-colors disabled:opacity-60',
+                    'border-2 px-3 py-2 text-[0.72rem] font-bold uppercase tracking-[0.08em] transition-colors disabled:opacity-60 sm:order-none',
+                    MODE_ORDER[m.value],
                     tickerMode === m.value
                       ? 'border-secondary bg-secondary text-secondary-foreground'
                       : 'border-foreground/35 text-muted-foreground hover:border-secondary',
