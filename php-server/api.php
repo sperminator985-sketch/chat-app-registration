@@ -5,10 +5,26 @@ ob_start();
 
 require __DIR__ . '/db.php';
 
-header('Access-Control-Allow-Origin: *');
+$allowedOrigins = [
+    'https://chat-tom.ru',
+    'https://www.chat-tom.ru',
+    'http://localhost:5173',
+    'http://127.0.0.1:5173',
+];
+$origin = (string) ($_SERVER['HTTP_ORIGIN'] ?? '');
+if ($origin !== '' && in_array($origin, $allowedOrigins, true)) {
+    header('Access-Control-Allow-Origin: ' . $origin);
+    header('Vary: Origin');
+} elseif ($origin === '') {
+    header('Access-Control-Allow-Origin: ' . $allowedOrigins[0]);
+}
 header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type, X-Auth-Token');
 header('Access-Control-Max-Age: 86400');
+header('X-Content-Type-Options: nosniff');
+header('X-Frame-Options: DENY');
+header('Referrer-Policy: no-referrer');
+header('Strict-Transport-Security: max-age=31536000; includeSubDomains');
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
 header('Pragma: no-cache');
@@ -135,6 +151,66 @@ function shapeUser(array $r): array
     ];
 }
 
+function clientIp(): string
+{
+    $ip = (string) ($_SERVER['REMOTE_ADDR'] ?? '0.0.0.0');
+    return mb_substr($ip, 0, 45);
+}
+
+function hasAttemptTable(): bool
+{
+    static $ok = null;
+    if ($ok !== null) {
+        return $ok;
+    }
+    try {
+        db()->exec("CREATE TABLE IF NOT EXISTS login_attempts (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            ip VARCHAR(45) NOT NULL,
+            nick VARCHAR(32) NULL,
+            at DATETIME NOT NULL,
+            INDEX idx_ip_at (ip, at)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+        $ok = true;
+    } catch (Throwable $e) {
+        $ok = false;
+    }
+    return $ok;
+}
+
+function loginGuard(string $nick): void
+{
+    if (!hasAttemptTable()) {
+        return;
+    }
+    q('DELETE FROM login_attempts WHERE at < UTC_TIMESTAMP() - INTERVAL 1 HOUR');
+    $row = one(
+        'SELECT COUNT(*) AS n FROM login_attempts
+         WHERE at > UTC_TIMESTAMP() - INTERVAL 15 MINUTE AND (ip = ? OR nick = ?)',
+        [clientIp(), mb_strtolower($nick)]
+    );
+    if ((int) ($row['n'] ?? 0) >= 10) {
+        fail(429, 'Слишком много попыток входа. Подожди 15 минут.');
+    }
+}
+
+function loginFailed(string $nick): void
+{
+    if (!hasAttemptTable()) {
+        return;
+    }
+    q('INSERT INTO login_attempts (ip, nick, at) VALUES (?, ?, UTC_TIMESTAMP())',
+      [clientIp(), mb_substr(mb_strtolower($nick), 0, 32)]);
+}
+
+function loginPassed(string $nick): void
+{
+    if (!hasAttemptTable()) {
+        return;
+    }
+    q('DELETE FROM login_attempts WHERE ip = ? OR nick = ?', [clientIp(), mb_strtolower($nick)]);
+}
+
 function currentUser(): ?array
 {
     $t = token();
@@ -142,7 +218,8 @@ function currentUser(): ?array
         return null;
     }
     $r = one(
-        'SELECT u.* FROM sessions s JOIN users u ON u.id = s.user_id WHERE s.token = ?',
+        'SELECT u.* FROM sessions s JOIN users u ON u.id = s.user_id
+         WHERE s.token = ? AND s.created_at > UTC_TIMESTAMP() - INTERVAL 90 DAY',
         [$t]
     );
     return $r ? shapeUser($r) : null;
@@ -751,10 +828,13 @@ try {
     if ($method === 'POST' && $action === 'login') {
         $nick = trim((string) param('nick', ''));
         $password = (string) param('password', '');
+        loginGuard($nick);
         $row = one('SELECT * FROM users WHERE nick_lower = ?', [mb_strtolower($nick)]);
         if (!$row || !password_verify($password, $row['password_hash'])) {
+            loginFailed($nick);
             fail(401, 'Ник или пароль не подходят');
         }
+        loginPassed($nick);
         if ($row['banned_at'] !== null) {
             fail(403, 'Ты выселен из общаги: ' . ($row['ban_reason'] ?: 'нарушение правил'));
         }
@@ -767,6 +847,7 @@ try {
         }
         $user = shapeUser($row);
         $new = bin2hex(random_bytes(24));
+        q('DELETE FROM sessions WHERE created_at < UTC_TIMESTAMP() - INTERVAL 90 DAY');
         q('INSERT INTO sessions (token, user_id, created_at) VALUES (?, ?, UTC_TIMESTAMP())', [$new, $user['id']]);
         touch_user($user['id']);
         out(200, ['user' => $user, 'token' => $new]);
@@ -813,6 +894,25 @@ try {
         }
         if (!canEnterRoom($room, $user)) {
             fail(403, 'Этот этаж только для студентов своего вуза');
+        }
+        if (empty($user['isAdmin'])) {
+            $flood = one(
+                'SELECT COUNT(*) AS n FROM messages
+                 WHERE user_id = ? AND created_at > UTC_TIMESTAMP() - INTERVAL 10 SECOND',
+                [$user['id']]
+            );
+            if ((int) ($flood['n'] ?? 0) >= 8) {
+                fail(429, 'Не части — переведи дух на пару секунд');
+            }
+            $dup = one(
+                'SELECT id FROM messages
+                 WHERE user_id = ? AND text = ? AND created_at > UTC_TIMESTAMP() - INTERVAL 20 SECOND
+                 ORDER BY id DESC LIMIT 1',
+                [$user['id'], $text]
+            );
+            if ($dup) {
+                fail(429, 'Это уже было — не повторяйся');
+            }
         }
         q(
             'INSERT INTO messages (room, user_id, nick, color, text, avatar, avatar_url, created_at)
