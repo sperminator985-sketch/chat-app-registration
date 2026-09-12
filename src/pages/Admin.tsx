@@ -297,11 +297,11 @@ const AdminPanel = () => {
           <span className="pointer-events-none absolute left-1/2 hidden -translate-x-1/2 font-display text-lg font-extrabold uppercase tracking-[0.04em] md:block">
             Комендантская
           </span>
-          <div className="flex items-center justify-end gap-2 md:ml-auto">
+          <div className="flex items-center justify-end gap-1.5 md:ml-auto md:gap-2">
             <button
               onClick={() => setTab('users')}
               className={cn(
-                'border-2 px-3 py-1.5 text-[0.72rem] font-bold uppercase tracking-[0.1em] transition-colors',
+                'border-2 px-2 py-1.5 text-[0.62rem] font-bold uppercase tracking-[0.04em] transition-colors md:px-3 md:text-[0.72rem] md:tracking-[0.1em]',
                 tab === 'users'
                   ? 'border-secondary bg-secondary text-secondary-foreground'
                   : 'border-foreground/35 text-muted-foreground hover:border-secondary',
@@ -312,7 +312,7 @@ const AdminPanel = () => {
             <button
               onClick={() => setTab('messages')}
               className={cn(
-                'border-2 px-3 py-1.5 text-[0.72rem] font-bold uppercase tracking-[0.1em] transition-colors',
+                'border-2 px-2 py-1.5 text-[0.62rem] font-bold uppercase tracking-[0.04em] transition-colors md:px-3 md:text-[0.72rem] md:tracking-[0.1em]',
                 tab === 'messages'
                   ? 'border-secondary bg-secondary text-secondary-foreground'
                   : 'border-foreground/35 text-muted-foreground hover:border-secondary',
@@ -323,7 +323,7 @@ const AdminPanel = () => {
             <button
               onClick={() => setTab('ticker')}
               className={cn(
-                'border-2 px-3 py-1.5 text-[0.72rem] font-bold uppercase tracking-[0.1em] transition-colors',
+                'border-2 px-2 py-1.5 text-[0.62rem] font-bold uppercase tracking-[0.04em] transition-colors md:px-3 md:text-[0.72rem] md:tracking-[0.1em]',
                 tab === 'ticker'
                   ? 'border-secondary bg-secondary text-secondary-foreground'
                   : 'border-foreground/35 text-muted-foreground hover:border-secondary',
@@ -340,7 +340,7 @@ const AdminPanel = () => {
               onClick={refresh}
               disabled={refreshing}
               title="Обновить данные"
-              className="flex items-center gap-1.5 border-2 border-foreground/35 px-3 py-1.5 text-[0.72rem] font-bold uppercase tracking-[0.1em] text-muted-foreground transition-colors hover:border-secondary hover:text-secondary disabled:opacity-50"
+              className="flex items-center gap-1.5 border-2 border-foreground/35 px-2 py-1.5 text-[0.62rem] font-bold uppercase tracking-[0.04em] text-muted-foreground transition-colors hover:border-secondary hover:text-secondary disabled:opacity-50 md:px-3 md:text-[0.72rem] md:tracking-[0.1em]"
             >
               <Icon name="RefreshCw" size={14} className={refreshing ? 'animate-spin' : ''} />
               <span className="hidden sm:inline">Обновить</span>
