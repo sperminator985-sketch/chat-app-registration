@@ -27,6 +27,8 @@ const eventStyle = (e: string) =>
       ? 'border-amber-500 bg-amber-500/15 text-amber-500'
       : 'border-foreground/35 text-muted-foreground';
 
+const SEEN_KEY = 'admin_security_seen';
+
 const seenText = (u: AdminUser) => {
   if (u.online) return 'в сети';
   if (u.seenAgo == null) return 'давно';
@@ -44,6 +46,7 @@ const AdminPanel = () => {
 
   const [tab, setTab] = useState<'security' | 'users' | 'messages' | 'ticker'>('users');
   const [events, setEvents] = useState<SecurityEvent[]>([]);
+  const [alerts, setAlerts] = useState(0);
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [messages, setMessages] = useState<AdminMessage[]>([]);
   const [ticker, setTicker] = useState<AdminTickerPost[]>([]);
@@ -80,16 +83,23 @@ const AdminPanel = () => {
     }
   }, [room, toast]);
 
+  const markSeen = useCallback((list: SecurityEvent[]) => {
+    const top = list.length ? list[0].id : 0;
+    localStorage.setItem(SEEN_KEY, String(top));
+    setAlerts(0);
+  }, []);
+
   const loadSecurity = useCallback(async () => {
     try {
       const res = await api.adminSecurity();
       setEvents(res.events);
+      markSeen(res.events);
       setDenied(false);
     } catch (e) {
       setDenied(true);
       toast({ title: (e as Error).message, variant: 'destructive' });
     }
-  }, [toast]);
+  }, [toast, markSeen]);
 
   const loadTicker = useCallback(async () => {
     try {
@@ -114,12 +124,35 @@ const AdminPanel = () => {
     else loadMessages();
   }, [user, loading, tab, room, navigate, loadUsers, loadMessages, loadTicker, loadSecurity]);
 
+  useEffect(() => {
+    if (!user?.isAdmin) return;
+    let alive = true;
+    const check = async () => {
+      try {
+        const res = await api.adminSecurity();
+        if (!alive) return;
+        const seen = Number(localStorage.getItem(SEEN_KEY) || 0);
+        setAlerts(res.events.filter((e) => e.id > seen).length);
+      } catch {
+        // тихо
+      }
+    };
+    check();
+    const timer = window.setInterval(check, 60000);
+    return () => {
+      alive = false;
+      window.clearInterval(timer);
+    };
+  }, [user]);
+
   const clearSecurity = async () => {
     if (busy) return;
     setBusy(true);
     try {
       await api.adminSecurityClear();
       setEvents([]);
+      localStorage.setItem(SEEN_KEY, '0');
+      setAlerts(0);
       toast({ title: 'Журнал очищен' });
     } catch (e) {
       toast({ title: (e as Error).message, variant: 'destructive' });
@@ -363,6 +396,9 @@ const AdminPanel = () => {
               )}
             >
               Журнал
+              {tab !== 'security' && alerts > 0 && (
+                <span className="ml-1 inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-primary align-middle md:h-2 md:w-2" />
+              )}
             </button>
             <button
               onClick={() => setTab('users')}
