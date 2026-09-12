@@ -452,6 +452,16 @@ function rememberIp(int $userId): void
     }
 }
 
+function rememberIpThrottled(int $userId): void
+{
+    static $done = false;
+    if ($done) {
+        return;
+    }
+    $done = true;
+    rememberIp($userId);
+}
+
 function touch_user(int $id, ?string $room = null): void
 {
     if ($room !== null) {
@@ -459,6 +469,7 @@ function touch_user(int $id, ?string $room = null): void
     } else {
         q('UPDATE users SET last_seen = UTC_TIMESTAMP() WHERE id = ?', [$id]);
     }
+    rememberIpThrottled($id);
 }
 
 function hasTypingColumns(): bool
