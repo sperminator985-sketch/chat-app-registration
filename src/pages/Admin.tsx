@@ -398,10 +398,10 @@ const AdminPanel = () => {
               Комендантская
             </span>
           </div>
-          <span className="pointer-events-none absolute left-1/2 hidden -translate-x-1/2 font-display text-lg font-extrabold uppercase tracking-[0.04em] md:block">
+          <span className="pointer-events-none hidden flex-1 whitespace-nowrap px-2 text-center font-display text-lg font-extrabold uppercase tracking-[0.04em] md:block">
             Комендантская
           </span>
-          <div className="flex items-center justify-end gap-1 md:ml-auto md:gap-2">
+          <div className="flex items-center justify-end gap-1 md:gap-2">
             <button
               onClick={() => setTab('vault')}
               className={cn(
