@@ -226,6 +226,8 @@ export const api = {
   tickerSend: (text: string) =>
     request<{ ok: boolean }>('ticker_send', { method: 'POST', body: { text } }),
   adminTicker: () => request<{ posts: AdminTickerPost[] }>('admin_ticker'),
+  adminTickerEdit: (id: number, text: string) =>
+    request<{ ok: boolean; text: string }>('admin_ticker_edit', { method: 'POST', body: { id, text } }),
   adminTickerDecide: (id: number, decision: 'approved' | 'rejected' | 'pending' | 'delete') =>
     request<{ ok: boolean }>('admin_ticker_decide', { method: 'POST', body: { id, decision } }),
   adminUsers: () => request<{ users: AdminUser[] }>('admin_users'),

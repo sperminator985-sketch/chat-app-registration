@@ -26,6 +26,8 @@ const AdminPanel = () => {
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [messages, setMessages] = useState<AdminMessage[]>([]);
   const [ticker, setTicker] = useState<AdminTickerPost[]>([]);
+  const [editId, setEditId] = useState<number | null>(null);
+  const [editText, setEditText] = useState('');
   const [room, setRoom] = useState('');
   const [busy, setBusy] = useState(false);
   const [search, setSearch] = useState('');
@@ -152,6 +154,30 @@ const AdminPanel = () => {
         setTicker((prev) => prev.map((x) => (x.id === p.id ? { ...x, status: decision } : x)));
         toast({ title: decision === 'approved' ? 'Объявление в эфире' : 'Объявление отклонено' });
       }
+    } catch (e) {
+      toast({ title: (e as Error).message, variant: 'destructive' });
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const saveEdit = async (p: AdminTickerPost) => {
+    const value = editText.trim();
+    if (busy) return;
+    if (value.length < 3) {
+      toast({ title: 'Слишком короткий текст', variant: 'destructive' });
+      return;
+    }
+    if (value === p.text) {
+      setEditId(null);
+      return;
+    }
+    setBusy(true);
+    try {
+      const res = await api.adminTickerEdit(p.id, value);
+      setTicker((prev) => prev.map((x) => (x.id === p.id ? { ...x, text: res.text } : x)));
+      setEditId(null);
+      toast({ title: 'Текст обновлён' });
     } catch (e) {
       toast({ title: (e as Error).message, variant: 'destructive' });
     } finally {
@@ -314,9 +340,55 @@ const AdminPanel = () => {
                     {p.uni && <span className="border border-foreground/30 px-1.5 py-0.5">{p.uni}</span>}
                     <span className="font-semibold text-foreground">&lt;{p.nick}&gt;</span>
                   </p>
-                  <p className="break-words text-[1rem] text-foreground/90">{p.text}</p>
+                  {editId === p.id ? (
+                    <div className="flex flex-col gap-2">
+                      <input
+                        autoFocus
+                        value={editText}
+                        onChange={(e) => setEditText(e.target.value.slice(0, 120))}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') saveEdit(p);
+                          if (e.key === 'Escape') setEditId(null);
+                        }}
+                        className="w-full border-2 border-secondary bg-input px-3 py-2 text-[1rem] text-foreground outline-none"
+                      />
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono text-[0.7rem] text-muted-foreground">
+                          {editText.length}/120
+                        </span>
+                        <button
+                          onClick={() => saveEdit(p)}
+                          disabled={busy}
+                          className="border-2 border-secondary bg-secondary px-3 py-1 text-[0.68rem] font-bold uppercase tracking-[0.1em] text-secondary-foreground"
+                        >
+                          Сохранить
+                        </button>
+                        <button
+                          onClick={() => setEditId(null)}
+                          className="border-2 border-foreground/35 px-3 py-1 text-[0.68rem] font-bold uppercase tracking-[0.1em] text-muted-foreground transition-colors hover:border-primary hover:text-primary"
+                        >
+                          Отмена
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="break-words text-[1rem] text-foreground/90">{p.text}</p>
+                  )}
                 </div>
                 <div className="flex shrink-0 items-center gap-1.5">
+                  {editId !== p.id && (
+                    <button
+                      onClick={() => {
+                        setEditId(p.id);
+                        setEditText(p.text);
+                      }}
+                      disabled={busy}
+                      title="Поправить текст"
+                      className="flex h-8 w-8 items-center justify-center border-2 border-foreground/35 text-muted-foreground transition-colors hover:border-secondary hover:text-secondary"
+                    >
+                      <Icon name="Pencil" size={15} />
+                    </button>
+                  )}
                   {p.status !== 'approved' && (
                     <button
                       onClick={() => decide(p, 'approved')}

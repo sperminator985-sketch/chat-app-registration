@@ -1111,7 +1111,7 @@ try {
     }
 
     // --- Комендантская: только для владельца ---
-    if (in_array($action, ['admin_users', 'admin_messages', 'admin_ban', 'admin_hide', 'admin_delete', 'admin_ticker', 'admin_ticker_decide'], true)) {
+    if (in_array($action, ['admin_users', 'admin_messages', 'admin_ban', 'admin_hide', 'admin_delete', 'admin_ticker', 'admin_ticker_decide', 'admin_ticker_edit'], true)) {
         $user = requireUser();
         $row = one('SELECT is_admin FROM users WHERE id = ?', [$user['id']]);
         if (!$row || !$row['is_admin']) {
@@ -1136,6 +1136,22 @@ try {
                     'time' => fmtTime($r['created_at']),
                 ];
             }, $rows)]);
+        }
+
+        if ($method === 'POST' && $action === 'admin_ticker_edit') {
+            if (!hasTickerTable()) {
+                fail(500, 'Бегущая строка пока недоступна');
+            }
+            $id = (int) param('id', 0);
+            $text = mb_substr(trim((string) param('text', '')), 0, 120);
+            if ($id <= 0) {
+                fail(400, 'Не указано объявление');
+            }
+            if (mb_strlen($text) < 3) {
+                fail(400, 'Слишком короткий текст');
+            }
+            q('UPDATE ticker_posts SET text = ? WHERE id = ?', [$text, $id]);
+            out(200, ['ok' => true, 'text' => $text]);
         }
 
         if ($method === 'POST' && $action === 'admin_ticker_decide') {
