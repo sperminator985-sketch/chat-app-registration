@@ -12,3 +12,6 @@ Allow: /
 
 User-agent: *
 Allow: /
+
+Host: https://chat-tom.ru
+Sitemap: https://chat-tom.ru/sitemap.xml
