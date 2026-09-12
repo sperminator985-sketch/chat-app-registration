@@ -419,13 +419,12 @@ const AdminPanel = () => {
                 'border-2 px-1.5 py-1.5 text-[0.55rem] font-bold uppercase tracking-[0.02em] transition-colors md:px-3 md:text-[0.72rem] md:tracking-[0.1em]',
                 tab === 'security'
                   ? 'border-secondary bg-secondary text-secondary-foreground'
-                  : 'border-foreground/35 text-muted-foreground hover:border-secondary',
+                  : alerts > 0
+                    ? 'animate-pulse border-primary bg-primary text-primary-foreground'
+                    : 'border-foreground/35 text-muted-foreground hover:border-secondary',
               )}
             >
               Журнал
-              {tab !== 'security' && alerts > 0 && (
-                <span className="ml-1 inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-primary align-middle md:h-2 md:w-2" />
-              )}
             </button>
             <button
               onClick={() => setTab('users')}
