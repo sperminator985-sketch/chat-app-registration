@@ -2,6 +2,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { AuthProvider, useAuth } from '@/hooks/use-auth';
 import { toast } from '@/hooks/use-toast';
 import { DmProvider } from '@/hooks/use-dm';
+import { CryptoProvider } from '@/hooks/use-crypto';
 import { CallProvider } from '@/hooks/use-call';
 import { TickerProvider, useTicker } from '@/hooks/use-ticker';
 import CallWindow from '@/components/CallWindow';
@@ -152,13 +153,15 @@ const PageBody = () => {
 
 const Index = () => (
   <AuthProvider>
-    <DmProvider>
-      <CallProvider>
-        <TickerProvider>
-          <PageBody />
-        </TickerProvider>
-      </CallProvider>
-    </DmProvider>
+    <CryptoProvider>
+      <DmProvider>
+        <CallProvider>
+          <TickerProvider>
+            <PageBody />
+          </TickerProvider>
+        </CallProvider>
+      </DmProvider>
+    </CryptoProvider>
   </AuthProvider>
 );
 

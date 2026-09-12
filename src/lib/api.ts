@@ -88,9 +88,30 @@ export type ApiMessage = {
   nick: string;
   color: NickColor;
   text: string;
+  cipher?: string | null;
   time: string;
   avatar?: number;
   avatarUrl?: string | null;
+};
+
+export type KeyBundleDto = {
+  publicJwk: string;
+  privateEnc: string;
+  salt: string;
+  iv: string;
+};
+
+export type VaultInfo = {
+  fingerprint: string;
+  since: string;
+};
+
+export type VaultMessage = {
+  id: number;
+  from: string;
+  to: string;
+  cipher: string;
+  time: string;
 };
 
 export type FeedResponse = {
@@ -291,8 +312,21 @@ export const api = {
     }),
   dmAll: () =>
     request<{ messages: (ApiMessage & { peer: string; outgoing: boolean })[] }>('dm_all'),
-  dmSend: (body: { nick: string; text: string }) =>
+  dmSend: (body: { nick: string; text?: string; cipher?: string }) =>
     request<{ message: ApiMessage }>('dm_send', { method: 'POST', body }),
+  keysMe: () =>
+    request<{ enabled: boolean; vault: string | null; bundle: KeyBundleDto | null }>('keys_me'),
+  keysSave: (body: KeyBundleDto) =>
+    request<{ ok: boolean }>('keys_save', { method: 'POST', body }),
+  keysPeer: (nick: string) =>
+    request<{ userId: number | null; publicJwk: string | null; vault: string | null }>('keys_peer', {
+      query: `&nick=${encodeURIComponent(nick)}`,
+    }),
+  adminVault: () => request<{ vault: VaultInfo | null; messages: number }>('admin_vault'),
+  adminVaultSet: (body: { publicJwk: string; fingerprint: string }) =>
+    request<{ ok: boolean }>('admin_vault_set', { method: 'POST', body }),
+  adminDmWipe: () => request<{ ok: boolean; removed: number }>('admin_dm_wipe', { method: 'POST' }),
+  adminDmVault: () => request<{ messages: VaultMessage[] }>('admin_dm_vault'),
   callSignal: (body: { nick: string; callId: string; kind: CallKind; payload?: unknown }) =>
     request<{ ok: boolean }>('call_signal', { method: 'POST', body }),
   callPoll: () => request<{ signals: CallSignal[] }>('call_poll'),

@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, ReactNode } from 'react';
 import { onBanned, api, clearToken, getToken, setToken, setTempToken, persistToken, hasPendingVerify, ApiUser } from '@/lib/api';
+import { deriveSecret, stashSecret, bindSecret } from '@/lib/dm-secret';
 
 export type Account = ApiUser;
 
@@ -70,7 +71,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const closeWelcome = useCallback(() => setWelcomeOpen(false), []);
 
   const register = useCallback(async (body: { nick: string; password: string; color: number; room: string; avatar: number; uni?: string; email?: string }) => {
+    stashSecret(await deriveSecret(body.nick, body.password));
     const res = await api.register(body);
+    bindSecret(res.user.id);
     const needVerify = Boolean(res.needVerify) && !res.user.emailVerified;
     if (needVerify) {
       setTempToken(res.token);
@@ -87,6 +90,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const verifyEmail = useCallback(async (code: string) => {
     const res = await api.verifyEmail(code);
+    if (res.user) bindSecret(res.user.id);
     persistToken();
     setPendingVerify(false);
     if (res.user) setUser(res.user);
@@ -103,7 +107,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const login = useCallback(async (body: { nick: string; password: string }) => {
+    stashSecret(await deriveSecret(body.nick, body.password));
     const res = await api.login(body);
+    bindSecret(res.user.id);
     setToken(res.token);
     setUser(res.user);
     setAuthOpen(false);

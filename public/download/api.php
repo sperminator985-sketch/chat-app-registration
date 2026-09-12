@@ -287,6 +287,70 @@ function verifiedCond(string $alias = ''): string
     return " AND ({$p}email_verified_at IS NOT NULL OR {$p}email_code IS NULL)";
 }
 
+function hasCryptoTable(): bool
+{
+    static $ok = null;
+    if ($ok !== null) {
+        return $ok;
+    }
+    try {
+        db()->exec("CREATE TABLE IF NOT EXISTS user_keys (
+            user_id INT PRIMARY KEY,
+            public_jwk TEXT NOT NULL,
+            private_enc TEXT NOT NULL,
+            salt VARCHAR(64) NOT NULL,
+            iv VARCHAR(64) NOT NULL,
+            created_at DATETIME NOT NULL
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+        db()->exec("CREATE TABLE IF NOT EXISTS vault_key (
+            id TINYINT PRIMARY KEY,
+            public_jwk TEXT NOT NULL,
+            fingerprint VARCHAR(64) NOT NULL,
+            created_at DATETIME NOT NULL
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+        $ok = true;
+    } catch (Throwable $e) {
+        $ok = false;
+    }
+    return $ok;
+}
+
+function hasDmCipherColumn(): bool
+{
+    static $ok = null;
+    if ($ok !== null) {
+        return $ok;
+    }
+    try {
+        $found = (int) scalar(
+            "SELECT COUNT(*) FROM information_schema.COLUMNS
+             WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'direct_messages'
+               AND COLUMN_NAME = 'cipher'"
+        );
+        if ($found < 1) {
+            try {
+                db()->exec("ALTER TABLE direct_messages ADD COLUMN cipher MEDIUMTEXT NULL");
+                $found = 1;
+            } catch (Throwable $e) {
+                // работаем без шифрования
+            }
+        }
+        $ok = $found >= 1;
+    } catch (Throwable $e) {
+        $ok = false;
+    }
+    return $ok;
+}
+
+function vaultPublicJwk(): ?string
+{
+    if (!hasCryptoTable()) {
+        return null;
+    }
+    $row = one('SELECT public_jwk FROM vault_key WHERE id = 1');
+    return $row ? (string) $row['public_jwk'] : null;
+}
+
 function hasIpColumns(): bool
 {
     static $ok = null;
@@ -577,6 +641,7 @@ function shapeMessage(array $r): array
         'nick' => array_key_exists('nick', $r) ? $r['nick'] : ($r['sender_nick'] ?? ''),
         'color' => (int) (array_key_exists('color', $r) ? $r['color'] : ($r['sender_color'] ?? 1)),
         'text' => $r['text'],
+        'cipher' => empty($r['cipher']) ? null : (string) $r['cipher'],
         'time' => fmtTime($r['created_at']),
         'avatar' => (int) (array_key_exists('avatar', $r) ? $r['avatar'] : ($r['sender_avatar'] ?? 1)),
         'avatarUrl' => array_key_exists('avatar_url', $r) ? $r['avatar_url'] : ($r['sender_avatar_url'] ?? null),
@@ -1123,6 +1188,67 @@ try {
         out(200, ['user' => shapeUser(one('SELECT * FROM users WHERE id = ?', [$user['id']]))]);
     }
 
+    // --- Криптография: мои ключи ---
+    if ($method === 'GET' && $action === 'keys_me') {
+        $user = requireUser();
+        if (!hasCryptoTable()) {
+            out(200, ['bundle' => null, 'vault' => null, 'enabled' => false]);
+        }
+        $row = one('SELECT * FROM user_keys WHERE user_id = ?', [$user['id']]);
+        out(200, [
+            'enabled' => vaultPublicJwk() !== null,
+            'vault' => vaultPublicJwk(),
+            'bundle' => $row ? [
+                'publicJwk' => (string) $row['public_jwk'],
+                'privateEnc' => (string) $row['private_enc'],
+                'salt' => (string) $row['salt'],
+                'iv' => (string) $row['iv'],
+            ] : null,
+        ]);
+    }
+
+    // --- Криптография: сохранить свою пару ключей ---
+    if ($method === 'POST' && $action === 'keys_save') {
+        $user = requireUser();
+        if (!hasCryptoTable()) {
+            fail(500, 'Хранилище ключей недоступно');
+        }
+        $pub = (string) param('publicJwk', '');
+        $priv = (string) param('privateEnc', '');
+        $salt = (string) param('salt', '');
+        $iv = (string) param('iv', '');
+        if ($pub === '' || $priv === '' || $salt === '' || $iv === '') {
+            fail(400, 'Ключ неполный');
+        }
+        q(
+            'INSERT INTO user_keys (user_id, public_jwk, private_enc, salt, iv, created_at)
+             VALUES (?, ?, ?, ?, ?, UTC_TIMESTAMP())
+             ON DUPLICATE KEY UPDATE public_jwk = VALUES(public_jwk), private_enc = VALUES(private_enc),
+                                     salt = VALUES(salt), iv = VALUES(iv), created_at = UTC_TIMESTAMP()',
+            [$user['id'], $pub, $priv, mb_substr($salt, 0, 64), mb_substr($iv, 0, 64)]
+        );
+        out(200, ['ok' => true]);
+    }
+
+    // --- Криптография: открытый ключ собеседника ---
+    if ($method === 'GET' && $action === 'keys_peer') {
+        requireUser();
+        if (!hasCryptoTable()) {
+            out(200, ['publicJwk' => null, 'userId' => null]);
+        }
+        $nick = trim((string) param('nick', ''));
+        $other = one('SELECT id FROM users WHERE nick_lower = ?', [mb_strtolower($nick)]);
+        if (!$other) {
+            fail(404, 'Такого жильца нет');
+        }
+        $row = one('SELECT public_jwk FROM user_keys WHERE user_id = ?', [(int) $other['id']]);
+        out(200, [
+            'userId' => (int) $other['id'],
+            'publicJwk' => $row ? (string) $row['public_jwk'] : null,
+            'vault' => vaultPublicJwk(),
+        ]);
+    }
+
     // --- Список личных диалогов ---
     if ($method === 'GET' && $action === 'dialogs') {
         $user = requireUser();
@@ -1162,6 +1288,7 @@ try {
     // --- Переписка с конкретным жильцом ---
     if ($method === 'GET' && $action === 'dm') {
         $user = requireUser();
+        hasDmCipherColumn();
         $me = $user['id'];
         $withNick = trim((string) param('nick', ''));
         $other = one(
@@ -1228,9 +1355,18 @@ try {
     if ($method === 'POST' && $action === 'dm_send') {
         $user = requireUser('Сначала займи ник');
         $toNick = trim((string) param('nick', ''));
+        $cipher = (string) param('cipher', '');
         $text = mb_substr(trim((string) param('text', '')), 0, 500);
-        if ($text === '') {
-            fail(400, 'Пустое сообщение');
+        if ($cipher !== '' && hasDmCipherColumn()) {
+            if (mb_strlen($cipher) > 20000) {
+                fail(400, 'Сообщение слишком длинное');
+            }
+            $text = '';
+        } else {
+            $cipher = '';
+            if ($text === '') {
+                fail(400, 'Пустое сообщение');
+            }
         }
         $other = one('SELECT id FROM users WHERE nick_lower = ?', [mb_strtolower($toNick)]);
         if (!$other) {
@@ -1239,12 +1375,21 @@ try {
         if ((int) $other['id'] === $user['id']) {
             fail(400, 'Самому себе писать скучно');
         }
-        q(
-            'INSERT INTO direct_messages
-             (sender_id, recipient_id, sender_nick, sender_color, text, sender_avatar, sender_avatar_url, created_at)
-             VALUES (?, ?, ?, ?, ?, ?, ?, UTC_TIMESTAMP())',
-            [$user['id'], (int) $other['id'], $user['nick'], $user['color'], $text, $user['avatar'], $user['avatarUrl']]
-        );
+        if ($cipher !== '') {
+            q(
+                'INSERT INTO direct_messages
+                 (sender_id, recipient_id, sender_nick, sender_color, text, cipher, sender_avatar, sender_avatar_url, created_at)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, UTC_TIMESTAMP())',
+                [$user['id'], (int) $other['id'], $user['nick'], $user['color'], '', $cipher, $user['avatar'], $user['avatarUrl']]
+            );
+        } else {
+            q(
+                'INSERT INTO direct_messages
+                 (sender_id, recipient_id, sender_nick, sender_color, text, sender_avatar, sender_avatar_url, created_at)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, UTC_TIMESTAMP())',
+                [$user['id'], (int) $other['id'], $user['nick'], $user['color'], $text, $user['avatar'], $user['avatarUrl']]
+            );
+        }
         $id = (int) db()->lastInsertId();
         touch_user($user['id']);
         out(200, ['message' => [
@@ -1252,6 +1397,7 @@ try {
             'nick' => $user['nick'],
             'color' => $user['color'],
             'text' => $text,
+            'cipher' => $cipher !== '' ? $cipher : null,
             'time' => fmtTime(),
             'avatar' => $user['avatar'],
             'avatarUrl' => $user['avatarUrl'],
@@ -1403,7 +1549,12 @@ try {
     }
 
     // --- Комендантская: только для владельца ---
-    if (in_array($action, ['admin_users', 'admin_messages', 'admin_ban', 'admin_hide', 'admin_delete', 'admin_ticker', 'admin_ticker_decide', 'admin_ticker_edit', 'admin_ticker_add', 'admin_ticker_days'], true)) {
+    if (in_array($action, [
+        'admin_users', 'admin_messages', 'admin_ban', 'admin_hide', 'admin_delete',
+        'admin_ticker', 'admin_ticker_decide', 'admin_ticker_edit', 'admin_ticker_add',
+        'admin_ticker_days', 'admin_security', 'admin_security_clear',
+        'admin_vault', 'admin_vault_set', 'admin_dm_wipe', 'admin_dm_vault',
+    ], true)) {
         $user = requireUser();
         $row = one('SELECT is_admin FROM users WHERE id = ?', [$user['id']]);
         if (!$row || !$row['is_admin']) {
@@ -1558,6 +1709,75 @@ try {
                 );
             }
             out(200, ['ok' => true]);
+        }
+
+        if ($method === 'GET' && $action === 'admin_vault') {
+            if (!hasCryptoTable()) {
+                out(200, ['vault' => null, 'messages' => 0]);
+            }
+            $row = one('SELECT fingerprint, created_at FROM vault_key WHERE id = 1');
+            $cnt = hasDmCipherColumn()
+                ? (int) scalar('SELECT COUNT(*) FROM direct_messages WHERE cipher IS NOT NULL')
+                : 0;
+            out(200, [
+                'vault' => $row ? [
+                    'fingerprint' => (string) $row['fingerprint'],
+                    'since' => gmdate('d.m.Y H:i', tomskTs($row['created_at'])),
+                ] : null,
+                'messages' => $cnt,
+            ]);
+        }
+
+        if ($method === 'POST' && $action === 'admin_vault_set') {
+            if (!hasCryptoTable()) {
+                fail(500, 'Хранилище ключей недоступно');
+            }
+            $pub = (string) param('publicJwk', '');
+            $fp = mb_substr((string) param('fingerprint', ''), 0, 64);
+            if ($pub === '' || $fp === '') {
+                fail(400, 'Ключ неполный');
+            }
+            q(
+                'INSERT INTO vault_key (id, public_jwk, fingerprint, created_at)
+                 VALUES (1, ?, ?, UTC_TIMESTAMP())
+                 ON DUPLICATE KEY UPDATE public_jwk = VALUES(public_jwk),
+                                         fingerprint = VALUES(fingerprint),
+                                         created_at = UTC_TIMESTAMP()',
+                [$pub, $fp]
+            );
+            hasDmCipherColumn();
+            logSecurity('vault_key', $user['nick'] ?? null, 'Установлен главный ключ шифрования');
+            out(200, ['ok' => true]);
+        }
+
+        if ($method === 'POST' && $action === 'admin_dm_wipe') {
+            $n = (int) scalar('SELECT COUNT(*) FROM direct_messages');
+            db()->exec('DELETE FROM direct_messages');
+            logSecurity('dm_wipe', $user['nick'] ?? null, 'Удалено личных сообщений: ' . $n);
+            out(200, ['ok' => true, 'removed' => $n]);
+        }
+
+        if ($method === 'GET' && $action === 'admin_dm_vault') {
+            if (!hasDmCipherColumn()) {
+                out(200, ['messages' => []]);
+            }
+            $rows = q(
+                "SELECT d.id, d.cipher, d.created_at, d.sender_nick,
+                        r.nick AS to_nick
+                 FROM direct_messages d
+                 LEFT JOIN users r ON r.id = d.recipient_id
+                 WHERE d.cipher IS NOT NULL
+                 ORDER BY d.id DESC LIMIT 200"
+            )->fetchAll();
+            out(200, ['messages' => array_map(static function (array $r): array {
+                return [
+                    'id' => (int) $r['id'],
+                    'from' => (string) $r['sender_nick'],
+                    'to' => (string) ($r['to_nick'] ?? '—'),
+                    'cipher' => (string) $r['cipher'],
+                    'time' => gmdate('d.m.Y H:i', tomskTs($r['created_at'])),
+                ];
+            }, $rows)]);
         }
 
         if ($method === 'GET' && $action === 'admin_security') {

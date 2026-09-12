@@ -7,6 +7,7 @@ import { getToken, api, ApiMessage } from '@/lib/api';
 import { toast } from '@/hooks/use-toast';
 import { nickColorClass, rooms, canEnterRoom, isStaffNick, staffNickClass } from '@/data/chat';
 import { useDm } from '@/hooks/use-dm';
+import { useCrypto } from '@/hooks/use-crypto';
 import { useCall } from '@/hooks/use-call';
 import EmojiPicker from '@/components/EmojiPicker';
 import { useTicker } from '@/hooks/use-ticker';
@@ -41,6 +42,7 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
   const [privateTo, setPrivateTo] = useState<string | null>(null);
   const [onlyPrivate, setOnlyPrivate] = useState(false);
   const [privateMsgs, setPrivateMsgs] = useState<(ApiMessage & { peer: string; outgoing: boolean })[]>([]);
+  const [dmPlain, setDmPlain] = useState<Record<number, string>>({});
   const typingSentAt = useRef(0);
   const { unreadBy: unread } = useDm();
   const { startCall } = useCall();
@@ -80,6 +82,23 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
     localStorage.setItem('chat-cleared-dm', String(lastDm));
     setClearedDm(lastDm);
   }, [messages, privateMsgs, room.id]);
+
+  const { reveal } = useCrypto();
+
+  useEffect(() => {
+    let alive = true;
+    const run = async () => {
+      const next: Record<number, string> = {};
+      for (const m of privateMsgs) {
+        if (m.cipher) next[m.id] = await reveal(m.cipher);
+      }
+      if (alive) setDmPlain((prev) => ({ ...prev, ...next }));
+    };
+    if (privateMsgs.some((m) => m.cipher)) run();
+    return () => {
+      alive = false;
+    };
+  }, [privateMsgs, reveal]);
 
   usePolling(load, 5000);
 
@@ -145,7 +164,12 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
       .map((m) => ({ ...m, key: `p-${m.id}`, private: false, peer: '', outgoing: false }));
     const privList = privateMsgs
       .filter((m) => m.id > clearedDm)
-      .map((m) => ({ ...m, key: `d-${m.id}`, private: true }));
+      .map((m) => ({
+        ...m,
+        text: m.cipher ? (dmPlain[m.id] ?? '🔒 расшифровываем…') : m.text,
+        key: `d-${m.id}`,
+        private: true,
+      }));
     const rank = (t: string) => {
       const match = /(\d{2}):(\d{2})$/.exec(t || '');
       if (!match) return 0;
@@ -154,7 +178,7 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
     };
     const all = onlyPrivate ? privList : [...openList, ...privList];
     return all.sort((a, b) => rank(a.time) - rank(b.time));
-  }, [messages, clearedAt, privateMsgs, clearedDm, onlyPrivate]);
+  }, [messages, clearedAt, privateMsgs, clearedDm, onlyPrivate, dmPlain]);
   const isEmpty = loaded && visibleMessages.length === 0;
   const othersTyping = useMemo(
     () => typingUsers.filter((t) => !user || t.nick !== user.nick),

@@ -8,6 +8,7 @@ import { api, ApiMessage } from '@/lib/api';
 import { nickColorClass, NickColor, staffNickClass } from '@/data/chat';
 import { lastSeenText } from '@/lib/last-seen';
 import { useDm } from '@/hooks/use-dm';
+import { useCrypto } from '@/hooks/use-crypto';
 import { useCall } from '@/hooks/use-call';
 import EmojiPicker from '@/components/EmojiPicker';
 import { usePolling } from '@/hooks/use-polling';
@@ -17,7 +18,9 @@ const DirectMessages = () => {
   const { user } = useAuth();
   const { dmNick: nick, closeDm: onClose, refresh, soundOn } = useDm();
   const { startCall } = useCall();
+  const { enabled: cryptoOn, seal, reveal } = useCrypto();
   const [messages, setMessages] = useState<ApiMessage[]>([]);
+  const [plain, setPlain] = useState<Record<number, string>>({});
   const [peer, setPeer] = useState<{ nick: string; color: NickColor; status: string; avatar?: number; avatarUrl?: string | null; online?: boolean; seenAgo?: number | null } | null>(null);
   const [draft, setDraft] = useState('');
   const [sending, setSending] = useState(false);
@@ -54,6 +57,23 @@ const DirectMessages = () => {
   usePolling(load, 5000, Boolean(nick));
 
   useEffect(() => {
+    let alive = true;
+    const run = async () => {
+      const next: Record<number, string> = {};
+      for (const m of messages) {
+        if (m.cipher) next[m.id] = await reveal(m.cipher);
+      }
+      if (alive) setPlain((prev) => ({ ...prev, ...next }));
+    };
+    if (messages.some((m) => m.cipher)) run();
+    return () => {
+      alive = false;
+    };
+  }, [messages, reveal]);
+
+  const textOf = (m: ApiMessage) => (m.cipher ? (plain[m.id] ?? '🔒 расшифровываем…') : m.text);
+
+  useEffect(() => {
     const el = feedRef.current;
     if (el) el.scrollTop = el.scrollHeight;
   }, [messages]);
@@ -64,8 +84,11 @@ const DirectMessages = () => {
     if (!text || !nick || sending) return;
     setSending(true);
     try {
-      const res = await api.dmSend({ nick, text });
-      setMessages((prev) => [...prev, res.message]);
+      const cipher = cryptoOn ? await seal(nick, text) : null;
+      const res = await api.dmSend(cipher ? { nick, cipher } : { nick, text });
+      const shown = cipher ? { ...res.message, cipher, text: '' } : res.message;
+      if (cipher) setPlain((prev) => ({ ...prev, [shown.id]: text }));
+      setMessages((prev) => [...prev, shown]);
       setDraft('');
       refresh();
     } catch (err) {
@@ -104,6 +127,15 @@ const DirectMessages = () => {
               </p>
             )}
           </div>
+          {cryptoOn && (
+            <span
+              title="Переписка зашифрована — прочитать её на сервере невозможно"
+              className="ml-auto flex shrink-0 items-center gap-1 text-[0.68rem] font-bold uppercase tracking-[0.06em] text-secondary"
+            >
+              <Icon name="ShieldCheck" size={14} />
+              <span className="hidden sm:inline">шифр</span>
+            </span>
+          )}
           {nick && (
             <button
               type="button"
@@ -111,7 +143,10 @@ const DirectMessages = () => {
               disabled={!peer?.online}
               title={peer?.online ? 'Позвонить по видео' : 'Сосед не в сети — трубку не возьмут'}
               aria-label="Позвонить по видео"
-              className="ml-auto mr-8 flex h-9 w-9 shrink-0 items-center justify-center border-2 border-foreground/35 text-foreground transition-colors hover:border-secondary hover:text-secondary disabled:cursor-not-allowed disabled:border-foreground/20 disabled:text-muted-foreground/40 disabled:hover:border-foreground/20 disabled:hover:text-muted-foreground/40"
+              className={cn(
+                'mr-8 flex h-9 w-9 shrink-0 items-center justify-center border-2 border-foreground/35 text-foreground transition-colors hover:border-secondary hover:text-secondary disabled:cursor-not-allowed disabled:border-foreground/20 disabled:text-muted-foreground/40 disabled:hover:border-foreground/20 disabled:hover:text-muted-foreground/40',
+                !cryptoOn && 'ml-auto',
+              )}
             >
               <Icon name="Video" size={18} />
             </button>
@@ -127,8 +162,9 @@ const DirectMessages = () => {
           )}
           {messages.map((m) => {
             const mine = user && m.nick === user.nick;
-            if (m.text.startsWith('Видеозвонок')) {
-              const missed = m.text.includes('без ответа') || m.text.includes('отклонён');
+            const body = textOf(m);
+            if (body.startsWith('Видеозвонок')) {
+              const missed = body.includes('без ответа') || body.includes('отклонён');
               return (
                 <p
                   key={m.id}
@@ -138,7 +174,7 @@ const DirectMessages = () => {
                   )}
                 >
                   <Icon name={missed ? 'PhoneMissed' : 'Video'} size={14} className="shrink-0" />
-                  {m.text}
+                  {body}
                   <span className="ml-auto text-[0.72rem] normal-case">{m.time}</span>
                   {nick && (
                     <button
@@ -169,7 +205,7 @@ const DirectMessages = () => {
                   <span className={cn('text-[0.84rem] font-semibold sm:text-[1rem]', staffNickClass(m.nick, nickColorClass[m.color]))}>{m.nick}</span>
                   <span className="font-mono text-[0.64rem] text-muted-foreground sm:text-[0.72rem]">{m.time}</span>
                 </p>
-                <p className="mt-1 text-[0.86rem] text-foreground/90 sm:text-[1rem]">{m.text}</p>
+                <p className="mt-1 text-[0.86rem] text-foreground/90 sm:text-[1rem]">{body}</p>
               </div>
             );
           })}

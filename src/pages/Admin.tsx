@@ -6,6 +6,7 @@ import { AuthProvider, useAuth } from '@/hooks/use-auth';
 import { api, type AdminMessage, type AdminTickerPost, type AdminUser, type SecurityEvent } from '@/lib/api';
 import { nickColorClass, rooms, staffNickClass } from '@/data/chat';
 import { useToast } from '@/hooks/use-toast';
+import VaultPanel from '@/components/VaultPanel';
 
 const DAY_OPTIONS = [1, 3, 7, 14, 30, 0];
 
@@ -44,7 +45,7 @@ const AdminPanel = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const [tab, setTab] = useState<'security' | 'users' | 'messages' | 'ticker'>('users');
+  const [tab, setTab] = useState<'vault' | 'security' | 'users' | 'messages' | 'ticker'>('users');
   const [events, setEvents] = useState<SecurityEvent[]>([]);
   const [alerts, setAlerts] = useState(0);
   const [users, setUsers] = useState<AdminUser[]>([]);
@@ -387,6 +388,17 @@ const AdminPanel = () => {
           </span>
           <div className="flex items-center justify-end gap-1 md:ml-auto md:gap-2">
             <button
+              onClick={() => setTab('vault')}
+              className={cn(
+                'border-2 px-1.5 py-1.5 text-[0.55rem] font-bold uppercase tracking-[0.02em] transition-colors md:px-3 md:text-[0.72rem] md:tracking-[0.1em]',
+                tab === 'vault'
+                  ? 'border-secondary bg-secondary text-secondary-foreground'
+                  : 'border-foreground/35 text-muted-foreground hover:border-secondary',
+              )}
+            >
+              Сейф
+            </button>
+            <button
               onClick={() => setTab('security')}
               className={cn(
                 'border-2 px-1.5 py-1.5 text-[0.55rem] font-bold uppercase tracking-[0.02em] transition-colors md:px-3 md:text-[0.72rem] md:tracking-[0.1em]',
@@ -452,7 +464,7 @@ const AdminPanel = () => {
       </header>
 
       <main className="mx-auto max-w-[1200px] px-4 py-6 md:px-8 md:py-8">
-        <div className="relative mb-5">
+        <div className={cn('relative mb-5', tab === 'vault' && 'hidden')}>
           <Icon
             name="Search"
             size={16}
@@ -480,7 +492,9 @@ const AdminPanel = () => {
             </button>
           )}
         </div>
-        {tab === 'security' ? (
+        {tab === 'vault' ? (
+          <VaultPanel />
+        ) : tab === 'security' ? (
           <div className="space-y-3">
             <div className="flex flex-wrap items-center justify-between gap-2 border-2 border-foreground/35 bg-card px-4 py-3">
               <p className="text-[0.85rem] leading-snug text-muted-foreground">
