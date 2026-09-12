@@ -77,6 +77,7 @@ export type FeedResponse = {
   online: { nick: string; color: NickColor; status: string; avatar?: number; avatarUrl?: string | null; isAdmin?: boolean }[];
   onlineTotal?: number;
   adminOnline?: boolean;
+  tickerPending?: number;
   roomCounts: Record<string, number>;
   totalUsers: number;
   dayMessages: number;

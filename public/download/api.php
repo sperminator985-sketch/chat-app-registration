@@ -435,9 +435,15 @@ try {
             [ONLINE_SEC]
         )->fetch();
 
+        $tickerPending = 0;
+        if ($viewer && !empty($viewer['isAdmin']) && hasTickerTable()) {
+            $tickerPending = (int) scalar("SELECT COUNT(*) FROM ticker_posts WHERE status = 'pending'");
+        }
+
         out(200, [
             'messages' => $messages,
             'online' => $online,
+            'tickerPending' => $tickerPending,
             'onlineTotal' => (int) ($allOnline['c'] ?? 0),
             'adminOnline' => (bool) ($allOnline['a'] ?? 0),
             'typing' => $typing,

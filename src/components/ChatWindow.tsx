@@ -35,6 +35,7 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
   const [loaded, setLoaded] = useState(false);
   const [whoOpen, setWhoOpen] = useState(false);
   const [tickerOpen, setTickerOpen] = useState(false);
+  const [tickerPending, setTickerPending] = useState(0);
   const [clearedAt, setClearedAt] = useState(0);
   const [clearedDm, setClearedDm] = useState(0);
   const [typingUsers, setTypingUsers] = useState<{ nick: string; color: number }[]>([]);
@@ -53,6 +54,7 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
       setMessages(data.messages);
       setOnline(data.online);
       setTypingUsers(data.typing ?? []);
+      setTickerPending(data.tickerPending ?? 0);
       const dm = await api.dmAll();
       setPrivateMsgs(dm.messages);
     } catch {
@@ -217,15 +219,40 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
                   <Icon name="Users" size={14} />
                   {onlineList.length}
                 </button>
-                {(user?.isAdmin || Boolean(user?.uni)) && (
-                  <button
-                    onClick={() => setTickerOpen(true)}
-                    title="Объявление в бегущую строку"
-                    className="flex items-center gap-1.5 border-2 border-foreground/35 px-2.5 py-1 text-[0.72rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground transition-colors hover:border-secondary hover:text-secondary"
+                {user?.isAdmin ? (
+                  <a
+                    href="/admin"
+                    title={
+                      tickerPending > 0
+                        ? `Объявлений на проверку: ${tickerPending}`
+                        : 'Комендантская'
+                    }
+                    className={cn(
+                      'relative flex items-center gap-1.5 border-2 px-2.5 py-1 text-[0.72rem] font-semibold uppercase tracking-[0.1em] transition-colors',
+                      tickerPending > 0
+                        ? 'animate-pulse border-primary text-primary'
+                        : 'border-foreground/35 text-muted-foreground hover:border-secondary hover:text-secondary',
+                    )}
                   >
                     <Icon name="Megaphone" size={14} />
                     <span className="hidden sm:inline">Строка</span>
-                  </button>
+                    {tickerPending > 0 && (
+                      <span className="min-w-[18px] bg-primary px-1 text-center font-mono text-[0.65rem] font-bold text-primary-foreground">
+                        {tickerPending}
+                      </span>
+                    )}
+                  </a>
+                ) : (
+                  Boolean(user?.uni) && (
+                    <button
+                      onClick={() => setTickerOpen(true)}
+                      title="Объявление в бегущую строку"
+                      className="flex items-center gap-1.5 border-2 border-foreground/35 px-2.5 py-1 text-[0.72rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground transition-colors hover:border-secondary hover:text-secondary"
+                    >
+                      <Icon name="Megaphone" size={14} />
+                      <span className="hidden sm:inline">Строка</span>
+                    </button>
+                  )
                 )}
                 <button
                   onClick={() => setOnlyPrivate((v) => !v)}
