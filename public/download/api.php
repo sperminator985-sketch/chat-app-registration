@@ -5,18 +5,20 @@ ob_start();
 
 require __DIR__ . '/db.php';
 
-$allowedOrigins = [
-    'https://chat-tom.ru',
-    'https://www.chat-tom.ru',
-    'http://localhost:5173',
-    'http://127.0.0.1:5173',
-];
+$allowedOrigins = cfg()['allowed_origins'] ?? [];
+if (!is_array($allowedOrigins) || !$allowedOrigins) {
+    $base = (string) (cfg()['base_url'] ?? '');
+    $host = parse_url($base, PHP_URL_SCHEME) . '://' . parse_url($base, PHP_URL_HOST);
+    $allowedOrigins = $host !== '://' ? [$host] : ['*'];
+}
 $origin = (string) ($_SERVER['HTTP_ORIGIN'] ?? '');
 if ($origin !== '' && in_array($origin, $allowedOrigins, true)) {
     header('Access-Control-Allow-Origin: ' . $origin);
     header('Vary: Origin');
 } elseif ($origin === '') {
     header('Access-Control-Allow-Origin: ' . $allowedOrigins[0]);
+} elseif (in_array('*', $allowedOrigins, true)) {
+    header('Access-Control-Allow-Origin: *');
 }
 header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type, X-Auth-Token');
@@ -387,6 +389,9 @@ function geoCity(string $ip): ?string
     }
     if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE) === false) {
         return 'локальная сеть';
+    }
+    if ((cfg()['geo_lookup'] ?? true) === false) {
+        return null;
     }
     try {
         $ctx = stream_context_create(['http' => ['timeout' => 2, 'ignore_errors' => true]]);
