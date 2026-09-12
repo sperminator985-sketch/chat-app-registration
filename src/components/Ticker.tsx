@@ -83,8 +83,8 @@ const Ticker = () => {
   if (mode === 'off') return null;
 
   const chars = items.reduce((sum, t) => sum + t.nick.length + t.text.length + 6, 0);
-  const base = Math.max(18, Math.round(chars / 11));
-  const duration = Math.max(6, Math.round((base * 100) / (speed || 100)));
+  const baseDuration = Math.max(18, Math.round(chars / 11));
+  const duration = Math.max(6, Math.round((baseDuration * 100) / (speed || 100)));
 
   return (
     <div className="group my-0 overflow-hidden border-y-2 border-foreground/35 bg-card py-2.5 md:py-3">
