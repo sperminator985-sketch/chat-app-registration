@@ -76,7 +76,7 @@ const Ticker = () => {
 
   if (mode === 'off' || items.length === 0) return null;
 
-  const solo = items.length === 1;
+  const solo = mode === 'posts';
   const chars = items.reduce((sum, t) => sum + t.nick.length + t.text.length + 6, 0);
   const baseDuration = Math.max(18, Math.round((solo ? chars + 90 : chars) / 11));
   const duration = Math.max(6, Math.round((baseDuration * 100) / (speed || 100)));
@@ -109,7 +109,7 @@ const Ticker = () => {
                   </>
                 )}
                 {t.text}
-                {!solo && (
+                {(!solo || idx < items.length - 1) && (
                   <span className="mx-5 h-[5px] w-[5px] shrink-0 rounded-full bg-primary md:mx-7 md:h-1.5 md:w-1.5" />
                 )}
               </span>
