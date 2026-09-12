@@ -1111,7 +1111,7 @@ try {
     }
 
     // --- Комендантская: только для владельца ---
-    if (in_array($action, ['admin_users', 'admin_messages', 'admin_ban', 'admin_hide', 'admin_delete', 'admin_ticker', 'admin_ticker_decide', 'admin_ticker_edit'], true)) {
+    if (in_array($action, ['admin_users', 'admin_messages', 'admin_ban', 'admin_hide', 'admin_delete', 'admin_ticker', 'admin_ticker_decide', 'admin_ticker_edit', 'admin_ticker_add'], true)) {
         $user = requireUser();
         $row = one('SELECT is_admin FROM users WHERE id = ?', [$user['id']]);
         if (!$row || !$row['is_admin']) {
@@ -1136,6 +1136,22 @@ try {
                     'time' => fmtTime($r['created_at']),
                 ];
             }, $rows)]);
+        }
+
+        if ($method === 'POST' && $action === 'admin_ticker_add') {
+            if (!hasTickerTable()) {
+                fail(500, 'Бегущая строка пока недоступна');
+            }
+            $text = mb_substr(trim((string) param('text', '')), 0, 120);
+            if (mb_strlen($text) < 3) {
+                fail(400, 'Слишком короткий текст');
+            }
+            q(
+                "INSERT INTO ticker_posts (user_id, nick, uni, text, status, created_at, decided_at)
+                 VALUES (?, ?, ?, ?, 'approved', UTC_TIMESTAMP(), UTC_TIMESTAMP())",
+                [$user['id'], $user['nick'], $user['uni'] ?? null, $text]
+            );
+            out(200, ['ok' => true, 'id' => (int) db()->lastInsertId()]);
         }
 
         if ($method === 'POST' && $action === 'admin_ticker_edit') {

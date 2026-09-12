@@ -28,6 +28,7 @@ const AdminPanel = () => {
   const [ticker, setTicker] = useState<AdminTickerPost[]>([]);
   const [editId, setEditId] = useState<number | null>(null);
   const [editText, setEditText] = useState('');
+  const [newText, setNewText] = useState('');
   const [room, setRoom] = useState('');
   const [busy, setBusy] = useState(false);
   const [search, setSearch] = useState('');
@@ -185,6 +186,23 @@ const AdminPanel = () => {
     }
   };
 
+  const addOwn = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const value = newText.trim();
+    if (busy || value.length < 3) return;
+    setBusy(true);
+    try {
+      await api.adminTickerAdd(value);
+      setNewText('');
+      await loadTicker();
+      toast({ title: 'Объявление в эфире' });
+    } catch (err) {
+      toast({ title: (err as Error).message, variant: 'destructive' });
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const needle = search.trim().toLowerCase();
   const shownUsers = users
     .filter((u) => (filter === 'banned' ? u.banned : filter === 'online' ? u.online : true))
@@ -314,6 +332,31 @@ const AdminPanel = () => {
           )}
         </div>
         {tab === 'ticker' ? (
+          <>
+          <form onSubmit={addOwn} className="mb-5 border-2 border-foreground/35 bg-card px-4 py-3">
+            <p className="mb-2 text-[0.7rem] font-bold uppercase tracking-[0.14em] text-muted-foreground">
+              Своя строка
+            </p>
+            <div className="flex flex-col gap-2 sm:flex-row">
+              <input
+                value={newText}
+                onChange={(e) => setNewText(e.target.value.slice(0, 120))}
+                placeholder="Текст сразу уйдёт в бегущую строку"
+                className="w-full border-2 border-foreground/35 bg-input px-3 py-2 text-foreground outline-none transition-colors placeholder:text-muted-foreground/70 focus:border-secondary"
+              />
+              <button
+                type="submit"
+                disabled={busy || newText.trim().length < 3}
+                className="flex shrink-0 items-center justify-center gap-2 border-2 border-secondary bg-secondary px-4 py-2 text-[0.7rem] font-bold uppercase tracking-[0.1em] text-secondary-foreground transition-opacity disabled:opacity-40"
+              >
+                <Icon name="Plus" size={14} />
+                В эфир
+              </button>
+            </div>
+            <span className="mt-1.5 block font-mono text-[0.7rem] text-muted-foreground">
+              {newText.length}/120
+            </span>
+          </form>
           <div className="grid gap-px bg-foreground/25">
             {shownTicker.length === 0 && (
               <p className="bg-card px-4 py-6 text-center text-muted-foreground">
@@ -421,6 +464,7 @@ const AdminPanel = () => {
               </div>
             ))}
           </div>
+          </>
         ) : tab === 'users' ? (
           <>
             <div className="mb-4 flex flex-wrap gap-2">
