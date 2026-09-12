@@ -760,6 +760,12 @@ const AdminPanel = () => {
                       <span className={u.online ? 'text-nick-3' : undefined}>{seenText(u)}</span>
                       {u.banReason ? ` · причина: ${u.banReason}` : ''}
                     </p>
+                    {u.ip && (
+                      <p className="truncate font-mono text-[0.72rem] text-muted-foreground/70">
+                        {u.ip}
+                        {u.city ? ` — ${u.city}` : ' — город не определён'}
+                      </p>
+                    )}
                   </div>
                   {!u.isAdmin && (
                     <div className="flex shrink-0 flex-col items-stretch gap-1.5 sm:flex-row sm:items-center">

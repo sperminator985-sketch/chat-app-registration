@@ -36,6 +36,8 @@ export type AdminUser = {
   seenAgo?: number | null;
   online: boolean;
   messages: number;
+  ip?: string | null;
+  city?: string | null;
 };
 
 export type AdminMessage = {

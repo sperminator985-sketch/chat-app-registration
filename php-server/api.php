@@ -287,6 +287,88 @@ function verifiedCond(string $alias = ''): string
     return " AND ({$p}email_verified_at IS NOT NULL OR {$p}email_code IS NULL)";
 }
 
+function hasIpColumns(): bool
+{
+    static $ok = null;
+    if ($ok !== null) {
+        return $ok;
+    }
+    try {
+        $found = (int) scalar(
+            "SELECT COUNT(*) FROM information_schema.COLUMNS
+             WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users'
+               AND COLUMN_NAME IN ('last_ip', 'last_city')"
+        );
+        if ($found < 2) {
+            try {
+                db()->exec("ALTER TABLE users
+                    ADD COLUMN last_ip VARCHAR(45) NULL,
+                    ADD COLUMN last_city VARCHAR(80) NULL");
+                $found = 2;
+            } catch (Throwable $e) {
+                // нет прав на ALTER — работаем без геоданных
+            }
+        }
+        $ok = $found >= 2;
+    } catch (Throwable $e) {
+        $ok = false;
+    }
+    return $ok;
+}
+
+function geoCity(string $ip): ?string
+{
+    if ($ip === '' || $ip === '0.0.0.0') {
+        return null;
+    }
+    if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE) === false) {
+        return 'локальная сеть';
+    }
+    try {
+        $ctx = stream_context_create(['http' => ['timeout' => 2, 'ignore_errors' => true]]);
+        $raw = @file_get_contents(
+            'http://ip-api.com/json/' . urlencode($ip) . '?fields=status,city,regionName,country&lang=ru',
+            false,
+            $ctx
+        );
+        if ($raw === false) {
+            return null;
+        }
+        $j = json_decode($raw, true);
+        if (!is_array($j) || ($j['status'] ?? '') !== 'success') {
+            return null;
+        }
+        $parts = array_filter([
+            (string) ($j['city'] ?? ''),
+            (string) ($j['country'] ?? ''),
+        ], static fn($v) => trim($v) !== '');
+        if (!$parts) {
+            return null;
+        }
+        return mb_substr(implode(', ', $parts), 0, 80);
+    } catch (Throwable $e) {
+        return null;
+    }
+}
+
+function rememberIp(int $userId): void
+{
+    if (!hasIpColumns()) {
+        return;
+    }
+    $ip = clientIp();
+    try {
+        $row = one('SELECT last_ip, last_city FROM users WHERE id = ?', [$userId]);
+        if ($row && (string) ($row['last_ip'] ?? '') === $ip && !empty($row['last_city'])) {
+            return;
+        }
+        $city = geoCity($ip);
+        q('UPDATE users SET last_ip = ?, last_city = ? WHERE id = ?', [$ip, $city, $userId]);
+    } catch (Throwable $e) {
+        // геоданные не критичны
+    }
+}
+
 function touch_user(int $id, ?string $room = null): void
 {
     if ($room !== null) {
@@ -734,6 +816,7 @@ try {
 
         $new = bin2hex(random_bytes(24));
         q('INSERT INTO sessions (token, user_id, created_at) VALUES (?, ?, UTC_TIMESTAMP())', [$new, $user['id']]);
+        rememberIp((int) $user['id']);
         out(200, ['user' => $user, 'token' => $new, 'needVerify' => $useEmail, 'mailSent' => $mailSent]);
     }
 
@@ -893,6 +976,7 @@ try {
         $new = bin2hex(random_bytes(24));
         q('DELETE FROM sessions WHERE created_at < UTC_TIMESTAMP() - INTERVAL 90 DAY');
         q('INSERT INTO sessions (token, user_id, created_at) VALUES (?, ?, UTC_TIMESTAMP())', [$new, $user['id']]);
+        rememberIp((int) $user['id']);
         touch_user($user['id']);
         out(200, ['user' => $user, 'token' => $new]);
     }
@@ -1503,6 +1587,7 @@ try {
         }
 
         if ($method === 'GET' && $action === 'admin_users') {
+            hasIpColumns();
             $rows = q(
                 'SELECT u.*, TIMESTAMPDIFF(SECOND, u.last_seen, UTC_TIMESTAMP()) AS ago,
                         (SELECT COUNT(*) FROM messages m WHERE m.user_id = u.id AND m.hidden_at IS NULL) AS msgs
@@ -1522,6 +1607,8 @@ try {
                     'isAdmin' => (bool) $r['is_admin'],
                     'banned' => $r['banned_at'] !== null,
                     'banReason' => $r['ban_reason'],
+                    'ip' => $r['last_ip'] ?? null,
+                    'city' => $r['last_city'] ?? null,
                     'seenAgo' => $ago,
                     'online' => $ago !== null && $ago < ONLINE_SEC,
                     'messages' => (int) $r['msgs'],
