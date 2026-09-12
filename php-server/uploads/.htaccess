@@ -1,7 +1,3 @@
-# В этой папке лежат только картинки — выполнять код запрещено
-php_flag engine off
-<IfModule mod_php.c>
-    php_flag engine off
-</IfModule>
-RemoveHandler .php .phtml .php3 .php4 .php5 .php7 .php8 .phps
-RemoveType .php .phtml .php3 .php4 .php5 .php7 .php8 .phps
+# В этой папке лежат только картинки — PHP тут выполнять не нужно
+RemoveHandler .php .phtml .php3 .php4 .php5 .php6 .php7 .php8 .phps
+RemoveType .php .phtml .php3 .php4 .php5 .php6 .php7 .php8 .phps
