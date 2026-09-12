@@ -335,16 +335,6 @@ const Header = ({ onProfile }: HeaderProps) => {
           {user && mailButton()}
           {user && tickerButton()}
           {user && soundButton()}
-          {user && (
-            <button
-              onClick={signOut}
-              aria-label="Выйти"
-              title="Выйти из общаги"
-              className="flex h-10 w-10 items-center justify-center border-2 border-foreground/40 text-foreground transition-colors hover:border-primary hover:text-primary"
-            >
-              <Icon name="LogOut" size={18} />
-            </button>
-          )}
           <button
             className="flex h-10 w-10 items-center justify-center border-2 border-foreground/40 text-foreground"
             onClick={() => setOpen((v) => !v)}
@@ -413,6 +403,16 @@ const Header = ({ onProfile }: HeaderProps) => {
                     Комендантская
                   </Link>
                 )}
+                <button
+                  onClick={() => {
+                    setOpen(false);
+                    signOut();
+                  }}
+                  className="btn-ghost-brut flex items-center justify-center gap-2 border-primary/60 text-primary"
+                >
+                  <Icon name="LogOut" size={16} />
+                  Выйти из общаги
+                </button>
               </>
             ) : (
               <div className="flex flex-col gap-3 pt-1">
