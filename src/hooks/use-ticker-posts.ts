@@ -6,6 +6,7 @@ const TTL = 60 * 1000;
 export const useTickerPosts = () => {
   const [items, setItems] = useState<TickerLine[]>([]);
   const [mode, setMode] = useState<TickerMode>('mix');
+  const [speed, setSpeed] = useState(100);
 
   useEffect(() => {
     let alive = true;
@@ -19,6 +20,7 @@ export const useTickerPosts = () => {
           );
           setItems(list);
           setMode(res.mode ?? 'mix');
+          setSpeed(res.speed && res.speed > 0 ? res.speed : 100);
         })
         .catch(() => undefined);
     };
@@ -30,7 +32,7 @@ export const useTickerPosts = () => {
     };
   }, []);
 
-  return { items, mode };
+  return { items, mode, speed };
 };
 
 export default useTickerPosts;

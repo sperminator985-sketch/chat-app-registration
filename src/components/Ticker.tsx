@@ -20,7 +20,7 @@ const Ticker = () => {
   const temp = useWeather();
   const live = useLiveStats();
   const news = useNews();
-  const { items: posts, mode } = useTickerPosts();
+  const { items: posts, mode, speed } = useTickerPosts();
 
   const plural = (n: number, one: string, few: string, many: string) => {
     const m10 = n % 10;
@@ -83,7 +83,8 @@ const Ticker = () => {
   if (mode === 'off') return null;
 
   const chars = items.reduce((sum, t) => sum + t.nick.length + t.text.length + 6, 0);
-  const duration = Math.max(18, Math.round(chars / 11));
+  const base = Math.max(18, Math.round(chars / 11));
+  const duration = Math.max(6, Math.round((base * 100) / (speed || 100)));
 
   return (
     <div className="group my-0 overflow-hidden border-y-2 border-foreground/35 bg-card py-2.5 md:py-3">

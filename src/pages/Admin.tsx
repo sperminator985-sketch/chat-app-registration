@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Icon from '@/components/ui/icon';
 import { cn } from '@/lib/utils';
@@ -88,6 +88,8 @@ const AdminPanel = () => {
   const [alerts, setAlerts] = useState(0);
   const [pendingTicker, setPendingTicker] = useState(0);
   const [tickerMode, setTickerMode] = useState<TickerMode>('mix');
+  const [tickerSpeed, setTickerSpeed] = useState(100);
+  const speedTimer = useRef<number | null>(null);
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [messages, setMessages] = useState<AdminMessage[]>([]);
   const [ticker, setTicker] = useState<AdminTickerPost[]>([]);
@@ -185,7 +187,10 @@ const AdminPanel = () => {
         setPendingTicker(res.posts.filter((p) => p.status === 'pending').length);
         try {
           const m = await api.ticker();
-          if (alive) setTickerMode(m.mode ?? 'mix');
+          if (alive) {
+            setTickerMode(m.mode ?? 'mix');
+            setTickerSpeed(m.speed && m.speed > 0 ? m.speed : 100);
+          }
         } catch {
           // тихо
         }
@@ -219,6 +224,18 @@ const AdminPanel = () => {
     } finally {
       setBusy(false);
     }
+  };
+
+  const saveSpeed = async (value: number) => {
+    setTickerSpeed(value);
+    if (speedTimer.current) window.clearTimeout(speedTimer.current);
+    speedTimer.current = window.setTimeout(async () => {
+      try {
+        await api.adminTickerSpeed(value);
+      } catch (e) {
+        toast({ title: (e as Error).message, variant: 'destructive' });
+      }
+    }, 600);
   };
 
   const clearSecurity = async () => {
@@ -648,6 +665,39 @@ const AdminPanel = () => {
             <p className="mt-2 text-[0.78rem] text-muted-foreground">
               {MODE_OPTIONS.find((m) => m.value === tickerMode)?.hint}
             </p>
+            {tickerMode !== 'off' && (
+              <div className="mt-4 border-t-2 border-foreground/20 pt-3">
+                <div className="mb-2 flex items-center gap-3">
+                  <p className="text-[0.7rem] font-bold uppercase tracking-[0.14em] text-muted-foreground">
+                    Скорость
+                  </p>
+                  <span className="font-mono text-[0.8rem] font-bold text-secondary">
+                    {tickerSpeed}%
+                  </span>
+                  {tickerSpeed !== 100 && (
+                    <button
+                      onClick={() => saveSpeed(100)}
+                      className="text-[0.7rem] font-bold uppercase tracking-[0.08em] text-muted-foreground underline transition-colors hover:text-secondary"
+                    >
+                      сбросить
+                    </button>
+                  )}
+                </div>
+                <input
+                  type="range"
+                  min={50}
+                  max={250}
+                  step={10}
+                  value={tickerSpeed}
+                  onChange={(e) => saveSpeed(Number(e.target.value))}
+                  className="w-full max-w-sm accent-secondary"
+                />
+                <div className="mt-1 flex max-w-sm justify-between text-[0.68rem] uppercase tracking-[0.08em] text-muted-foreground/80">
+                  <span>медленнее</span>
+                  <span>быстрее</span>
+                </div>
+              </div>
+            )}
           </div>
           <form onSubmit={addOwn} className="mb-5 border-2 border-foreground/35 bg-card px-4 py-3">
             <p className="mb-2 text-[0.7rem] font-bold uppercase tracking-[0.14em] text-muted-foreground">

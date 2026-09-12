@@ -1545,11 +1545,12 @@ try {
     // --- Бегущая строка: одобренные объявления ---
     if ($method === 'GET' && $action === 'ticker') {
         $mode = setting('ticker_mode', 'mix');
+        $speed = (int) setting('ticker_speed', '100');
         if ($mode === 'news' || $mode === 'off') {
-            out(200, ['ticker' => [], 'mode' => $mode]);
+            out(200, ['ticker' => [], 'mode' => $mode, 'speed' => $speed]);
         }
         if (!hasTickerTable()) {
-            out(200, ['ticker' => [], 'mode' => $mode]);
+            out(200, ['ticker' => [], 'mode' => $mode, 'speed' => $speed]);
         }
         $rows = q(
             "SELECT t.text, t.nick AS author_nick, u.nick AS user_nick,
@@ -1567,12 +1568,15 @@ try {
                 'color' => !empty($r['by_admin']) ? 0 : (int) ($r['nick_color'] ?? 1),
                 'text' => (string) $r['text'],
             ];
-        }, $rows), 'mode' => $mode]);
+        }, $rows), 'mode' => $mode, 'speed' => $speed]);
     }
 
     // --- Режим бегущей строки ---
     if ($method === 'GET' && $action === 'ticker_mode') {
-        out(200, ['mode' => setting('ticker_mode', 'mix')]);
+        out(200, [
+            'mode' => setting('ticker_mode', 'mix'),
+            'speed' => (int) setting('ticker_speed', '100'),
+        ]);
     }
 
     // --- Мои заявки в бегущую строку ---
@@ -1635,7 +1639,7 @@ try {
     if (in_array($action, [
         'admin_users', 'admin_messages', 'admin_ban', 'admin_hide', 'admin_delete',
         'admin_ticker', 'admin_ticker_decide', 'admin_ticker_edit', 'admin_ticker_add',
-        'admin_ticker_days', 'admin_ticker_mode', 'admin_security', 'admin_security_clear',
+        'admin_ticker_days', 'admin_ticker_mode', 'admin_ticker_speed', 'admin_security', 'admin_security_clear',
         'admin_vault', 'admin_vault_set', 'admin_dm_wipe', 'admin_dm_vault',
     ], true)) {
         $user = requireUser();
@@ -1792,6 +1796,15 @@ try {
                 );
             }
             out(200, ['ok' => true]);
+        }
+
+        if ($method === 'POST' && $action === 'admin_ticker_speed') {
+            $speed = (int) param('speed', 100);
+            if ($speed < 50 || $speed > 250) {
+                out(400, ['error' => 'Скорость должна быть от 50 до 250']);
+            }
+            settingSet('ticker_speed', (string) $speed);
+            out(200, ['speed' => $speed]);
         }
 
         if ($method === 'POST' && $action === 'admin_ticker_mode') {

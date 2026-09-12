@@ -266,9 +266,12 @@ export const api = {
   profile: (body: { status: string; color: number; avatar: number; image?: string; removeImage?: boolean }) =>
     request<{ user: ApiUser }>('profile', { method: 'POST', body }),
   logout: () => request<{ ok: boolean }>('logout', { method: 'POST' }),
-  ticker: () => request<{ ticker: (string | TickerLine)[]; mode?: TickerMode }>('ticker'),
+  ticker: () =>
+    request<{ ticker: (string | TickerLine)[]; mode?: TickerMode; speed?: number }>('ticker'),
   adminTickerMode: (mode: TickerMode) =>
     request<{ mode: TickerMode }>('admin_ticker_mode', { method: 'POST', body: { mode } }),
+  adminTickerSpeed: (speed: number) =>
+    request<{ speed: number }>('admin_ticker_speed', { method: 'POST', body: { speed } }),
   tickerMy: () => request<{ posts: TickerPost[] }>('ticker_my'),
   tickerSend: (text: string) =>
     request<{ ok: boolean }>('ticker_send', { method: 'POST', body: { text } }),
