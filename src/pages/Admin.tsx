@@ -150,14 +150,25 @@ const AdminPanel = () => {
 
   const decide = async (p: AdminTickerPost, decision: 'approved' | 'rejected' | 'delete') => {
     if (busy) return;
+    let reason = '';
+    if (decision === 'rejected') {
+      const input = window.prompt(
+        `Почему отклоняем объявление «${p.text}»?\nПричину увидит автор в личных сообщениях.`,
+        'не по теме общаги',
+      );
+      if (input === null) return;
+      reason = input.trim();
+    }
     setBusy(true);
     try {
-      await api.adminTickerDecide(p.id, decision, p.liveDays ?? 7);
+      await api.adminTickerDecide(p.id, decision, p.liveDays ?? 7, reason);
       if (decision === 'delete') {
         setTicker((prev) => prev.filter((x) => x.id !== p.id));
         toast({ title: 'Объявление удалено' });
       } else {
-        setTicker((prev) => prev.map((x) => (x.id === p.id ? { ...x, status: decision } : x)));
+        setTicker((prev) =>
+          prev.map((x) => (x.id === p.id ? { ...x, status: decision, reason: reason || null } : x)),
+        );
         if (decision === 'approved') loadTicker();
         toast({
           title:
@@ -468,7 +479,14 @@ const AdminPanel = () => {
                       </div>
                     </div>
                   ) : (
-                    <p className="break-words text-[1rem] text-foreground/90">{p.text}</p>
+                    <>
+                      <p className="break-words text-[1rem] text-foreground/90">{p.text}</p>
+                      {p.status === 'rejected' && p.reason && (
+                        <p className="mt-1 text-[0.8rem] text-muted-foreground">
+                          Причина: {p.reason}
+                        </p>
+                      )}
+                    </>
                   )}
                 </div>
                 <div className="flex shrink-0 items-center gap-1.5">

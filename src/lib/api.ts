@@ -52,6 +52,7 @@ export type TickerPost = {
   id: number;
   text: string;
   status: 'pending' | 'approved' | 'rejected';
+  reason?: string | null;
   time: string;
 };
 
@@ -243,7 +244,12 @@ export const api = {
     id: number,
     decision: 'approved' | 'rejected' | 'pending' | 'delete',
     days?: number,
-  ) => request<{ ok: boolean }>('admin_ticker_decide', { method: 'POST', body: { id, decision, days } }),
+    reason?: string,
+  ) =>
+    request<{ ok: boolean }>('admin_ticker_decide', {
+      method: 'POST',
+      body: { id, decision, days, reason },
+    }),
   adminUsers: () => request<{ users: AdminUser[] }>('admin_users'),
   adminMessages: (room?: string) =>
     request<{ messages: AdminMessage[] }>('admin_messages', { query: room ? `&room=${room}` : '' }),

@@ -110,6 +110,9 @@ const TickerDialog = ({ open, onOpenChange }: TickerDialogProps) => {
                     </span>
                     <span className="font-mono text-[0.7rem] text-muted-foreground">{p.time}</span>
                   </div>
+                  {p.status === 'rejected' && p.reason && (
+                    <p className="mt-1.5 text-[0.8rem] text-muted-foreground">Причина: {p.reason}</p>
+                  )}
                 </div>
               ))}
             </div>

@@ -230,6 +230,32 @@ function hasUniColumn(): bool
     return $ok;
 }
 
+function notifyFromAdmin(int $recipientId, string $text): void
+{
+    try {
+        $admin = one('SELECT id, nick, color, avatar, avatar_url FROM users WHERE is_admin = 1 ORDER BY id LIMIT 1');
+        if (!$admin || (int) $admin['id'] === $recipientId) {
+            return;
+        }
+        q(
+            'INSERT INTO direct_messages
+             (sender_id, recipient_id, sender_nick, sender_color, text, sender_avatar, sender_avatar_url, created_at)
+             VALUES (?, ?, ?, ?, ?, ?, ?, UTC_TIMESTAMP())',
+            [
+                (int) $admin['id'],
+                $recipientId,
+                $admin['nick'],
+                (int) $admin['color'],
+                mb_substr($text, 0, 500),
+                (int) $admin['avatar'],
+                $admin['avatar_url'],
+            ]
+        );
+    } catch (Throwable $e) {
+        // уведомление не критично
+    }
+}
+
 function hasTickerTable(): bool
 {
     static $ok = null;
@@ -248,21 +274,27 @@ function hasTickerTable(): bool
             decided_at DATETIME NULL,
             expires_at DATETIME NULL,
             live_days INT NOT NULL DEFAULT 7,
+            reject_reason VARCHAR(200) NULL,
             INDEX idx_status (status, created_at),
             INDEX idx_user (user_id)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
         $found = (int) scalar(
             "SELECT COUNT(*) FROM information_schema.COLUMNS
              WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'ticker_posts'
-               AND COLUMN_NAME IN ('expires_at', 'live_days')"
+               AND COLUMN_NAME IN ('expires_at', 'live_days', 'reject_reason')"
         );
-        if ($found < 2) {
+        if ($found < 3) {
             try {
                 db()->exec("ALTER TABLE ticker_posts
                     ADD COLUMN expires_at DATETIME NULL,
-                    ADD COLUMN live_days INT NOT NULL DEFAULT 7");
+                    ADD COLUMN live_days INT NOT NULL DEFAULT 7,
+                    ADD COLUMN reject_reason VARCHAR(200) NULL");
             } catch (Throwable $e) {
-                // колонки уже есть или нет прав
+                try {
+                    db()->exec("ALTER TABLE ticker_posts ADD COLUMN reject_reason VARCHAR(200) NULL");
+                } catch (Throwable $e2) {
+                    // колонка уже есть
+                }
             }
         }
         $ok = true;
@@ -1083,7 +1115,7 @@ try {
             out(200, ['posts' => []]);
         }
         $rows = q(
-            'SELECT id, text, status, created_at FROM ticker_posts WHERE user_id = ? ORDER BY id DESC LIMIT 20',
+            'SELECT id, text, status, reject_reason, created_at FROM ticker_posts WHERE user_id = ? ORDER BY id DESC LIMIT 20',
             [$user['id']]
         )->fetchAll();
         out(200, ['posts' => array_map(static function (array $r): array {
@@ -1091,6 +1123,7 @@ try {
                 'id' => (int) $r['id'],
                 'text' => $r['text'],
                 'status' => $r['status'],
+                'reason' => $r['reject_reason'] ?? null,
                 'time' => fmtTime($r['created_at']),
             ];
         }, $rows)]);
@@ -1158,6 +1191,7 @@ try {
                     'status' => $r['status'],
                     'byAdmin' => !empty($r['by_admin']),
                     'liveDays' => (int) ($r['live_days'] ?? 7),
+                    'reason' => $r['reject_reason'] ?? null,
                     'expired' => !empty($r['expires_at']) && strtotime($r['expires_at'] . ' UTC') <= time(),
                     'expires' => empty($r['expires_at']) ? null : fmtTime($r['expires_at']),
                     'time' => fmtTime($r['created_at']),
@@ -1249,6 +1283,7 @@ try {
             if (!in_array($decision, ['approved', 'rejected', 'pending'], true)) {
                 fail(400, 'Неизвестное решение');
             }
+            $post = one('SELECT user_id, text FROM ticker_posts WHERE id = ?', [$id]);
             if ($decision === 'approved') {
                 $days = (int) param('days', 0);
                 if ($days <= 0) {
@@ -1262,12 +1297,28 @@ try {
                      WHERE id = ?',
                     [$decision, $days, $id]
                 );
+                q('UPDATE ticker_posts SET reject_reason = NULL WHERE id = ?', [$id]);
+                if ($post) {
+                    $when = $days > 0 ? " Повисит {$days} дн." : ' Висит бессрочно.';
+                    notifyFromAdmin(
+                        (int) $post['user_id'],
+                        'Твоё объявление одобрено и уже едет в бегущей строке: «' . $post['text'] . '».' . $when
+                    );
+                }
                 out(200, ['ok' => true]);
             }
+            $reason = mb_substr(trim((string) param('reason', '')), 0, 200);
             q(
-                'UPDATE ticker_posts SET status = ?, decided_at = UTC_TIMESTAMP(), expires_at = NULL WHERE id = ?',
-                [$decision, $id]
+                'UPDATE ticker_posts SET status = ?, decided_at = UTC_TIMESTAMP(), expires_at = NULL, reject_reason = ? WHERE id = ?',
+                [$decision, $reason !== '' ? $reason : null, $id]
             );
+            if ($decision === 'rejected' && $post) {
+                notifyFromAdmin(
+                    (int) $post['user_id'],
+                    'Твоё объявление в бегущую строку отклонено: «' . $post['text'] . '».'
+                        . ($reason !== '' ? ' Причина: ' . $reason : ' Причина не указана.')
+                );
+            }
             out(200, ['ok' => true]);
         }
 
