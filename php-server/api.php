@@ -230,6 +230,32 @@ function hasUniColumn(): bool
     return $ok;
 }
 
+function hasTickerTable(): bool
+{
+    static $ok = null;
+    if ($ok !== null) {
+        return $ok;
+    }
+    try {
+        db()->exec("CREATE TABLE IF NOT EXISTS ticker_posts (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            user_id INT NOT NULL,
+            nick VARCHAR(32) NOT NULL,
+            uni VARCHAR(16) NULL,
+            text VARCHAR(120) NOT NULL,
+            status VARCHAR(10) NOT NULL DEFAULT 'pending',
+            created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            decided_at DATETIME NULL,
+            INDEX idx_status (status, created_at),
+            INDEX idx_user (user_id)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+        $ok = true;
+    } catch (Throwable $e) {
+        $ok = false;
+    }
+    return $ok;
+}
+
 function hasEmailColumns(): bool
 {
     static $ok = null;
@@ -1012,12 +1038,121 @@ try {
         }, $rows)]);
     }
 
+    // --- Бегущая строка: одобренные объявления ---
+    if ($method === 'GET' && $action === 'ticker') {
+        if (!hasTickerTable()) {
+            out(200, ['ticker' => []]);
+        }
+        $rows = q(
+            "SELECT text FROM ticker_posts WHERE status = 'approved' ORDER BY decided_at DESC, id DESC LIMIT 10"
+        )->fetchAll();
+        out(200, ['ticker' => array_map(static fn(array $r): string => $r['text'], $rows)]);
+    }
+
+    // --- Мои заявки в бегущую строку ---
+    if ($method === 'GET' && $action === 'ticker_my') {
+        $user = requireUser();
+        if (!hasTickerTable()) {
+            out(200, ['posts' => []]);
+        }
+        $rows = q(
+            'SELECT id, text, status, created_at FROM ticker_posts WHERE user_id = ? ORDER BY id DESC LIMIT 20',
+            [$user['id']]
+        )->fetchAll();
+        out(200, ['posts' => array_map(static function (array $r): array {
+            return [
+                'id' => (int) $r['id'],
+                'text' => $r['text'],
+                'status' => $r['status'],
+                'time' => fmtTime($r['created_at']),
+            ];
+        }, $rows)]);
+    }
+
+    // --- Предложить строку (только студенты вузов) ---
+    if ($method === 'POST' && $action === 'ticker_send') {
+        $user = requireUser('Сначала займи ник');
+        if (empty($user['isAdmin']) && !in_array((string) ($user['uni'] ?? ''), UNI_LIST, true)) {
+            fail(403, 'Объявления в бегущую строку шлют только студенты вузов');
+        }
+        if (!hasTickerTable()) {
+            fail(500, 'Бегущая строка пока недоступна');
+        }
+        $text = mb_substr(trim((string) param('text', '')), 0, 120);
+        if (mb_strlen($text) < 3) {
+            fail(400, 'Слишком короткое объявление');
+        }
+        $pending = (int) scalar(
+            "SELECT COUNT(*) FROM ticker_posts WHERE user_id = ? AND status = 'pending'",
+            [$user['id']]
+        );
+        if ($pending >= 3) {
+            fail(429, 'У тебя уже 3 объявления на модерации — дождись ответа коменданта');
+        }
+        $dup = (int) scalar(
+            "SELECT COUNT(*) FROM ticker_posts WHERE user_id = ? AND text = ? AND status <> 'rejected'",
+            [$user['id'], $text]
+        );
+        if ($dup > 0) {
+            fail(400, 'Такое объявление уже отправлено');
+        }
+        q(
+            'INSERT INTO ticker_posts (user_id, nick, uni, text, created_at) VALUES (?, ?, ?, ?, UTC_TIMESTAMP())',
+            [$user['id'], $user['nick'], $user['uni'] ?? null, $text]
+        );
+        touch_user($user['id']);
+        out(200, ['ok' => true]);
+    }
+
     // --- Комендантская: только для владельца ---
-    if (in_array($action, ['admin_users', 'admin_messages', 'admin_ban', 'admin_hide', 'admin_delete'], true)) {
+    if (in_array($action, ['admin_users', 'admin_messages', 'admin_ban', 'admin_hide', 'admin_delete', 'admin_ticker', 'admin_ticker_decide'], true)) {
         $user = requireUser();
         $row = one('SELECT is_admin FROM users WHERE id = ?', [$user['id']]);
         if (!$row || !$row['is_admin']) {
             fail(403, 'Доступ только для владельца чата');
+        }
+
+        if ($method === 'GET' && $action === 'admin_ticker') {
+            if (!hasTickerTable()) {
+                out(200, ['posts' => []]);
+            }
+            $rows = q(
+                "SELECT * FROM ticker_posts ORDER BY (status = 'pending') DESC, id DESC LIMIT 200"
+            )->fetchAll();
+            out(200, ['posts' => array_map(static function (array $r): array {
+                return [
+                    'id' => (int) $r['id'],
+                    'userId' => (int) $r['user_id'],
+                    'nick' => $r['nick'],
+                    'uni' => $r['uni'],
+                    'text' => $r['text'],
+                    'status' => $r['status'],
+                    'time' => fmtTime($r['created_at']),
+                ];
+            }, $rows)]);
+        }
+
+        if ($method === 'POST' && $action === 'admin_ticker_decide') {
+            if (!hasTickerTable()) {
+                fail(500, 'Бегущая строка пока недоступна');
+            }
+            $id = (int) param('id', 0);
+            $decision = (string) param('decision', '');
+            if ($id <= 0) {
+                fail(400, 'Не указано объявление');
+            }
+            if ($decision === 'delete') {
+                q('DELETE FROM ticker_posts WHERE id = ?', [$id]);
+                out(200, ['ok' => true]);
+            }
+            if (!in_array($decision, ['approved', 'rejected', 'pending'], true)) {
+                fail(400, 'Неизвестное решение');
+            }
+            q(
+                'UPDATE ticker_posts SET status = ?, decided_at = UTC_TIMESTAMP() WHERE id = ?',
+                [$decision, $id]
+            );
+            out(200, ['ok' => true]);
         }
 
         if ($method === 'GET' && $action === 'admin_users') {

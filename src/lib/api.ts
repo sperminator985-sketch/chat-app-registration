@@ -48,6 +48,19 @@ export type AdminMessage = {
   userId: number;
 };
 
+export type TickerPost = {
+  id: number;
+  text: string;
+  status: 'pending' | 'approved' | 'rejected';
+  time: string;
+};
+
+export type AdminTickerPost = TickerPost & {
+  userId: number;
+  nick: string;
+  uni?: string | null;
+};
+
 export type ApiMessage = {
   id: number;
   nick: string;
@@ -207,6 +220,13 @@ export const api = {
   profile: (body: { status: string; color: number; avatar: number; image?: string; removeImage?: boolean }) =>
     request<{ user: ApiUser }>('profile', { method: 'POST', body }),
   logout: () => request<{ ok: boolean }>('logout', { method: 'POST' }),
+  ticker: () => request<{ ticker: string[] }>('ticker'),
+  tickerMy: () => request<{ posts: TickerPost[] }>('ticker_my'),
+  tickerSend: (text: string) =>
+    request<{ ok: boolean }>('ticker_send', { method: 'POST', body: { text } }),
+  adminTicker: () => request<{ posts: AdminTickerPost[] }>('admin_ticker'),
+  adminTickerDecide: (id: number, decision: 'approved' | 'rejected' | 'pending' | 'delete') =>
+    request<{ ok: boolean }>('admin_ticker_decide', { method: 'POST', body: { id, decision } }),
   adminUsers: () => request<{ users: AdminUser[] }>('admin_users'),
   adminMessages: (room?: string) =>
     request<{ messages: AdminMessage[] }>('admin_messages', { query: room ? `&room=${room}` : '' }),

@@ -9,6 +9,7 @@ import { nickColorClass, rooms, canEnterRoom, isStaffNick, staffNickClass } from
 import { useDm } from '@/hooks/use-dm';
 import { useCall } from '@/hooks/use-call';
 import EmojiPicker from '@/components/EmojiPicker';
+import TickerDialog from '@/components/TickerDialog';
 
 type ChatWindowProps = {
   activeRoom: string;
@@ -33,6 +34,7 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
   const [sending, setSending] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const [whoOpen, setWhoOpen] = useState(false);
+  const [tickerOpen, setTickerOpen] = useState(false);
   const [clearedAt, setClearedAt] = useState(0);
   const [clearedDm, setClearedDm] = useState(0);
   const [typingUsers, setTypingUsers] = useState<{ nick: string; color: number }[]>([]);
@@ -215,6 +217,16 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
                   <Icon name="Users" size={14} />
                   {onlineList.length}
                 </button>
+                {(user?.isAdmin || Boolean(user?.uni)) && (
+                  <button
+                    onClick={() => setTickerOpen(true)}
+                    title="Объявление в бегущую строку"
+                    className="flex items-center gap-1.5 border-2 border-foreground/35 px-2.5 py-1 text-[0.72rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground transition-colors hover:border-secondary hover:text-secondary"
+                  >
+                    <Icon name="Megaphone" size={14} />
+                    <span className="hidden sm:inline">Строка</span>
+                  </button>
+                )}
                 <button
                   onClick={() => setOnlyPrivate((v) => !v)}
                   title="Показывать только личные сообщения"
@@ -427,6 +439,7 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
           </aside>
         </div>
       </div>
+      <TickerDialog open={tickerOpen} onOpenChange={setTickerOpen} />
     </section>
   );
 };

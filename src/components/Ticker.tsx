@@ -1,6 +1,7 @@
 import { useWeather, formatTemp } from '@/hooks/use-weather';
 import { useLiveStats } from '@/hooks/use-live-stats';
 import { useNews } from '@/hooks/use-news';
+import { useTickerPosts } from '@/hooks/use-ticker-posts';
 
 const base = [
   'КТО ИДЁТ ЗА ХЛЕБОМ',
@@ -15,6 +16,7 @@ const Ticker = () => {
   const temp = useWeather();
   const live = useLiveStats();
   const news = useNews();
+  const posts = useTickerPosts();
 
   const plural = (n: number, one: string, few: string, many: string) => {
     const m10 = n % 10;
@@ -37,10 +39,15 @@ const Ticker = () => {
       : 'ЭТАЖИ ПУСТЫЕ — ЗАХОДИ ПЕРВЫМ';
 
   const newsLines = news.slice(0, 8).map((t) => t.toUpperCase());
+  const postLines = posts.slice(0, 10).map((t) => t.toUpperCase());
 
-  const items = newsLines.length
+  const core = newsLines.length
     ? [liveLine, newsLines[0], weatherLine, ...newsLines.slice(1), base[2]].filter(Boolean)
     : [liveLine, base[0], base[1], weatherLine, base[2], base[3], base[4], base[5]];
+
+  const items = postLines.length
+    ? core.flatMap((t, i) => (postLines[i] ? [t, postLines[i]] : [t])).concat(postLines.slice(core.length))
+    : core;
 
   return (
     <div className="group my-0 overflow-hidden border-y-2 border-foreground/35 bg-card py-2.5 md:py-3">

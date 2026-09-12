@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Icon from '@/components/ui/icon';
 import { cn } from '@/lib/utils';
 import { AuthProvider, useAuth } from '@/hooks/use-auth';
-import { api, type AdminMessage, type AdminUser } from '@/lib/api';
+import { api, type AdminMessage, type AdminTickerPost, type AdminUser } from '@/lib/api';
 import { nickColorClass, rooms, staffNickClass } from '@/data/chat';
 import { useToast } from '@/hooks/use-toast';
 
@@ -22,9 +22,10 @@ const AdminPanel = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const [tab, setTab] = useState<'users' | 'messages'>('users');
+  const [tab, setTab] = useState<'users' | 'messages' | 'ticker'>('users');
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [messages, setMessages] = useState<AdminMessage[]>([]);
+  const [ticker, setTicker] = useState<AdminTickerPost[]>([]);
   const [room, setRoom] = useState('');
   const [busy, setBusy] = useState(false);
   const [search, setSearch] = useState('');
@@ -54,6 +55,17 @@ const AdminPanel = () => {
     }
   }, [room, toast]);
 
+  const loadTicker = useCallback(async () => {
+    try {
+      const res = await api.adminTicker();
+      setTicker(res.posts);
+      setDenied(false);
+    } catch (e) {
+      setDenied(true);
+      toast({ title: (e as Error).message, variant: 'destructive' });
+    }
+  }, [toast]);
+
   useEffect(() => {
     if (loading) return;
     if (!user) {
@@ -61,14 +73,16 @@ const AdminPanel = () => {
       return;
     }
     if (tab === 'users') loadUsers();
+    else if (tab === 'ticker') loadTicker();
     else loadMessages();
-  }, [user, loading, tab, room, navigate, loadUsers, loadMessages]);
+  }, [user, loading, tab, room, navigate, loadUsers, loadMessages, loadTicker]);
 
   const refresh = async () => {
     if (refreshing) return;
     setRefreshing(true);
     try {
       if (tab === 'users') await loadUsers();
+      else if (tab === 'ticker') await loadTicker();
       else await loadMessages();
       toast({ title: 'Данные обновлены' });
     } finally {
@@ -126,12 +140,34 @@ const AdminPanel = () => {
     }
   };
 
+  const decide = async (p: AdminTickerPost, decision: 'approved' | 'rejected' | 'delete') => {
+    if (busy) return;
+    setBusy(true);
+    try {
+      await api.adminTickerDecide(p.id, decision);
+      if (decision === 'delete') {
+        setTicker((prev) => prev.filter((x) => x.id !== p.id));
+        toast({ title: 'Объявление удалено' });
+      } else {
+        setTicker((prev) => prev.map((x) => (x.id === p.id ? { ...x, status: decision } : x)));
+        toast({ title: decision === 'approved' ? 'Объявление в эфире' : 'Объявление отклонено' });
+      }
+    } catch (e) {
+      toast({ title: (e as Error).message, variant: 'destructive' });
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const needle = search.trim().toLowerCase();
   const shownUsers = users
     .filter((u) => (filter === 'banned' ? u.banned : filter === 'online' ? u.online : true))
     .filter((u) =>
       needle ? u.nick.toLowerCase().includes(needle) || u.status.toLowerCase().includes(needle) : true,
     );
+  const shownTicker = needle
+    ? ticker.filter((p) => p.nick.toLowerCase().includes(needle) || p.text.toLowerCase().includes(needle))
+    : ticker;
   const shownMessages = needle
     ? messages.filter((m) => m.nick.toLowerCase().includes(needle) || m.text.toLowerCase().includes(needle))
     : messages;
@@ -200,6 +236,22 @@ const AdminPanel = () => {
               Сообщения
             </button>
             <button
+              onClick={() => setTab('ticker')}
+              className={cn(
+                'border-2 px-3 py-1.5 text-[0.72rem] font-bold uppercase tracking-[0.1em] transition-colors',
+                tab === 'ticker'
+                  ? 'border-secondary bg-secondary text-secondary-foreground'
+                  : 'border-foreground/35 text-muted-foreground hover:border-secondary',
+              )}
+            >
+              Строка
+              {ticker.filter((p) => p.status === 'pending').length > 0 && (
+                <span className="ml-1.5 bg-primary px-1 font-mono text-[0.62rem] text-primary-foreground">
+                  {ticker.filter((p) => p.status === 'pending').length}
+                </span>
+              )}
+            </button>
+            <button
               onClick={refresh}
               disabled={refreshing}
               title="Обновить данные"
@@ -235,7 +287,69 @@ const AdminPanel = () => {
             </button>
           )}
         </div>
-        {tab === 'users' ? (
+        {tab === 'ticker' ? (
+          <div className="grid gap-px bg-foreground/25">
+            {shownTicker.length === 0 && (
+              <p className="bg-card px-4 py-6 text-center text-muted-foreground">
+                Объявлений пока нет
+              </p>
+            )}
+            {shownTicker.map((p) => (
+              <div key={p.id} className="flex items-start gap-3 bg-card px-4 py-3">
+                <div className="min-w-0 flex-1">
+                  <p className="mb-1 flex flex-wrap items-center gap-2 font-mono text-[0.72rem] uppercase tracking-[0.08em] text-muted-foreground">
+                    <span
+                      className={cn(
+                        'border px-1.5 py-0.5',
+                        p.status === 'pending'
+                          ? 'border-amber-400 text-amber-400'
+                          : p.status === 'approved'
+                            ? 'border-secondary text-secondary'
+                            : 'border-primary text-primary',
+                      )}
+                    >
+                      {p.status === 'pending' ? 'ждёт' : p.status === 'approved' ? 'в эфире' : 'отклонено'}
+                    </span>
+                    <span>{p.time}</span>
+                    {p.uni && <span className="border border-foreground/30 px-1.5 py-0.5">{p.uni}</span>}
+                    <span className="font-semibold text-foreground">&lt;{p.nick}&gt;</span>
+                  </p>
+                  <p className="break-words text-[1rem] text-foreground/90">{p.text}</p>
+                </div>
+                <div className="flex shrink-0 items-center gap-1.5">
+                  {p.status !== 'approved' && (
+                    <button
+                      onClick={() => decide(p, 'approved')}
+                      disabled={busy}
+                      title="Одобрить"
+                      className="flex h-8 w-8 items-center justify-center border-2 border-secondary text-secondary transition-colors hover:bg-secondary hover:text-secondary-foreground"
+                    >
+                      <Icon name="Check" size={15} />
+                    </button>
+                  )}
+                  {p.status !== 'rejected' && (
+                    <button
+                      onClick={() => decide(p, 'rejected')}
+                      disabled={busy}
+                      title="Отклонить"
+                      className="flex h-8 w-8 items-center justify-center border-2 border-foreground/35 text-muted-foreground transition-colors hover:border-primary hover:text-primary"
+                    >
+                      <Icon name="X" size={15} />
+                    </button>
+                  )}
+                  <button
+                    onClick={() => decide(p, 'delete')}
+                    disabled={busy}
+                    title="Удалить"
+                    className="flex h-8 w-8 items-center justify-center border-2 border-primary text-primary transition-colors hover:bg-primary hover:text-primary-foreground"
+                  >
+                    <Icon name="Trash2" size={15} />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : tab === 'users' ? (
           <>
             <div className="mb-4 flex flex-wrap gap-2">
               {([

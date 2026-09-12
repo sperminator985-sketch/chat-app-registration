@@ -86,6 +86,19 @@ $sql[] = "CREATE TABLE IF NOT EXISTS call_signals (
     INDEX idx_recipient (recipient_id, consumed, created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci";
 
+$sql[] = "CREATE TABLE IF NOT EXISTS ticker_posts (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    nick VARCHAR(32) NOT NULL,
+    uni VARCHAR(16) NULL,
+    text VARCHAR(120) NOT NULL,
+    status VARCHAR(10) NOT NULL DEFAULT 'pending',
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    decided_at DATETIME NULL,
+    INDEX idx_status (status, created_at),
+    INDEX idx_user (user_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci";
+
 foreach ($sql as $stmt) {
     db()->exec($stmt);
 }
