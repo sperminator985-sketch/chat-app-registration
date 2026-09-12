@@ -63,6 +63,7 @@ const AdminPanel = () => {
   }, []);
   const [events, setEvents] = useState<SecurityEvent[]>([]);
   const [alerts, setAlerts] = useState(0);
+  const [pendingTicker, setPendingTicker] = useState(0);
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [messages, setMessages] = useState<AdminMessage[]>([]);
   const [ticker, setTicker] = useState<AdminTickerPost[]>([]);
@@ -153,8 +154,21 @@ const AdminPanel = () => {
         // тихо
       }
     };
+    const checkTicker = async () => {
+      try {
+        const res = await api.adminTicker();
+        if (!alive) return;
+        setPendingTicker(res.posts.filter((p) => p.status === 'pending').length);
+      } catch {
+        // тихо
+      }
+    };
     check();
-    const timer = window.setInterval(check, 60000);
+    checkTicker();
+    const timer = window.setInterval(() => {
+      check();
+      checkTicker();
+    }, 60000);
     return () => {
       alive = false;
       window.clearInterval(timer);
@@ -357,6 +371,8 @@ const AdminPanel = () => {
   const shownTicker = needle
     ? ticker.filter((p) => p.nick.toLowerCase().includes(needle) || p.text.toLowerCase().includes(needle))
     : ticker;
+  const pendingCount =
+    tab === 'ticker' ? ticker.filter((p) => p.status === 'pending').length : pendingTicker;
   const shownMessages = needle
     ? messages.filter((m) => m.nick.toLowerCase().includes(needle) || m.text.toLowerCase().includes(needle))
     : messages;
@@ -454,13 +470,22 @@ const AdminPanel = () => {
                 'border-2 px-1.5 py-1.5 text-[0.55rem] font-bold uppercase tracking-[0.02em] transition-colors md:px-3 md:text-[0.72rem] md:tracking-[0.1em]',
                 tab === 'ticker'
                   ? 'border-secondary bg-secondary text-secondary-foreground'
-                  : 'border-foreground/35 text-muted-foreground hover:border-secondary',
+                  : pendingCount > 0
+                    ? 'animate-pulse border-primary bg-primary text-primary-foreground'
+                    : 'border-foreground/35 text-muted-foreground hover:border-secondary',
               )}
             >
               Строка
-              {ticker.filter((p) => p.status === 'pending').length > 0 && (
-                <span className="ml-1 bg-primary px-1 font-mono text-[0.55rem] text-primary-foreground md:text-[0.62rem]">
-                  {ticker.filter((p) => p.status === 'pending').length}
+              {pendingCount > 0 && (
+                <span
+                  className={cn(
+                    'ml-1 px-1 font-mono text-[0.55rem] md:text-[0.62rem]',
+                    tab === 'ticker'
+                      ? 'bg-secondary-foreground/15 text-secondary-foreground'
+                      : 'bg-primary-foreground/20 text-primary-foreground',
+                  )}
+                >
+                  {pendingCount}
                 </span>
               )}
             </button>
