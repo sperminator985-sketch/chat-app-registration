@@ -1098,17 +1098,21 @@ try {
             out(200, ['ticker' => []]);
         }
         $rows = q(
-            "SELECT t.text, t.nick AS author_nick, u.nick AS user_nick, COALESCE(u.is_admin, 0) AS by_admin
+            "SELECT t.text, t.nick AS author_nick, u.nick AS user_nick,
+                    COALESCE(u.color, 1) AS nick_color, COALESCE(u.is_admin, 0) AS by_admin
              FROM ticker_posts t LEFT JOIN users u ON u.id = t.user_id
              WHERE t.status = 'approved' AND (t.expires_at IS NULL OR t.expires_at > UTC_TIMESTAMP())
              ORDER BY t.decided_at DESC, t.id DESC LIMIT 10"
         )->fetchAll();
-        out(200, ['ticker' => array_map(static function (array $r): string {
-            if (!empty($r['by_admin'])) {
-                return 'ОТ КОМЕНДАНТА — ' . $r['text'];
-            }
-            $nick = trim((string) ($r['user_nick'] ?? $r['author_nick'] ?? ''));
-            return $nick !== '' ? $nick . ' — ' . $r['text'] : $r['text'];
+        out(200, ['ticker' => array_map(static function (array $r): array {
+            $nick = !empty($r['by_admin'])
+                ? 'ОТ КОМЕНДАНТА'
+                : trim((string) ($r['user_nick'] ?? $r['author_nick'] ?? ''));
+            return [
+                'nick' => $nick,
+                'color' => !empty($r['by_admin']) ? 0 : (int) ($r['nick_color'] ?? 1),
+                'text' => (string) $r['text'],
+            ];
         }, $rows)]);
     }
 

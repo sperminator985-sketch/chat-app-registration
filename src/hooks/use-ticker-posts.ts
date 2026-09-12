@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
-import { api } from '@/lib/api';
+import { api, type TickerLine } from '@/lib/api';
 
 const TTL = 60 * 1000;
 
 export const useTickerPosts = () => {
-  const [items, setItems] = useState<string[]>([]);
+  const [items, setItems] = useState<TickerLine[]>([]);
 
   useEffect(() => {
     let alive = true;
@@ -12,7 +12,11 @@ export const useTickerPosts = () => {
       api
         .ticker()
         .then((res) => {
-          if (alive) setItems(res.ticker ?? []);
+          if (!alive) return;
+          const list = (res.ticker ?? []).map((t) =>
+            typeof t === 'string' ? { nick: '', color: 0, text: t } : t,
+          );
+          setItems(list);
         })
         .catch(() => undefined);
     };

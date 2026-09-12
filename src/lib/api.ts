@@ -48,6 +48,12 @@ export type AdminMessage = {
   userId: number;
 };
 
+export type TickerLine = {
+  nick: string;
+  color: number;
+  text: string;
+};
+
 export type TickerPost = {
   id: number;
   text: string;
@@ -226,7 +232,7 @@ export const api = {
   profile: (body: { status: string; color: number; avatar: number; image?: string; removeImage?: boolean }) =>
     request<{ user: ApiUser }>('profile', { method: 'POST', body }),
   logout: () => request<{ ok: boolean }>('logout', { method: 'POST' }),
-  ticker: () => request<{ ticker: string[] }>('ticker'),
+  ticker: () => request<{ ticker: (string | TickerLine)[] }>('ticker'),
   tickerMy: () => request<{ posts: TickerPost[] }>('ticker_my'),
   tickerSend: (text: string) =>
     request<{ ok: boolean }>('ticker_send', { method: 'POST', body: { text } }),

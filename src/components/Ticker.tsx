@@ -2,6 +2,10 @@ import { useWeather, formatTemp } from '@/hooks/use-weather';
 import { useLiveStats } from '@/hooks/use-live-stats';
 import { useNews } from '@/hooks/use-news';
 import { useTickerPosts } from '@/hooks/use-ticker-posts';
+import { nickColorClass } from '@/data/chat';
+import type { NickColor } from '@/data/chat';
+import type { TickerLine } from '@/lib/api';
+import { cn } from '@/lib/utils';
 
 const base = [
   'КТО ИДЁТ ЗА ХЛЕБОМ',
@@ -38,12 +42,19 @@ const Ticker = () => {
       ? `СЕЙЧАС В ЧАТЕ ${live.online} ${plural(live.online, 'ЖИЛЕЦ', 'ЖИЛЬЦА', 'ЖИЛЬЦОВ')}`
       : 'ЭТАЖИ ПУСТЫЕ — ЗАХОДИ ПЕРВЫМ';
 
-  const newsLines = news.slice(0, 8).map((t) => t.toUpperCase());
-  const postLines = posts.slice(0, 10).map((t) => t.toUpperCase());
+  const newsLines: TickerLine[] = news
+    .slice(0, 8)
+    .map((t) => ({ nick: '', color: 0, text: t.toUpperCase() }));
+  const postLines: TickerLine[] = posts.slice(0, 10).map((p) => ({
+    nick: p.nick.toUpperCase(),
+    color: p.color,
+    text: p.text.toUpperCase(),
+  }));
+  const plain = (t: string): TickerLine => ({ nick: '', color: 0, text: t });
 
-  const core = newsLines.length
-    ? [liveLine, newsLines[0], weatherLine, ...newsLines.slice(1), base[2]].filter(Boolean)
-    : [liveLine, base[0], base[1], weatherLine, base[2], base[3], base[4], base[5]];
+  const core: TickerLine[] = newsLines.length
+    ? [plain(liveLine), newsLines[0], plain(weatherLine), ...newsLines.slice(1), plain(base[2])]
+    : [liveLine, base[0], base[1], weatherLine, base[2], base[3], base[4], base[5]].map(plain);
 
   const items = postLines.length
     ? core.flatMap((t, i) => (postLines[i] ? [t, postLines[i]] : [t])).concat(postLines.slice(core.length))
@@ -54,12 +65,20 @@ const Ticker = () => {
       <div className="flex w-max animate-marquee">
         {[0, 1].map((pass) => (
           <div key={pass} className="flex shrink-0">
-            {items.map((t) => (
+            {items.map((t, idx) => (
               <span
-                key={`${pass}-${t}`}
+                key={`${pass}-${idx}-${t.text}`}
                 className="flex shrink-0 items-center whitespace-nowrap font-display text-[0.72rem] font-extrabold uppercase tracking-[0.06em] text-foreground md:text-sm md:tracking-[0.08em]"
               >
-                {t}
+                {t.nick && (
+                  <>
+                    <span className={cn(nickColorClass[t.color as NickColor] ?? 'text-secondary')}>
+                      {t.nick}
+                    </span>
+                    <span className="mx-1.5 text-foreground/50">—</span>
+                  </>
+                )}
+                {t.text}
                 <span className="mx-5 h-[5px] w-[5px] shrink-0 rounded-full bg-primary md:mx-7 md:h-1.5 md:w-1.5" />
               </span>
             ))}
