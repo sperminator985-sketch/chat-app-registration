@@ -35,6 +35,24 @@ type AdminTab = 'vault' | 'security' | 'users' | 'messages' | 'ticker';
 
 const TABS: AdminTab[] = ['vault', 'security', 'users', 'messages', 'ticker'];
 
+const MODE_OPTIONS: { value: TickerMode; label: string; hint: string }[] = [
+  {
+    value: 'news',
+    label: 'Только новости',
+    hint: 'В строке идут городские новости и погода. Объявления жильцов не показываются.',
+  },
+  {
+    value: 'posts',
+    label: 'Только объявления',
+    hint: 'В строке идут одобренные объявления жильцов. Если их нет — крутятся обычные надписи.',
+  },
+  {
+    value: 'mix',
+    label: 'Вперемешку',
+    hint: 'Новости и объявления жильцов чередуются между собой.',
+  },
+];
+
 const savedTab = (): AdminTab => {
   const v = localStorage.getItem(TAB_KEY) as AdminTab | null;
   return v && TABS.includes(v) ? v : 'users';
@@ -64,6 +82,7 @@ const AdminPanel = () => {
   const [events, setEvents] = useState<SecurityEvent[]>([]);
   const [alerts, setAlerts] = useState(0);
   const [pendingTicker, setPendingTicker] = useState(0);
+  const [tickerMode, setTickerMode] = useState<TickerMode>('mix');
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [messages, setMessages] = useState<AdminMessage[]>([]);
   const [ticker, setTicker] = useState<AdminTickerPost[]>([]);
@@ -159,6 +178,12 @@ const AdminPanel = () => {
         const res = await api.adminTicker();
         if (!alive) return;
         setPendingTicker(res.posts.filter((p) => p.status === 'pending').length);
+        try {
+          const m = await api.ticker();
+          if (alive) setTickerMode(m.mode ?? 'mix');
+        } catch {
+          // тихо
+        }
       } catch {
         // тихо
       }
@@ -174,6 +199,22 @@ const AdminPanel = () => {
       window.clearInterval(timer);
     };
   }, [user]);
+
+  const changeMode = async (mode: TickerMode) => {
+    if (busy || mode === tickerMode) return;
+    setBusy(true);
+    const prev = tickerMode;
+    setTickerMode(mode);
+    try {
+      await api.adminTickerMode(mode);
+      toast({ title: 'Бегущая строка обновлена' });
+    } catch (e) {
+      setTickerMode(prev);
+      toast({ title: (e as Error).message, variant: 'destructive' });
+    } finally {
+      setBusy(false);
+    }
+  };
 
   const clearSecurity = async () => {
     if (busy) return;
@@ -578,6 +619,31 @@ const AdminPanel = () => {
           </div>
         ) : tab === 'ticker' ? (
           <>
+          <div className="mb-5 border-2 border-foreground/35 bg-card px-4 py-3">
+            <p className="mb-2 text-[0.7rem] font-bold uppercase tracking-[0.14em] text-muted-foreground">
+              Что крутится в строке
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {MODE_OPTIONS.map((m) => (
+                <button
+                  key={m.value}
+                  onClick={() => changeMode(m.value)}
+                  disabled={busy}
+                  className={cn(
+                    'border-2 px-3 py-2 text-[0.72rem] font-bold uppercase tracking-[0.08em] transition-colors disabled:opacity-60',
+                    tickerMode === m.value
+                      ? 'border-secondary bg-secondary text-secondary-foreground'
+                      : 'border-foreground/35 text-muted-foreground hover:border-secondary',
+                  )}
+                >
+                  {m.label}
+                </button>
+              ))}
+            </div>
+            <p className="mt-2 text-[0.78rem] text-muted-foreground">
+              {MODE_OPTIONS.find((m) => m.value === tickerMode)?.hint}
+            </p>
+          </div>
           <form onSubmit={addOwn} className="mb-5 border-2 border-foreground/35 bg-card px-4 py-3">
             <p className="mb-2 text-[0.7rem] font-bold uppercase tracking-[0.14em] text-muted-foreground">
               Своя строка

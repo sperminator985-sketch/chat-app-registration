@@ -20,7 +20,7 @@ const Ticker = () => {
   const temp = useWeather();
   const live = useLiveStats();
   const news = useNews();
-  const posts = useTickerPosts();
+  const { items: posts, mode } = useTickerPosts();
 
   const plural = (n: number, one: string, few: string, many: string) => {
     const m10 = n % 10;
@@ -52,13 +52,33 @@ const Ticker = () => {
   }));
   const plain = (t: string): TickerLine => ({ nick: '', color: 0, text: t });
 
+  const fallback: TickerLine[] = [
+    liveLine,
+    base[0],
+    base[1],
+    weatherLine,
+    base[2],
+    base[3],
+    base[4],
+    base[5],
+  ].map(plain);
+
   const core: TickerLine[] = newsLines.length
     ? [plain(liveLine), newsLines[0], plain(weatherLine), ...newsLines.slice(1), plain(base[2])]
-    : [liveLine, base[0], base[1], weatherLine, base[2], base[3], base[4], base[5]].map(plain);
+    : fallback;
 
-  const items = postLines.length
+  const mixed = postLines.length
     ? core.flatMap((t, i) => (postLines[i] ? [t, postLines[i]] : [t])).concat(postLines.slice(core.length))
     : core;
+
+  const items =
+    mode === 'news'
+      ? core
+      : mode === 'posts'
+        ? postLines.length
+          ? [plain(liveLine), ...postLines, plain(weatherLine)]
+          : fallback
+        : mixed;
 
   return (
     <div className="group my-0 overflow-hidden border-y-2 border-foreground/35 bg-card py-2.5 md:py-3">

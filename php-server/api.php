@@ -553,6 +553,50 @@ function notifyFromAdmin(int $recipientId, string $text): void
     }
 }
 
+function hasSettingsTable(): bool
+{
+    static $ok = null;
+    if ($ok !== null) {
+        return $ok;
+    }
+    try {
+        db()->exec("CREATE TABLE IF NOT EXISTS app_settings (
+            name VARCHAR(32) PRIMARY KEY,
+            value VARCHAR(64) NOT NULL
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+        $ok = true;
+    } catch (Throwable $e) {
+        $ok = false;
+    }
+    return $ok;
+}
+
+function setting(string $name, string $default): string
+{
+    if (!hasSettingsTable()) {
+        return $default;
+    }
+    try {
+        $v = scalar('SELECT value FROM app_settings WHERE name = ?', [$name]);
+        return $v === null || $v === false ? $default : (string) $v;
+    } catch (Throwable $e) {
+        return $default;
+    }
+}
+
+function settingSet(string $name, string $value): void
+{
+    if (!hasSettingsTable()) {
+        return;
+    }
+    try {
+        q('INSERT INTO app_settings (name, value) VALUES (?, ?)
+           ON DUPLICATE KEY UPDATE value = VALUES(value)', [$name, $value]);
+    } catch (Throwable $e) {
+        // не критично
+    }
+}
+
 function hasTickerTable(): bool
 {
     static $ok = null;
@@ -1500,8 +1544,12 @@ try {
 
     // --- Бегущая строка: одобренные объявления ---
     if ($method === 'GET' && $action === 'ticker') {
+        $mode = setting('ticker_mode', 'mix');
+        if ($mode === 'news') {
+            out(200, ['ticker' => [], 'mode' => $mode]);
+        }
         if (!hasTickerTable()) {
-            out(200, ['ticker' => []]);
+            out(200, ['ticker' => [], 'mode' => $mode]);
         }
         $rows = q(
             "SELECT t.text, t.nick AS author_nick, u.nick AS user_nick,
@@ -1519,7 +1567,12 @@ try {
                 'color' => !empty($r['by_admin']) ? 0 : (int) ($r['nick_color'] ?? 1),
                 'text' => (string) $r['text'],
             ];
-        }, $rows)]);
+        }, $rows), 'mode' => $mode]);
+    }
+
+    // --- Режим бегущей строки ---
+    if ($method === 'GET' && $action === 'ticker_mode') {
+        out(200, ['mode' => setting('ticker_mode', 'mix')]);
     }
 
     // --- Мои заявки в бегущую строку ---
@@ -1739,6 +1792,15 @@ try {
                 );
             }
             out(200, ['ok' => true]);
+        }
+
+        if ($method === 'POST' && $action === 'admin_ticker_mode') {
+            $mode = (string) param('mode', '');
+            if (!in_array($mode, ['news', 'posts', 'mix'], true)) {
+                out(400, ['error' => 'Неизвестный режим строки']);
+            }
+            settingSet('ticker_mode', $mode);
+            out(200, ['mode' => $mode]);
         }
 
         if ($method === 'GET' && $action === 'admin_vault') {

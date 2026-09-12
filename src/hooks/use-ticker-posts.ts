@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
-import { api, type TickerLine } from '@/lib/api';
+import { api, type TickerLine, type TickerMode } from '@/lib/api';
 
 const TTL = 60 * 1000;
 
 export const useTickerPosts = () => {
   const [items, setItems] = useState<TickerLine[]>([]);
+  const [mode, setMode] = useState<TickerMode>('mix');
 
   useEffect(() => {
     let alive = true;
@@ -17,6 +18,7 @@ export const useTickerPosts = () => {
             typeof t === 'string' ? { nick: '', color: 0, text: t } : t,
           );
           setItems(list);
+          setMode(res.mode ?? 'mix');
         })
         .catch(() => undefined);
     };
@@ -28,7 +30,7 @@ export const useTickerPosts = () => {
     };
   }, []);
 
-  return items;
+  return { items, mode };
 };
 
 export default useTickerPosts;
