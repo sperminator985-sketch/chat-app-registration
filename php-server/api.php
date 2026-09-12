@@ -12,7 +12,21 @@ if (!is_array($allowedOrigins) || !$allowedOrigins) {
     $allowedOrigins = $host !== '://' ? [$host] : ['*'];
 }
 $origin = (string) ($_SERVER['HTTP_ORIGIN'] ?? '');
-if ($origin !== '' && in_array($origin, $allowedOrigins, true)) {
+$originOk = static function (string $o, array $list): bool {
+    if (in_array($o, $list, true)) {
+        return true;
+    }
+    foreach ($list as $item) {
+        if (is_string($item) && strlen($item) > 2 && $item[0] === '*' && $item[1] === '.') {
+            $suffix = substr($item, 1);
+            if (substr($o, -strlen($suffix)) === $suffix) {
+                return true;
+            }
+        }
+    }
+    return false;
+};
+if ($origin !== '' && $originOk($origin, $allowedOrigins)) {
     header('Access-Control-Allow-Origin: ' . $origin);
     header('Vary: Origin');
 } elseif ($origin === '') {
