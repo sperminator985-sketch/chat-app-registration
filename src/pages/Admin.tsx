@@ -29,6 +29,16 @@ const eventStyle = (e: string) =>
       : 'border-foreground/35 text-muted-foreground';
 
 const SEEN_KEY = 'admin_security_seen';
+const TAB_KEY = 'admin_tab';
+
+type AdminTab = 'vault' | 'security' | 'users' | 'messages' | 'ticker';
+
+const TABS: AdminTab[] = ['vault', 'security', 'users', 'messages', 'ticker'];
+
+const savedTab = (): AdminTab => {
+  const v = localStorage.getItem(TAB_KEY) as AdminTab | null;
+  return v && TABS.includes(v) ? v : 'users';
+};
 
 const seenText = (u: AdminUser) => {
   if (u.online) return 'в сети';
@@ -45,7 +55,12 @@ const AdminPanel = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const [tab, setTab] = useState<'vault' | 'security' | 'users' | 'messages' | 'ticker'>('users');
+  const [tab, setTabState] = useState<AdminTab>(savedTab);
+
+  const setTab = useCallback((v: AdminTab) => {
+    localStorage.setItem(TAB_KEY, v);
+    setTabState(v);
+  }, []);
   const [events, setEvents] = useState<SecurityEvent[]>([]);
   const [alerts, setAlerts] = useState(0);
   const [users, setUsers] = useState<AdminUser[]>([]);

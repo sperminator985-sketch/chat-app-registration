@@ -29,6 +29,7 @@ const VaultPanel = () => {
   const [unlocked, setUnlocked] = useState<CryptoKey | null>(null);
   const [items, setItems] = useState<VaultMessage[]>([]);
   const [plain, setPlain] = useState<Record<number, string>>({});
+  const [idleLeft, setIdleLeft] = useState(0);
 
   const load = useCallback(async () => {
     try {
@@ -123,6 +124,34 @@ const VaultPanel = () => {
     }
   };
 
+  useEffect(() => {
+    if (!unlocked) return;
+    setIdleLeft(15 * 60);
+    const tick = window.setInterval(() => {
+      setIdleLeft((v) => (v <= 1 ? 0 : v - 1));
+    }, 1000);
+    const wake = () => setIdleLeft(15 * 60);
+    window.addEventListener('mousemove', wake);
+    window.addEventListener('keydown', wake);
+    window.addEventListener('touchstart', wake);
+    return () => {
+      window.clearInterval(tick);
+      window.removeEventListener('mousemove', wake);
+      window.removeEventListener('keydown', wake);
+      window.removeEventListener('touchstart', wake);
+    };
+  }, [unlocked]);
+
+  useEffect(() => {
+    if (unlocked && idleLeft === 0) {
+      setUnlocked(null);
+      setItems([]);
+      setPlain({});
+      setKeyFile('');
+      toast({ title: 'Сейф закрылся сам — не было действий 15 минут' });
+    }
+  }, [idleLeft, unlocked, toast]);
+
   const lock = () => {
     setUnlocked(null);
     setItems([]);
@@ -205,7 +234,11 @@ const VaultPanel = () => {
           Читальный зал
         </p>
         {unlocked ? (
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="mr-auto font-mono text-[0.75rem] text-muted-foreground">
+              закроется через {Math.floor(idleLeft / 60)}:
+              {String(idleLeft % 60).padStart(2, '0')}
+            </span>
             <button
               onClick={lock}
               className="border-2 border-foreground/35 px-3 py-1.5 text-[0.7rem] font-bold uppercase tracking-[0.1em] text-muted-foreground transition-colors hover:border-secondary hover:text-secondary"
