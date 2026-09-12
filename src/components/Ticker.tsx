@@ -82,9 +82,15 @@ const Ticker = () => {
 
   if (mode === 'off') return null;
 
+  const chars = items.reduce((sum, t) => sum + t.nick.length + t.text.length + 6, 0);
+  const duration = Math.max(18, Math.round(chars / 11));
+
   return (
     <div className="group my-0 overflow-hidden border-y-2 border-foreground/35 bg-card py-2.5 md:py-3">
-      <div className="flex w-max animate-marquee">
+      <div
+        className="flex w-max animate-marquee"
+        style={{ animationDuration: `${duration}s` }}
+      >
         {[0, 1].map((pass) => (
           <div key={pass} className="flex shrink-0">
             {items.map((t, idx) => (
