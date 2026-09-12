@@ -1635,7 +1635,7 @@ try {
     if (in_array($action, [
         'admin_users', 'admin_messages', 'admin_ban', 'admin_hide', 'admin_delete',
         'admin_ticker', 'admin_ticker_decide', 'admin_ticker_edit', 'admin_ticker_add',
-        'admin_ticker_days', 'admin_security', 'admin_security_clear',
+        'admin_ticker_days', 'admin_ticker_mode', 'admin_security', 'admin_security_clear',
         'admin_vault', 'admin_vault_set', 'admin_dm_wipe', 'admin_dm_vault',
     ], true)) {
         $user = requireUser();
