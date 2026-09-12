@@ -749,7 +749,7 @@ const AdminPanel = () => {
               </p>
             )}
             {shownTicker.map((p) => (
-              <div key={p.id} className="flex items-start gap-3 bg-card px-4 py-3">
+              <div key={p.id} className="flex flex-col gap-2 bg-card px-4 py-3 sm:flex-row sm:items-start sm:gap-3">
                 <div className="min-w-0 flex-1">
                   <p className="mb-1 flex flex-wrap items-center gap-2 font-mono text-[0.72rem] uppercase tracking-[0.08em] text-muted-foreground">
                     <span
@@ -822,7 +822,7 @@ const AdminPanel = () => {
                     </>
                   )}
                 </div>
-                <div className="flex shrink-0 items-center gap-1.5">
+                <div className="flex shrink-0 flex-wrap items-center gap-1.5">
                   <select
                     value={p.liveDays ?? 7}
                     onChange={(e) => setDays(p, Number(e.target.value))}
