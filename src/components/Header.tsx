@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import Icon from '@/components/ui/icon';
 import Logo from '@/components/Logo';
 import { cn } from '@/lib/utils';
@@ -8,6 +8,7 @@ import { nickColorClass, staffNickClass } from '@/data/chat';
 import { useDm } from '@/hooks/use-dm';
 import { useWeather, formatTemp, degreeWord } from '@/hooks/use-weather';
 import { useTheme } from '@/hooks/use-theme';
+import { useTicker } from '@/hooks/use-ticker';
 
 const guestLinks = [
   { href: '#top', label: 'Главная' },
@@ -27,6 +28,8 @@ const Header = ({ onProfile }: HeaderProps) => {
   const { unread, openList, soundOn, toggleSound } = useDm();
   const temp = useWeather();
   const { theme, toggle } = useTheme();
+  const { openTicker, pending } = useTicker();
+  const navigate = useNavigate();
   const links = user ? [] : guestLinks;
 
   const themeLabel = theme === 'day' ? 'Ночной режим' : 'Дневной режим';
@@ -67,6 +70,40 @@ const Header = ({ onProfile }: HeaderProps) => {
       )}
     </button>
   );
+
+  const tickerButton = (extra?: string) => {
+    if (!user || (!user.isAdmin && !user.uni)) return null;
+    const alert = Boolean(user.isAdmin) && pending > 0;
+    return (
+      <button
+        onClick={() => {
+          setOpen(false);
+          if (user.isAdmin) navigate('/admin');
+          else openTicker();
+        }}
+        aria-label="Бегущая строка"
+        title={
+          user.isAdmin
+            ? alert
+              ? `Объявлений на проверку: ${pending}`
+              : 'Бегущая строка'
+            : 'Объявление в бегущую строку'
+        }
+        className={cn(
+          'relative flex h-10 w-10 items-center justify-center border-2 transition-colors hover:border-secondary hover:text-secondary',
+          alert ? 'animate-pulse border-primary text-primary' : 'border-foreground/40 text-foreground',
+          extra,
+        )}
+      >
+        <Icon name="Megaphone" size={18} />
+        {alert && (
+          <span className="absolute -right-2 -top-2 min-w-[20px] border-2 border-foreground/40 bg-primary px-1 font-mono text-[0.68rem] font-bold leading-[16px] text-primary-foreground">
+            {pending > 99 ? '99+' : pending}
+          </span>
+        )}
+      </button>
+    );
+  };
 
   const soundButton = (extra?: string) => (
     <button
@@ -242,6 +279,7 @@ const Header = ({ onProfile }: HeaderProps) => {
           {user ? (
             <>
               {mailButton()}
+              {tickerButton()}
               {soundButton()}
               {user.isAdmin && (
                 <Link
@@ -295,6 +333,7 @@ const Header = ({ onProfile }: HeaderProps) => {
             </a>
           )}
           {user && mailButton()}
+          {user && tickerButton()}
           {user && soundButton()}
           {user && (
             <button

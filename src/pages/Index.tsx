@@ -3,6 +3,7 @@ import { AuthProvider, useAuth } from '@/hooks/use-auth';
 import { toast } from '@/hooks/use-toast';
 import { DmProvider } from '@/hooks/use-dm';
 import { CallProvider } from '@/hooks/use-call';
+import { TickerProvider, useTicker } from '@/hooks/use-ticker';
 import CallWindow from '@/components/CallWindow';
 import Header from '@/components/Header';
 import ServerDownBanner from '@/components/ServerDownBanner';
@@ -19,6 +20,7 @@ import WelcomeDialog from '@/components/WelcomeDialog';
 import DialogsList from '@/components/DialogsList';
 import DirectMessages from '@/components/DirectMessages';
 import ProfileDialog from '@/components/ProfileDialog';
+import TickerDialog from '@/components/TickerDialog';
 import { rooms, canEnterRoom, roomUni } from '@/data/chat';
 
 const PageBody = () => {
@@ -28,6 +30,7 @@ const PageBody = () => {
   const [profileOpen, setProfileOpen] = useState(false);
   const topRef = useRef<HTMLDivElement>(null);
   const { user, openAuth, loading } = useAuth();
+  const { open: tickerOpen, closeTicker } = useTicker();
 
   useLayoutEffect(() => {
     const el = topRef.current;
@@ -141,6 +144,7 @@ const PageBody = () => {
       <DialogsList />
       <DirectMessages />
       <ProfileDialog open={profileOpen} onOpenChange={setProfileOpen} />
+      <TickerDialog open={tickerOpen} onOpenChange={(v) => !v && closeTicker()} />
       <CallWindow />
     </div>
   );
@@ -150,7 +154,9 @@ const Index = () => (
   <AuthProvider>
     <DmProvider>
       <CallProvider>
-        <PageBody />
+        <TickerProvider>
+          <PageBody />
+        </TickerProvider>
       </CallProvider>
     </DmProvider>
   </AuthProvider>
