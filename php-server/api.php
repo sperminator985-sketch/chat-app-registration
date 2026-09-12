@@ -1545,7 +1545,7 @@ try {
     // --- Бегущая строка: одобренные объявления ---
     if ($method === 'GET' && $action === 'ticker') {
         $mode = setting('ticker_mode', 'mix');
-        if ($mode === 'news') {
+        if ($mode === 'news' || $mode === 'off') {
             out(200, ['ticker' => [], 'mode' => $mode]);
         }
         if (!hasTickerTable()) {
@@ -1796,7 +1796,7 @@ try {
 
         if ($method === 'POST' && $action === 'admin_ticker_mode') {
             $mode = (string) param('mode', '');
-            if (!in_array($mode, ['news', 'posts', 'mix'], true)) {
+            if (!in_array($mode, ['news', 'posts', 'mix', 'off'], true)) {
                 out(400, ['error' => 'Неизвестный режим строки']);
             }
             settingSet('ticker_mode', $mode);

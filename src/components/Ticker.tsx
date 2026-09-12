@@ -80,6 +80,8 @@ const Ticker = () => {
           : fallback
         : mixed;
 
+  if (mode === 'off') return null;
+
   return (
     <div className="group my-0 overflow-hidden border-y-2 border-foreground/35 bg-card py-2.5 md:py-3">
       <div className="flex w-max animate-marquee">

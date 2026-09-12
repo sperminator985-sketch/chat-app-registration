@@ -51,6 +51,11 @@ const MODE_OPTIONS: { value: TickerMode; label: string; hint: string }[] = [
     label: 'Вперемешку',
     hint: 'Новости и объявления жильцов чередуются между собой.',
   },
+  {
+    value: 'off',
+    label: 'Выключить',
+    hint: 'Строка полностью скрыта. Жильцы по-прежнему могут подавать объявления — они дождутся включения.',
+  },
 ];
 
 const savedTab = (): AdminTab => {

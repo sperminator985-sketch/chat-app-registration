@@ -50,7 +50,7 @@ export type AdminMessage = {
   userId: number;
 };
 
-export type TickerMode = 'news' | 'posts' | 'mix';
+export type TickerMode = 'news' | 'posts' | 'mix' | 'off';
 
 export type TickerLine = {
   nick: string;
