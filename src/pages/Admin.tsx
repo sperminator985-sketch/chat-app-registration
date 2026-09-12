@@ -380,7 +380,11 @@ const AdminPanel = () => {
                       {p.status === 'pending' ? 'ждёт' : p.status === 'approved' ? 'в эфире' : 'отклонено'}
                     </span>
                     <span>{p.time}</span>
-                    {p.uni && <span className="border border-foreground/30 px-1.5 py-0.5">{p.uni}</span>}
+                    {p.byAdmin ? (
+                      <span className="border border-sky-400 px-1.5 py-0.5 text-sky-400">от коменданта</span>
+                    ) : (
+                      p.uni && <span className="border border-foreground/30 px-1.5 py-0.5">{p.uni}</span>
+                    )}
                     <span className="font-semibold text-foreground">&lt;{p.nick}&gt;</span>
                   </p>
                   {editId === p.id ? (

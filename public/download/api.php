@@ -1050,9 +1050,13 @@ try {
             out(200, ['ticker' => []]);
         }
         $rows = q(
-            "SELECT text FROM ticker_posts WHERE status = 'approved' ORDER BY decided_at DESC, id DESC LIMIT 10"
+            "SELECT t.text, COALESCE(u.is_admin, 0) AS by_admin
+             FROM ticker_posts t LEFT JOIN users u ON u.id = t.user_id
+             WHERE t.status = 'approved' ORDER BY t.decided_at DESC, t.id DESC LIMIT 10"
         )->fetchAll();
-        out(200, ['ticker' => array_map(static fn(array $r): string => $r['text'], $rows)]);
+        out(200, ['ticker' => array_map(static function (array $r): string {
+            return (!empty($r['by_admin']) ? 'ОТ КОМЕНДАНТА: ' : '') . $r['text'];
+        }, $rows)]);
     }
 
     // --- Мои заявки в бегущую строку ---
@@ -1123,7 +1127,9 @@ try {
                 out(200, ['posts' => []]);
             }
             $rows = q(
-                "SELECT * FROM ticker_posts ORDER BY (status = 'pending') DESC, id DESC LIMIT 200"
+                "SELECT t.*, COALESCE(u.is_admin, 0) AS by_admin
+                 FROM ticker_posts t LEFT JOIN users u ON u.id = t.user_id
+                 ORDER BY (t.status = 'pending') DESC, t.id DESC LIMIT 200"
             )->fetchAll();
             out(200, ['posts' => array_map(static function (array $r): array {
                 return [
@@ -1133,6 +1139,7 @@ try {
                     'uni' => $r['uni'],
                     'text' => $r['text'],
                     'status' => $r['status'],
+                    'byAdmin' => !empty($r['by_admin']),
                     'time' => fmtTime($r['created_at']),
                 ];
             }, $rows)]);

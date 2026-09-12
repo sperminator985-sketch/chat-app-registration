@@ -59,6 +59,7 @@ export type AdminTickerPost = TickerPost & {
   userId: number;
   nick: string;
   uni?: string | null;
+  byAdmin?: boolean;
 };
 
 export type ApiMessage = {
