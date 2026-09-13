@@ -121,13 +121,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setUser(null);
   }, []);
 
-  useEffect(() =>
-    onBanned((msg) => {
+  useEffect(() => {
+    const off = onBanned((msg) => {
       if (!msg) return;
       clearToken();
       setUser(null);
-    }),
-  []);
+    });
+    return () => {
+      off();
+    };
+  }, []);
 
   const saveProfile = useCallback(async (body: { status: string; color: number; avatar: number; image?: string; removeImage?: boolean }) => {
     const res = await api.profile(body);

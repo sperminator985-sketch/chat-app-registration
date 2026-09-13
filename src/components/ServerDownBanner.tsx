@@ -8,12 +8,15 @@ const ServerDownBanner = () => {
   const [checking, setChecking] = useState(false);
   const [hidden, setHidden] = useState(false);
 
-  useEffect(() =>
-    onServerStatus((v) => {
+  useEffect(() => {
+    const off = onServerStatus((v) => {
       setDown(v);
       if (!v) setHidden(false);
-    }),
-  []);
+    });
+    return () => {
+      off();
+    };
+  }, []);
 
   useEffect(() => {
     if (!down) return;

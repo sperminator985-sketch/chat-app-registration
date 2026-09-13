@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Icon from '@/components/ui/icon';
 import { cn } from '@/lib/utils';
 import { AuthProvider, useAuth } from '@/hooks/use-auth';
-import { api, type AdminMessage, type AdminTickerPost, type AdminUser, type SecurityEvent } from '@/lib/api';
+import { api, type AdminMessage, type AdminTickerPost, type AdminUser, type SecurityEvent, type TickerMode } from '@/lib/api';
 import { nickColorClass, rooms, staffNickClass } from '@/data/chat';
 import { useToast } from '@/hooks/use-toast';
 import VaultPanel from '@/components/VaultPanel';
