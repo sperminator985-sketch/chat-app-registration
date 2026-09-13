@@ -118,6 +118,34 @@ $sql[] = "CREATE TABLE IF NOT EXISTS vault_key (
     created_at DATETIME NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci";
 
+$sql[] = "CREATE TABLE IF NOT EXISTS private_rooms (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    owner_id INT NOT NULL,
+    guest_id INT NOT NULL,
+    status VARCHAR(16) NOT NULL DEFAULT 'invited',
+    created_at DATETIME NOT NULL,
+    answered_at DATETIME NULL,
+    closed_at DATETIME NULL,
+    owner_seen DATETIME NULL,
+    guest_seen DATETIME NULL,
+    INDEX idx_owner (owner_id, status),
+    INDEX idx_guest (guest_id, status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci";
+
+$sql[] = "CREATE TABLE IF NOT EXISTS private_messages (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    room_id INT NOT NULL,
+    sender_id INT NOT NULL,
+    sender_nick VARCHAR(32) NOT NULL,
+    sender_color TINYINT NOT NULL DEFAULT 1,
+    text VARCHAR(500) NOT NULL,
+    cipher MEDIUMTEXT NULL,
+    sender_avatar TINYINT NOT NULL DEFAULT 1,
+    sender_avatar_url VARCHAR(255) NULL,
+    created_at DATETIME NOT NULL,
+    INDEX idx_room (room_id, id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci";
+
 $sql[] = "CREATE TABLE IF NOT EXISTS login_attempts (
     id INT AUTO_INCREMENT PRIMARY KEY,
     ip VARCHAR(45) NOT NULL,
@@ -163,6 +191,7 @@ if (!is_dir($dir)) {
 
 echo "Готово! Таблицы созданы.\n\n";
 echo "Шифрование личных сообщений: таблицы ключей готовы.\n";
+echo "Приватные комнаты: готовы.\n";
 echo "Журнал безопасности: готов.\n\n";
 echo "Проверка связи с базой: пользователей — " . scalar('SELECT COUNT(*) FROM users') . "\n";
 echo "Папка для аватарок: " . (is_dir($dir) && is_writable($dir) ? "ок\n" : "НЕ СОЗДАНА — создайте вручную папку uploads и дайте ей права на запись\n");

@@ -4,8 +4,11 @@ import { toast } from '@/hooks/use-toast';
 import { DmProvider } from '@/hooks/use-dm';
 import { CryptoProvider } from '@/hooks/use-crypto';
 import { CallProvider } from '@/hooks/use-call';
+import { PrivateProvider } from '@/hooks/use-private';
 import { TickerProvider, useTicker } from '@/hooks/use-ticker';
 import CallWindow from '@/components/CallWindow';
+import PrivateRoom from '@/components/PrivateRoom';
+import PrivateInvite from '@/components/PrivateInvite';
 import Header from '@/components/Header';
 import ServerDownBanner from '@/components/ServerDownBanner';
 import BannedDialog from '@/components/BannedDialog';
@@ -146,6 +149,8 @@ const PageBody = () => {
       <DirectMessages />
       <ProfileDialog open={profileOpen} onOpenChange={setProfileOpen} />
       <TickerDialog open={tickerOpen} onOpenChange={(v) => !v && closeTicker()} />
+      <PrivateInvite />
+      <PrivateRoom />
       <CallWindow />
     </div>
   );
@@ -156,9 +161,11 @@ const Index = () => (
     <CryptoProvider>
       <DmProvider>
         <CallProvider>
-          <TickerProvider>
-            <PageBody />
-          </TickerProvider>
+          <PrivateProvider>
+            <TickerProvider>
+              <PageBody />
+            </TickerProvider>
+          </PrivateProvider>
         </CallProvider>
       </DmProvider>
     </CryptoProvider>

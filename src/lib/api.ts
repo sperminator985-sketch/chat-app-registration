@@ -119,7 +119,7 @@ export type VaultMessage = {
 export type FeedResponse = {
   messages: ApiMessage[];
   typing?: { nick: string; color: NickColor }[];
-  online: { nick: string; color: NickColor; status: string; avatar?: number; avatarUrl?: string | null; isAdmin?: boolean }[];
+  online: { nick: string; color: NickColor; status: string; avatar?: number; avatarUrl?: string | null; isAdmin?: boolean; inPrivate?: boolean }[];
   onlineTotal?: number;
   adminOnline?: boolean;
   tickerPending?: number;
@@ -337,6 +337,33 @@ export const api = {
   callSignal: (body: { nick: string; callId: string; kind: CallKind; payload?: unknown }) =>
     request<{ ok: boolean }>('call_signal', { method: 'POST', body }),
   callPoll: () => request<{ signals: CallSignal[] }>('call_poll'),
+  privateInvite: (nick: string) =>
+    request<{ ok: boolean; roomId: number }>('private_invite', { method: 'POST', body: { nick } }),
+  privateAnswer: (roomId: number, accept: boolean) =>
+    request<{ ok: boolean; accepted: boolean }>('private_answer', {
+      method: 'POST',
+      body: { roomId, accept },
+    }),
+  privateState: () => request<PrivateState>('private_state'),
+  privateSend: (body: { text?: string; cipher?: string }) =>
+    request<{ message: ApiMessage }>('private_send', { method: 'POST', body }),
+  privateLeave: () => request<{ ok: boolean }>('private_leave', { method: 'POST' }),
+};
+
+export type PrivatePeer = {
+  nick: string;
+  color: NickColor;
+  avatar?: number;
+  avatarUrl?: string | null;
+};
+
+export type PrivateState = {
+  room: { id: number; peer: PrivatePeer | null } | null;
+  messages: ApiMessage[];
+  invite: { roomId: number; nick: string; color: NickColor } | null;
+  pending: { roomId: number; nick: string } | null;
+  ended: { status: 'declined' | 'missed' | 'closed'; nick: string } | null;
+  busy: number[];
 };
 
 export type CallKind = 'offer' | 'answer' | 'ice' | 'hangup' | 'decline';

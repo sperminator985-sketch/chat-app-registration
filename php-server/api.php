@@ -367,6 +367,111 @@ function vaultPublicJwk(): ?string
     return $row ? (string) $row['public_jwk'] : null;
 }
 
+const PRIVATE_INVITE_SEC = 60;
+const PRIVATE_ALIVE_SEC = 120;
+
+function hasPrivateTables(): bool
+{
+    static $ok = null;
+    if ($ok !== null) {
+        return $ok;
+    }
+    try {
+        db()->exec("CREATE TABLE IF NOT EXISTS private_rooms (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            owner_id INT NOT NULL,
+            guest_id INT NOT NULL,
+            status VARCHAR(16) NOT NULL DEFAULT 'invited',
+            created_at DATETIME NOT NULL,
+            answered_at DATETIME NULL,
+            closed_at DATETIME NULL,
+            owner_seen DATETIME NULL,
+            guest_seen DATETIME NULL,
+            INDEX idx_owner (owner_id, status),
+            INDEX idx_guest (guest_id, status)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+        db()->exec("CREATE TABLE IF NOT EXISTS private_messages (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            room_id INT NOT NULL,
+            sender_id INT NOT NULL,
+            sender_nick VARCHAR(32) NOT NULL,
+            sender_color TINYINT NOT NULL DEFAULT 1,
+            text VARCHAR(500) NOT NULL,
+            cipher MEDIUMTEXT NULL,
+            sender_avatar TINYINT NOT NULL DEFAULT 1,
+            sender_avatar_url VARCHAR(255) NULL,
+            created_at DATETIME NOT NULL,
+            INDEX idx_room (room_id, id)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+        $ok = true;
+    } catch (Throwable $e) {
+        $ok = false;
+    }
+    return $ok;
+}
+
+function privateExpire(): void
+{
+    if (!hasPrivateTables()) {
+        return;
+    }
+    try {
+        q(
+            "UPDATE private_rooms SET status = 'missed', closed_at = UTC_TIMESTAMP()
+             WHERE status = 'invited' AND created_at < UTC_TIMESTAMP() - INTERVAL ? SECOND",
+            [PRIVATE_INVITE_SEC]
+        );
+        q(
+            "UPDATE private_rooms SET status = 'closed', closed_at = UTC_TIMESTAMP()
+             WHERE status = 'active'
+               AND (owner_seen IS NULL OR owner_seen < UTC_TIMESTAMP() - INTERVAL ? SECOND
+                    OR guest_seen IS NULL OR guest_seen < UTC_TIMESTAMP() - INTERVAL ? SECOND)
+               AND answered_at < UTC_TIMESTAMP() - INTERVAL ? SECOND",
+            [PRIVATE_ALIVE_SEC, PRIVATE_ALIVE_SEC, PRIVATE_ALIVE_SEC]
+        );
+    } catch (Throwable $e) {
+        // молча
+    }
+}
+
+function privateBusyIds(): array
+{
+    if (!hasPrivateTables()) {
+        return [];
+    }
+    try {
+        $rows = db()->query(
+            "SELECT owner_id, guest_id FROM private_rooms WHERE status = 'active'"
+        )->fetchAll();
+    } catch (Throwable $e) {
+        return [];
+    }
+    $ids = [];
+    foreach ($rows as $r) {
+        $ids[] = (int) $r['owner_id'];
+        $ids[] = (int) $r['guest_id'];
+    }
+    return array_values(array_unique($ids));
+}
+
+function privateRoomOf(int $userId): ?array
+{
+    if (!hasPrivateTables()) {
+        return null;
+    }
+    return one(
+        "SELECT * FROM private_rooms
+         WHERE status = 'active' AND (owner_id = ? OR guest_id = ?) ORDER BY id DESC LIMIT 1",
+        [$userId, $userId]
+    ) ?: null;
+}
+
+function privateTouch(array $room, int $me): void
+{
+    $col = ((int) $room['owner_id']) === $me ? 'owner_seen' : 'guest_seen';
+    q("UPDATE private_rooms SET $col = UTC_TIMESTAMP() WHERE id = ?", [(int) $room['id']]);
+}
+
 function hasIpColumns(): bool
 {
     static $ok = null;
@@ -777,7 +882,9 @@ try {
         )->fetchAll();
         $messages = array_map('shapeMessage', array_reverse($rows));
 
-        $online = array_map(static function (array $r): array {
+        privateExpire();
+        $busyIds = privateBusyIds();
+        $online = array_map(static function (array $r) use ($busyIds): array {
             return [
                 'nick' => $r['nick'],
                 'color' => (int) $r['color'],
@@ -785,9 +892,10 @@ try {
                 'avatar' => (int) $r['avatar'],
                 'avatarUrl' => $r['avatar_url'],
                 'isAdmin' => (bool) $r['is_admin'],
+                'inPrivate' => in_array((int) $r['id'], $busyIds, true),
             ];
         }, q(
-            'SELECT nick, color, status, avatar, avatar_url, is_admin FROM users
+            'SELECT id, nick, color, status, avatar, avatar_url, is_admin FROM users
              WHERE last_seen > UTC_TIMESTAMP() - INTERVAL ? SECOND AND room = ? AND is_admin = 0'
              . verifiedCond() . '
              ORDER BY last_seen DESC LIMIT 40',
@@ -1540,6 +1648,216 @@ try {
                 ],
             ];
         }, $rows)]);
+    }
+
+    // --- Приват: позвать соседа в закрытую комнату ---
+    if ($method === 'POST' && $action === 'private_invite') {
+        $user = requireUser('Сначала займи ник');
+        if (!hasPrivateTables()) {
+            fail(500, 'Приватные комнаты недоступны');
+        }
+        privateExpire();
+        $toNick = trim((string) param('nick', ''));
+        $other = one('SELECT id, nick FROM users WHERE nick_lower = ?', [mb_strtolower($toNick)]);
+        if (!$other) {
+            fail(404, 'Такого жильца нет');
+        }
+        $otherId = (int) $other['id'];
+        if ($otherId === $user['id']) {
+            fail(400, 'В приват с самим собой не уйти');
+        }
+        if (privateRoomOf($user['id'])) {
+            fail(409, 'Ты уже в привате');
+        }
+        if (privateRoomOf($otherId)) {
+            fail(409, 'Сосед уже в привате');
+        }
+        $busy = one(
+            "SELECT id FROM private_rooms
+             WHERE status = 'invited' AND (owner_id = ? OR guest_id = ? OR owner_id = ? OR guest_id = ?)",
+            [$user['id'], $user['id'], $otherId, $otherId]
+        );
+        if ($busy) {
+            fail(409, 'Приглашение уже висит — подожди ответа');
+        }
+        q(
+            "INSERT INTO private_rooms (owner_id, guest_id, status, created_at)
+             VALUES (?, ?, 'invited', UTC_TIMESTAMP())",
+            [$user['id'], $otherId]
+        );
+        touch_user($user['id']);
+        out(200, ['ok' => true, 'roomId' => (int) db()->lastInsertId()]);
+    }
+
+    // --- Приват: ответить на приглашение ---
+    if ($method === 'POST' && $action === 'private_answer') {
+        $user = requireUser();
+        if (!hasPrivateTables()) {
+            fail(500, 'Приватные комнаты недоступны');
+        }
+        privateExpire();
+        $roomId = (int) param('roomId', 0);
+        $accept = (bool) param('accept', false);
+        $room = one("SELECT * FROM private_rooms WHERE id = ? AND status = 'invited'", [$roomId]);
+        if (!$room || (int) $room['guest_id'] !== $user['id']) {
+            fail(404, 'Приглашение уже неактуально');
+        }
+        if (!$accept) {
+            q(
+                "UPDATE private_rooms SET status = 'declined', closed_at = UTC_TIMESTAMP() WHERE id = ?",
+                [$roomId]
+            );
+            touch_user($user['id']);
+            out(200, ['ok' => true, 'accepted' => false]);
+        }
+        if (privateRoomOf($user['id']) || privateRoomOf((int) $room['owner_id'])) {
+            fail(409, 'Кто-то уже занят другим приватом');
+        }
+        q(
+            "UPDATE private_rooms SET status = 'active', answered_at = UTC_TIMESTAMP(),
+                    owner_seen = UTC_TIMESTAMP(), guest_seen = UTC_TIMESTAMP() WHERE id = ?",
+            [$roomId]
+        );
+        touch_user($user['id']);
+        out(200, ['ok' => true, 'accepted' => true, 'roomId' => $roomId]);
+    }
+
+    // --- Приват: состояние, сообщения и приглашения ---
+    if ($method === 'GET' && $action === 'private_state') {
+        $user = requireUser();
+        if (!hasPrivateTables()) {
+            out(200, ['room' => null, 'invite' => null, 'messages' => [], 'busy' => []]);
+        }
+        privateExpire();
+        $me = $user['id'];
+
+        $invite = null;
+        $inv = one(
+            "SELECT p.id, u.nick, u.color FROM private_rooms p JOIN users u ON u.id = p.owner_id
+             WHERE p.guest_id = ? AND p.status = 'invited' ORDER BY p.id DESC LIMIT 1",
+            [$me]
+        );
+        if ($inv) {
+            $invite = ['roomId' => (int) $inv['id'], 'nick' => $inv['nick'], 'color' => (int) $inv['color']];
+        }
+
+        $pendingOut = one(
+            "SELECT p.id, u.nick FROM private_rooms p JOIN users u ON u.id = p.guest_id
+             WHERE p.owner_id = ? AND p.status = 'invited' ORDER BY p.id DESC LIMIT 1",
+            [$me]
+        );
+
+        $lastEnded = one(
+            "SELECT p.id, p.status, p.owner_id,
+                    CASE WHEN p.owner_id = ? THEN g.nick ELSE o.nick END AS peer_nick
+             FROM private_rooms p
+             JOIN users o ON o.id = p.owner_id
+             JOIN users g ON g.id = p.guest_id
+             WHERE (p.owner_id = ? OR p.guest_id = ?)
+               AND p.status IN ('declined', 'missed', 'closed')
+               AND p.closed_at > UTC_TIMESTAMP() - INTERVAL 20 SECOND
+             ORDER BY p.id DESC LIMIT 1",
+            [$me, $me, $me]
+        );
+
+        $room = privateRoomOf($me);
+        $payload = ['room' => null, 'messages' => []];
+        if ($room) {
+            privateTouch($room, $me);
+            $peerId = ((int) $room['owner_id']) === $me ? (int) $room['guest_id'] : (int) $room['owner_id'];
+            $peer = one('SELECT nick, color, avatar, avatar_url FROM users WHERE id = ?', [$peerId]);
+            $rows = q(
+                'SELECT * FROM private_messages WHERE room_id = ? ORDER BY id DESC LIMIT 80',
+                [(int) $room['id']]
+            )->fetchAll();
+            $payload['room'] = [
+                'id' => (int) $room['id'],
+                'peer' => $peer ? [
+                    'nick' => $peer['nick'],
+                    'color' => (int) $peer['color'],
+                    'avatar' => (int) $peer['avatar'],
+                    'avatarUrl' => $peer['avatar_url'],
+                ] : null,
+            ];
+            $payload['messages'] = array_map('shapeMessage', array_reverse($rows));
+        }
+        touch_user($me);
+
+        out(200, $payload + [
+            'invite' => $invite,
+            'pending' => $pendingOut ? ['roomId' => (int) $pendingOut['id'], 'nick' => $pendingOut['nick']] : null,
+            'ended' => $lastEnded ? ['status' => $lastEnded['status'], 'nick' => $lastEnded['peer_nick']] : null,
+            'busy' => privateBusyIds(),
+        ]);
+    }
+
+    // --- Приват: отправить сообщение ---
+    if ($method === 'POST' && $action === 'private_send') {
+        $user = requireUser('Сначала займи ник');
+        if (!hasPrivateTables()) {
+            fail(500, 'Приватные комнаты недоступны');
+        }
+        privateExpire();
+        $room = privateRoomOf($user['id']);
+        if (!$room) {
+            fail(404, 'Приватная комната закрыта');
+        }
+        $cipher = (string) param('cipher', '');
+        $text = mb_substr(trim((string) param('text', '')), 0, 500);
+        if ($cipher !== '') {
+            if (mb_strlen($cipher) > 20000) {
+                fail(400, 'Сообщение слишком длинное');
+            }
+            $text = '';
+        } elseif ($text === '') {
+            fail(400, 'Пустое сообщение');
+        }
+        q(
+            'INSERT INTO private_messages
+             (room_id, sender_id, sender_nick, sender_color, text, cipher, sender_avatar, sender_avatar_url, created_at)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, UTC_TIMESTAMP())',
+            [
+                (int) $room['id'], $user['id'], $user['nick'], $user['color'],
+                $text, $cipher !== '' ? $cipher : null, $user['avatar'], $user['avatarUrl'],
+            ]
+        );
+        $id = (int) db()->lastInsertId();
+        privateTouch($room, $user['id']);
+        touch_user($user['id']);
+        out(200, ['message' => [
+            'id' => $id,
+            'nick' => $user['nick'],
+            'color' => $user['color'],
+            'text' => $text,
+            'cipher' => $cipher !== '' ? $cipher : null,
+            'time' => fmtTime(),
+            'avatar' => $user['avatar'],
+            'avatarUrl' => $user['avatarUrl'],
+        ]]);
+    }
+
+    // --- Приват: выйти из комнаты ---
+    if ($method === 'POST' && $action === 'private_leave') {
+        $user = requireUser();
+        if (!hasPrivateTables()) {
+            out(200, ['ok' => true]);
+        }
+        $room = privateRoomOf($user['id']);
+        if ($room) {
+            q(
+                "UPDATE private_rooms SET status = 'closed', closed_at = UTC_TIMESTAMP() WHERE id = ?",
+                [(int) $room['id']]
+            );
+            q('DELETE FROM private_messages WHERE room_id = ?', [(int) $room['id']]);
+        } else {
+            q(
+                "UPDATE private_rooms SET status = 'closed', closed_at = UTC_TIMESTAMP()
+                 WHERE owner_id = ? AND status = 'invited'",
+                [$user['id']]
+            );
+        }
+        touch_user($user['id']);
+        out(200, ['ok' => true]);
     }
 
     // --- Бегущая строка: одобренные объявления ---

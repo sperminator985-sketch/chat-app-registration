@@ -9,6 +9,7 @@ import { nickColorClass, rooms, canEnterRoom, isStaffNick, staffNickClass } from
 import { useDm } from '@/hooks/use-dm';
 import { useCrypto } from '@/hooks/use-crypto';
 import { useCall } from '@/hooks/use-call';
+import { usePrivate } from '@/hooks/use-private';
 import EmojiPicker from '@/components/EmojiPicker';
 import { useTicker } from '@/hooks/use-ticker';
 
@@ -24,6 +25,7 @@ type OnlineItem = {
   avatar?: number;
   avatarUrl?: string | null;
   seenAgo?: number | null;
+  inPrivate?: boolean;
 };
 
 const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
@@ -46,6 +48,7 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
   const typingSentAt = useRef(0);
   const { unreadBy: unread } = useDm();
   const { startCall } = useCall();
+  const { invitePeer, pendingNick } = usePrivate();
   const { setPending: setTickerPending } = useTicker();
   const feedRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -186,6 +189,10 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
   );
 
   const onlineList: OnlineItem[] = online;
+  const busyNicks = useMemo(
+    () => new Set(online.filter((u) => u.inPrivate).map((u) => u.nick)),
+    [online],
+  );
 
   if (!user) return null;
 
@@ -311,11 +318,13 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
                     <span className="font-mono text-[0.66rem] text-muted-foreground sm:text-[0.78rem]">[{m.time}]</span>
                     <button
                       type="button"
-                      onClick={() => user && m.nick !== user.nick && setPrivateTo(m.nick)}
-                      title={`Написать лично: ${m.nick}`}
+                      onClick={() => user && m.nick !== user.nick && !busyNicks.has(m.nick) && setPrivateTo(m.nick)}
+                      disabled={busyNicks.has(m.nick)}
+                      title={busyNicks.has(m.nick) ? `${m.nick} сейчас в привате` : `Написать лично: ${m.nick}`}
                       className={cn(
                         'text-[0.82rem] font-normal hover:underline sm:text-[0.92rem]',
                         isStaffNick(m.nick) ? 'font-bold text-red-500 [.day_&]:text-red-600' : nickColorClass[m.color],
+                        busyNicks.has(m.nick) && 'opacity-40 hover:no-underline',
                       )}
                     >
                       &lt;{m.nick}&gt;
@@ -414,18 +423,39 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
               )}
               {onlineList.map((u) => {
                 const isMe = Boolean(user && u.nick === user.nick);
+                const busy = Boolean(u.inPrivate);
+                const waiting = pendingNick === u.nick;
                 return (
-                  <li key={u.nick} className={cn('relative', isMe && 'bg-muted/60')}>
+                  <li key={u.nick} className={cn('relative', isMe && 'bg-muted/60', busy && !isMe && 'opacity-45')}>
                     {!isMe && (
-                      <button
-                        type="button"
-                        onClick={() => startCall(u.nick)}
-                        title={`Видеозвонок: ${u.nick}`}
-                        aria-label={`Видеозвонок: ${u.nick}`}
-                        className="absolute right-3 top-1/2 z-10 flex h-7 w-7 -translate-y-1/2 items-center justify-center border-2 border-foreground/30 text-muted-foreground transition-colors hover:border-secondary hover:text-secondary"
-                      >
-                        <Icon name="Video" size={13} />
-                      </button>
+                      <div className="absolute right-2.5 top-1/2 z-10 flex -translate-y-1/2 items-center gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => invitePeer(u.nick)}
+                          disabled={busy || waiting}
+                          title={
+                            busy
+                              ? `${u.nick} сейчас в привате`
+                              : waiting
+                                ? 'Ждём ответа'
+                                : `Позвать в приват: ${u.nick}`
+                          }
+                          aria-label={`Позвать в приват: ${u.nick}`}
+                          className="flex h-7 w-7 items-center justify-center border-2 border-foreground/30 text-muted-foreground transition-colors hover:border-sky-400 hover:text-sky-300 disabled:cursor-not-allowed disabled:border-foreground/15 disabled:text-muted-foreground/40 disabled:hover:border-foreground/15 disabled:hover:text-muted-foreground/40"
+                        >
+                          <Icon name={waiting ? 'Hourglass' : 'Lock'} size={13} />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => startCall(u.nick)}
+                          disabled={busy}
+                          title={busy ? `${u.nick} сейчас в привате` : `Видеозвонок: ${u.nick}`}
+                          aria-label={`Видеозвонок: ${u.nick}`}
+                          className="flex h-7 w-7 items-center justify-center border-2 border-foreground/30 text-muted-foreground transition-colors hover:border-secondary hover:text-secondary disabled:cursor-not-allowed disabled:border-foreground/15 disabled:text-muted-foreground/40 disabled:hover:border-foreground/15 disabled:hover:text-muted-foreground/40"
+                        >
+                          <Icon name="Video" size={13} />
+                        </button>
+                      </div>
                     )}
                     <button
                       type="button"
@@ -433,13 +463,18 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
                         setWhoOpen(false);
                         setPrivateTo(u.nick);
                       }}
-                      disabled={isMe}
-                      className="w-full py-3 pl-4 pr-14 text-left transition-colors hover:bg-muted/50 disabled:cursor-default disabled:hover:bg-transparent"
+                      disabled={isMe || busy}
+                      className="w-full py-3 pl-4 pr-[5.5rem] text-left transition-colors hover:bg-muted/50 disabled:cursor-default disabled:hover:bg-transparent"
                     >
                       <div className="flex items-center gap-2">
                         <span className={cn('font-normal', staffNickClass(u.nick, nickColorClass[u.color as 1]))}>{u.nick}</span>
                         {isMe ? (
                           <span className="ml-auto font-mono text-[0.7rem] uppercase text-secondary">это ты</span>
+                        ) : busy ? (
+                          <span className="ml-auto flex items-center gap-1 font-mono text-[0.66rem] uppercase text-sky-300/70">
+                            <Icon name="Lock" size={11} />
+                            приват
+                          </span>
                         ) : unread[u.nick] ? (
                           <span className="ml-auto border-2 border-secondary bg-secondary px-1.5 font-mono text-[0.7rem] font-bold text-secondary-foreground">
                             {unread[u.nick]}
