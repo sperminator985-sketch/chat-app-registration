@@ -9,6 +9,7 @@ import { usePrivate } from '@/hooks/use-private';
 import { useCrypto } from '@/hooks/use-crypto';
 import { useCall } from '@/hooks/use-call';
 import EmojiPicker from '@/components/EmojiPicker';
+import { playKnock } from '@/lib/notify-sound';
 
 const PrivateRoom = () => {
   const { user } = useAuth();
@@ -20,6 +21,7 @@ const PrivateRoom = () => {
   const [plain, setPlain] = useState<Record<number, string>>({});
   const feedRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const lastIncoming = useRef<number | null>(null);
 
   useEffect(() => {
     let alive = true;
@@ -40,6 +42,18 @@ const PrivateRoom = () => {
     const el = feedRef.current;
     if (el) el.scrollTop = el.scrollHeight;
   }, [messages]);
+
+  useEffect(() => {
+    if (!active) lastIncoming.current = null;
+  }, [active]);
+
+  useEffect(() => {
+    if (!active) return;
+    const incoming = messages.filter((m) => m.nick !== user?.nick);
+    const lastId = incoming.length ? incoming[incoming.length - 1].id : 0;
+    if (lastIncoming.current !== null && lastId > lastIncoming.current) playKnock();
+    lastIncoming.current = lastId;
+  }, [messages, user?.nick, active]);
 
   const textOf = useCallback(
     (m: ApiMessage) => (m.cipher ? (plain[m.id] ?? '🔒 расшифровываем…') : m.text),

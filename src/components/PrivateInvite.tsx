@@ -1,11 +1,28 @@
+import { useEffect } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import Icon from '@/components/ui/icon';
 import { cn } from '@/lib/utils';
 import { nickColorClass, staffNickClass } from '@/data/chat';
 import { usePrivate } from '@/hooks/use-private';
+import { startPrivateRinging } from '@/lib/notify-sound';
 
 const PrivateInvite = () => {
   const { invite, answer } = usePrivate();
+
+  useEffect(() => {
+    if (!invite) return;
+    const stop = startPrivateRinging();
+    return () => stop();
+  }, [invite]);
+
+  useEffect(() => {
+    if (!invite) return;
+    const base = document.title.replace(/^Приват: .*? · /, '');
+    document.title = `Приват: ${invite.nick} · ${base}`;
+    return () => {
+      document.title = document.title.replace(/^Приват: .*? · /, '');
+    };
+  }, [invite]);
 
   return (
     <Dialog open={Boolean(invite)} onOpenChange={(open) => !open && answer(false)}>

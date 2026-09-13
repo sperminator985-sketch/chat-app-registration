@@ -3,6 +3,7 @@ import { api, ApiMessage, PrivatePeer } from '@/lib/api';
 import { useAuth } from '@/hooks/use-auth';
 import { usePolling } from '@/hooks/use-polling';
 import { toast } from '@/hooks/use-toast';
+import { playKnock } from '@/lib/notify-sound';
 
 type Invite = { roomId: number; nick: string; color: number };
 
@@ -39,6 +40,7 @@ export const PrivateProvider = ({ children }: { children: ReactNode }) => {
       setPendingNick(data.pending?.nick ?? null);
 
       const nowActive = Boolean(data.room);
+      if (!wasActive.current && nowActive) playKnock();
       if (wasActive.current && !nowActive && data.ended) {
         toast({
           title: 'Приват закрыт',

@@ -34,6 +34,32 @@ export const startRinging = () => {
   return () => window.clearInterval(timer);
 };
 
+const privateChime = (audio: AudioContext, start: number) => {
+  [523.25, 659.25, 783.99].forEach((freq, i) => {
+    const at = start + i * 0.12;
+    const osc = audio.createOscillator();
+    const gain = audio.createGain();
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(freq, at);
+    gain.gain.setValueAtTime(0.0001, at);
+    gain.gain.exponentialRampToValueAtTime(0.13, at + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.0001, at + 0.3);
+    osc.connect(gain).connect(audio.destination);
+    osc.start(at);
+    osc.stop(at + 0.32);
+  });
+};
+
+export const startPrivateRinging = () => {
+  const audio = getCtx();
+  if (!audio) return () => undefined;
+  if (audio.state === 'suspended') audio.resume().catch(() => undefined);
+
+  privateChime(audio, audio.currentTime);
+  const timer = window.setInterval(() => privateChime(audio, audio.currentTime), 3000);
+  return () => window.clearInterval(timer);
+};
+
 export const playKnock = () => {
   const audio = getCtx();
   if (!audio) return;
