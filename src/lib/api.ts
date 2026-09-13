@@ -345,6 +345,7 @@ export const api = {
       body: { roomId, accept },
     }),
   privateState: () => request<PrivateState>('private_state'),
+  privateTyping: () => request<{ ok: boolean }>('private_typing', { method: 'POST' }),
   privateSend: (body: { text?: string; cipher?: string }) =>
     request<{ message: ApiMessage }>('private_send', { method: 'POST', body }),
   privateLeave: () => request<{ ok: boolean }>('private_leave', { method: 'POST' }),
@@ -360,6 +361,7 @@ export type PrivatePeer = {
 export type PrivateState = {
   room: { id: number; peer: PrivatePeer | null } | null;
   messages: ApiMessage[];
+  typing?: boolean;
   invite: { roomId: number; nick: string; color: NickColor } | null;
   pending: { roomId: number; nick: string } | null;
   ended: { status: 'declined' | 'missed' | 'closed'; nick: string } | null;

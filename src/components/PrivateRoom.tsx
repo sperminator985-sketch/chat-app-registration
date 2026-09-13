@@ -13,7 +13,7 @@ import { playKnock } from '@/lib/notify-sound';
 
 const PrivateRoom = () => {
   const { user } = useAuth();
-  const { active, peer, messages, leave, pushMessage } = usePrivate();
+  const { active, peer, peerTyping, messages, leave, pushMessage } = usePrivate();
   const { enabled: cryptoOn, seal, reveal } = useCrypto();
   const { startCall } = useCall();
   const [draft, setDraft] = useState('');
@@ -22,6 +22,7 @@ const PrivateRoom = () => {
   const feedRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const lastIncoming = useRef<number | null>(null);
+  const typingSentAt = useRef(0);
 
   useEffect(() => {
     let alive = true;
@@ -72,6 +73,7 @@ const PrivateRoom = () => {
       if (cipher) setPlain((prev) => ({ ...prev, [shown.id]: text }));
       pushMessage(shown);
       setDraft('');
+      typingSentAt.current = 0;
       inputRef.current?.focus();
     } catch (err) {
       toast({
@@ -146,6 +148,12 @@ const PrivateRoom = () => {
             ))}
           </div>
 
+          {peerTyping && (
+            <div className="border-t-2 border-foreground/20 px-4 py-1.5 font-mono text-[0.66rem] uppercase tracking-[0.06em] text-sky-300 sm:px-5 sm:text-[0.72rem]">
+              <span className="animate-pulse">{peer.nick} печатает…</span>
+            </div>
+          )}
+
           <form
             onSubmit={send}
             className="flex flex-row items-center gap-2 border-t-2 border-sky-400 px-3 py-2 sm:gap-2.5 sm:px-5 sm:py-2.5"
@@ -154,7 +162,14 @@ const PrivateRoom = () => {
               <input
                 ref={inputRef}
                 value={draft}
-                onChange={(e) => setDraft(e.target.value)}
+                onChange={(e) => {
+                  setDraft(e.target.value);
+                  const now = Date.now();
+                  if (e.target.value && now - typingSentAt.current > 4000) {
+                    typingSentAt.current = now;
+                    api.privateTyping().catch(() => undefined);
+                  }
+                }}
                 maxLength={480}
                 placeholder={`В привате с ${peer.nick}…`}
                 className="w-full min-w-0 bg-transparent text-[0.82rem] text-foreground outline-none placeholder:text-muted-foreground/70 sm:text-[0.92rem]"

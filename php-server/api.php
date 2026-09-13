@@ -1761,7 +1761,7 @@ try {
         );
 
         $room = privateRoomOf($me);
-        $payload = ['room' => null, 'messages' => []];
+        $payload = ['room' => null, 'messages' => [], 'typing' => false];
         if ($room) {
             privateTouch($room, $me);
             $peerId = ((int) $room['owner_id']) === $me ? (int) $room['guest_id'] : (int) $room['owner_id'];
@@ -1770,6 +1770,15 @@ try {
                 'SELECT * FROM private_messages WHERE room_id = ? ORDER BY id DESC LIMIT 80',
                 [(int) $room['id']]
             )->fetchAll();
+            $peerTyping = false;
+            if (hasTypingColumns()) {
+                $peerTyping = (bool) one(
+                    'SELECT id FROM users WHERE id = ? AND typing_room = ?
+                     AND typing_at > UTC_TIMESTAMP() - INTERVAL 6 SECOND',
+                    [$peerId, 'priv:' . (int) $room['id']]
+                );
+            }
+            $payload['typing'] = $peerTyping;
             $payload['room'] = [
                 'id' => (int) $room['id'],
                 'peer' => $peer ? [
@@ -1789,6 +1798,23 @@ try {
             'ended' => $lastEnded ? ['status' => $lastEnded['status'], 'nick' => $lastEnded['peer_nick']] : null,
             'busy' => privateBusyIds(),
         ]);
+    }
+
+    // --- Приват: печатает сейчас ---
+    if ($method === 'POST' && $action === 'private_typing') {
+        $user = requireUser();
+        if (!hasPrivateTables() || !hasTypingColumns()) {
+            out(200, ['ok' => true]);
+        }
+        $room = privateRoomOf($user['id']);
+        if ($room) {
+            q(
+                'UPDATE users SET typing_at = UTC_TIMESTAMP(), typing_room = ?, last_seen = UTC_TIMESTAMP()
+                 WHERE id = ?',
+                ['priv:' . (int) $room['id'], $user['id']]
+            );
+        }
+        out(200, ['ok' => true]);
     }
 
     // --- Приват: отправить сообщение ---
@@ -1823,6 +1849,9 @@ try {
         );
         $id = (int) db()->lastInsertId();
         privateTouch($room, $user['id']);
+        if (hasTypingColumns()) {
+            q('UPDATE users SET typing_at = NULL, typing_room = NULL WHERE id = ?', [$user['id']]);
+        }
         touch_user($user['id']);
         out(200, ['message' => [
             'id' => $id,
@@ -1855,6 +1884,9 @@ try {
                  WHERE owner_id = ? AND status = 'invited'",
                 [$user['id']]
             );
+        }
+        if (hasTypingColumns()) {
+            q('UPDATE users SET typing_at = NULL, typing_room = NULL WHERE id = ?', [$user['id']]);
         }
         touch_user($user['id']);
         out(200, ['ok' => true]);

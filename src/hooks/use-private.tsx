@@ -10,6 +10,7 @@ type Invite = { roomId: number; nick: string; color: number };
 type PrivateState = {
   active: boolean;
   peer: PrivatePeer | null;
+  peerTyping: boolean;
   messages: ApiMessage[];
   invite: Invite | null;
   pendingNick: string | null;
@@ -25,6 +26,7 @@ const PrivateContext = createContext<PrivateState | null>(null);
 export const PrivateProvider = ({ children }: { children: ReactNode }) => {
   const { user } = useAuth();
   const [peer, setPeer] = useState<PrivatePeer | null>(null);
+  const [peerTyping, setPeerTyping] = useState(false);
   const [messages, setMessages] = useState<ApiMessage[]>([]);
   const [invite, setInvite] = useState<Invite | null>(null);
   const [pendingNick, setPendingNick] = useState<string | null>(null);
@@ -35,6 +37,7 @@ export const PrivateProvider = ({ children }: { children: ReactNode }) => {
     try {
       const data = await api.privateState();
       setPeer(data.room?.peer ?? null);
+      setPeerTyping(Boolean(data.typing));
       setMessages(data.messages ?? []);
       setInvite(data.invite);
       setPendingNick(data.pending?.nick ?? null);
@@ -72,6 +75,7 @@ export const PrivateProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     if (!user) {
       setPeer(null);
+      setPeerTyping(false);
       setMessages([]);
       setInvite(null);
       setPendingNick(null);
@@ -117,6 +121,7 @@ export const PrivateProvider = ({ children }: { children: ReactNode }) => {
 
   const leave = useCallback(async () => {
     setPeer(null);
+    setPeerTyping(false);
     setMessages([]);
     setPendingNick(null);
     wasActive.current = false;
@@ -136,6 +141,7 @@ export const PrivateProvider = ({ children }: { children: ReactNode }) => {
     () => ({
       active: Boolean(peer),
       peer,
+      peerTyping,
       messages,
       invite,
       pendingNick,
@@ -145,7 +151,7 @@ export const PrivateProvider = ({ children }: { children: ReactNode }) => {
       pushMessage,
       refresh: load,
     }),
-    [peer, messages, invite, pendingNick, invitePeer, answer, leave, pushMessage, load],
+    [peer, peerTyping, messages, invite, pendingNick, invitePeer, answer, leave, pushMessage, load],
   );
 
   return <PrivateContext.Provider value={value}>{children}</PrivateContext.Provider>;
