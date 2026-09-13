@@ -13,7 +13,8 @@ import { playKnock } from '@/lib/notify-sound';
 
 const PrivateRoom = () => {
   const { user } = useAuth();
-  const { active, peer, messages, leave, pushMessage } = usePrivate();
+  const { active, peer, startedAt, messages, leave, pushMessage } = usePrivate();
+  const [elapsed, setElapsed] = useState('00:00');
   const { enabled: cryptoOn, seal, reveal } = useCrypto();
   const { startCall } = useCall();
   const [draft, setDraft] = useState('');
@@ -46,6 +47,24 @@ const PrivateRoom = () => {
   useEffect(() => {
     if (!active) lastIncoming.current = null;
   }, [active]);
+
+  useEffect(() => {
+    if (!active || !startedAt) {
+      setElapsed('00:00');
+      return;
+    }
+    const tick = () => {
+      const total = Math.max(0, Math.floor((Date.now() - startedAt) / 1000));
+      const h = Math.floor(total / 3600);
+      const m = Math.floor((total % 3600) / 60);
+      const s = total % 60;
+      const pad = (n: number) => String(n).padStart(2, '0');
+      setElapsed(h > 0 ? `${h}:${pad(m)}:${pad(s)}` : `${pad(m)}:${pad(s)}`);
+    };
+    tick();
+    const timer = window.setInterval(tick, 1000);
+    return () => window.clearInterval(timer);
+  }, [active, startedAt]);
 
   useEffect(() => {
     if (!active) return;
@@ -99,6 +118,13 @@ const PrivateRoom = () => {
             <span className="hidden items-center gap-1 font-mono text-[0.66rem] uppercase tracking-[0.08em] text-sky-300 sm:flex">
               <Icon name="ShieldCheck" size={13} />
               {cryptoOn ? 'зашифровано' : 'закрытая комната'}
+            </span>
+            <span
+              title="Сколько вы уже в привате"
+              className="flex items-center gap-1 border-2 border-sky-400/50 px-1.5 py-0.5 font-mono text-[0.68rem] tabular-nums tracking-[0.06em] text-sky-200 sm:text-[0.76rem]"
+            >
+              <Icon name="Clock" size={12} />
+              {elapsed}
             </span>
             <div className="ml-auto flex items-center gap-2">
               <button
