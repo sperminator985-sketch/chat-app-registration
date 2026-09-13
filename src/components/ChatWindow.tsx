@@ -204,7 +204,7 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
     >
       <div className="mx-auto flex w-full min-h-0 max-w-[1400px] flex-1 flex-col px-3 py-4 md:px-6 md:py-6">
         <div className="grid min-h-0 flex-1 gap-[2px] overflow-hidden border-2 border-foreground/35 bg-foreground/35 lg:grid-cols-[1fr_280px]">
-          <div className="flex min-h-0 flex-col bg-background">
+          <div className="flex min-h-0 min-w-0 flex-col bg-background">
             <div className="relative flex flex-wrap items-center gap-x-3 gap-y-2 border-b-2 border-foreground/35 px-4 py-3 md:px-5 md:py-4 lg:h-[68px]">
               <div className="flex min-w-0 shrink items-center gap-1.5 md:max-w-[34%] md:gap-3">
                 <Icon name={room.icon} size={16} className="shrink-0 text-secondary md:h-5 md:w-5" />
@@ -348,8 +348,12 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
 
             {privateTo && (
               <div className="flex items-center gap-2 border-t-2 border-sky-400 bg-sky-400/15 px-3 py-1.5 text-[0.7rem] font-semibold uppercase tracking-[0.08em] text-sky-200 sm:px-5 sm:text-[0.78rem]">
-                <Icon name="Lock" size={13} />
-                <span className="truncate">Личное сообщение для {privateTo}</span>
+                <Icon name="Lock" size={13} className="shrink-0" />
+                <span className="min-w-0 flex-1 truncate">
+                  <span className="hidden sm:inline">Личное сообщение для </span>
+                  <span className="sm:hidden">Лично: </span>
+                  {privateTo}
+                </span>
                 <button
                   type="button"
                   onClick={() => setPrivateTo(null)}
