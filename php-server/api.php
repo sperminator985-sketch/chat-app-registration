@@ -1770,13 +1770,8 @@ try {
                 'SELECT * FROM private_messages WHERE room_id = ? ORDER BY id DESC LIMIT 80',
                 [(int) $room['id']]
             )->fetchAll();
-            $since = one(
-                'SELECT TIMESTAMPDIFF(SECOND, answered_at, UTC_TIMESTAMP()) AS s FROM private_rooms WHERE id = ?',
-                [(int) $room['id']]
-            );
             $payload['room'] = [
                 'id' => (int) $room['id'],
-                'since' => (int) max(0, (int) ($since['s'] ?? 0)),
                 'peer' => $peer ? [
                     'nick' => $peer['nick'],
                     'color' => (int) $peer['color'],

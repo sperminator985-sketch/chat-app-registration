@@ -10,7 +10,6 @@ type Invite = { roomId: number; nick: string; color: number };
 type PrivateState = {
   active: boolean;
   peer: PrivatePeer | null;
-  startedAt: number | null;
   messages: ApiMessage[];
   invite: Invite | null;
   pendingNick: string | null;
@@ -26,25 +25,16 @@ const PrivateContext = createContext<PrivateState | null>(null);
 export const PrivateProvider = ({ children }: { children: ReactNode }) => {
   const { user } = useAuth();
   const [peer, setPeer] = useState<PrivatePeer | null>(null);
-  const [startedAt, setStartedAt] = useState<number | null>(null);
   const [messages, setMessages] = useState<ApiMessage[]>([]);
   const [invite, setInvite] = useState<Invite | null>(null);
   const [pendingNick, setPendingNick] = useState<string | null>(null);
   const wasActive = useRef(false);
-  const roomId = useRef<number | null>(null);
 
   const load = useCallback(async () => {
     if (!user) return;
     try {
       const data = await api.privateState();
       setPeer(data.room?.peer ?? null);
-      if (!data.room) {
-        roomId.current = null;
-        setStartedAt(null);
-      } else if (roomId.current !== data.room.id) {
-        roomId.current = data.room.id;
-        setStartedAt(Date.now() - (data.room.since ?? 0) * 1000);
-      }
       setMessages(data.messages ?? []);
       setInvite(data.invite);
       setPendingNick(data.pending?.nick ?? null);
@@ -82,12 +72,10 @@ export const PrivateProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     if (!user) {
       setPeer(null);
-      setStartedAt(null);
       setMessages([]);
       setInvite(null);
       setPendingNick(null);
       wasActive.current = false;
-      roomId.current = null;
     }
   }, [user]);
 
@@ -129,11 +117,9 @@ export const PrivateProvider = ({ children }: { children: ReactNode }) => {
 
   const leave = useCallback(async () => {
     setPeer(null);
-    setStartedAt(null);
     setMessages([]);
     setPendingNick(null);
     wasActive.current = false;
-    roomId.current = null;
     try {
       await api.privateLeave();
     } catch {
@@ -150,7 +136,6 @@ export const PrivateProvider = ({ children }: { children: ReactNode }) => {
     () => ({
       active: Boolean(peer),
       peer,
-      startedAt,
       messages,
       invite,
       pendingNick,
@@ -160,7 +145,7 @@ export const PrivateProvider = ({ children }: { children: ReactNode }) => {
       pushMessage,
       refresh: load,
     }),
-    [peer, startedAt, messages, invite, pendingNick, invitePeer, answer, leave, pushMessage, load],
+    [peer, messages, invite, pendingNick, invitePeer, answer, leave, pushMessage, load],
   );
 
   return <PrivateContext.Provider value={value}>{children}</PrivateContext.Provider>;

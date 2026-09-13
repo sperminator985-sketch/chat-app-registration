@@ -358,7 +358,7 @@ export type PrivatePeer = {
 };
 
 export type PrivateState = {
-  room: { id: number; since?: number; peer: PrivatePeer | null } | null;
+  room: { id: number; peer: PrivatePeer | null } | null;
   messages: ApiMessage[];
   invite: { roomId: number; nick: string; color: NickColor } | null;
   pending: { roomId: number; nick: string } | null;
