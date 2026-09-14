@@ -127,9 +127,6 @@ const PrivateRoom = () => {
             ref={feedRef}
             className="scrollbar-brut min-h-0 flex-1 space-y-1 overflow-y-auto overscroll-contain px-4 py-3 sm:px-5"
           >
-            <p className="border-l-2 border-sky-400 bg-sky-400/15 px-3 py-1.5 font-mono text-[0.7rem] uppercase tracking-[0.06em] text-sky-200 sm:text-[0.8rem]">
-              закрытая комната на двоих. переписка не видна остальным и стирается при выходе
-            </p>
             {messages.map((m) => (
               <div key={m.id} className="animate-fade-in leading-[1.3]">
                 <p className="flex flex-wrap items-baseline gap-x-1.5">
