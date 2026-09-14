@@ -21,15 +21,15 @@ const rnd = (seed: number) => {
 
 const buildStars = (): Star[] =>
   Array.from({ length: COUNT }, (_, i) => {
-    const big = rnd(i + 91) > 0.86;
+    const big = rnd(i + 91) > 0.78;
     return {
       left: +(rnd(i + 1) * 100).toFixed(2),
       top: +(rnd(i + 37) * 96).toFixed(2),
-      size: big ? 3 : rnd(i + 53) > 0.5 ? 2 : 1.5,
+      size: big ? 5 : rnd(i + 53) > 0.5 ? 3.5 : 2.5,
       dur: +(2.6 + rnd(i + 17) * 4.8).toFixed(2),
       delay: +(rnd(i + 71) * 6).toFixed(2),
-      dim: +(0.06 + rnd(i + 23) * 0.12).toFixed(2),
-      lit: +(0.4 + rnd(i + 11) * 0.28).toFixed(2),
+      dim: +(0.28 + rnd(i + 23) * 0.16).toFixed(2),
+      lit: +(0.82 + rnd(i + 11) * 0.18).toFixed(2),
       big,
     };
   });
@@ -110,7 +110,9 @@ const Stars = ({ className }: { className?: string }) => {
               width: `${s.size}px`,
               height: `${s.size}px`,
               animationDelay: `${s.delay}s`,
-              boxShadow: s.big ? '0 0 6px hsl(var(--secondary) / .7)' : undefined,
+              boxShadow: s.big
+                ? '0 0 8px hsl(var(--secondary)), 0 0 18px hsl(var(--secondary) / .65)'
+                : '0 0 6px hsl(var(--secondary) / .75)',
               '--star-dur': `${s.dur}s`,
               '--star-dim': s.dim,
               '--star-lit': s.lit,
