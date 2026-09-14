@@ -241,10 +241,7 @@ const UserCardDialog = ({ person, onOpenChange }: Props) => {
           </div>
 
           {isMe && rawImage && (
-            <div className="w-full max-w-[240px] space-y-1.5">
-              <p className="text-center font-mono text-[0.68rem] uppercase tracking-[0.08em] text-muted-foreground">
-                потяни фото мышкой · ползунок — размер
-              </p>
+            <div className="w-full max-w-[240px]">
               <input
                 type="range"
                 min={1}
@@ -252,7 +249,7 @@ const UserCardDialog = ({ person, onOpenChange }: Props) => {
                 step={0.01}
                 value={zoom}
                 onChange={(e) => setZoom(Number(e.target.value))}
-                className="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-foreground/25 accent-secondary"
+                className="zoom-range h-1.5 w-full cursor-pointer appearance-none rounded-full bg-foreground/25"
               />
             </div>
           )}

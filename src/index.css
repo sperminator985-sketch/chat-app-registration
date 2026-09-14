@@ -298,6 +298,26 @@
   .scrollbar-brut::-webkit-scrollbar-thumb {
     background: hsl(var(--secondary));
   }
+
+  .zoom-range::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    height: 16px;
+    width: 16px;
+    border-radius: 999px;
+    background: hsl(var(--secondary));
+    border: 2px solid hsl(var(--foreground) / 0.4);
+    cursor: pointer;
+  }
+
+  .zoom-range::-moz-range-thumb {
+    height: 16px;
+    width: 16px;
+    border-radius: 999px;
+    background: hsl(var(--secondary));
+    border: 2px solid hsl(var(--foreground) / 0.4);
+    cursor: pointer;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
