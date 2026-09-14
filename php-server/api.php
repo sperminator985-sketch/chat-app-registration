@@ -1895,10 +1895,10 @@ try {
 
     // --- Письмо в поддержку ---
     if ($method === 'POST' && $action === 'support_mail') {
-        $name = trim((string) ($input['name'] ?? ''));
-        $email = strtolower(trim((string) ($input['email'] ?? '')));
-        $topic = trim((string) ($input['topic'] ?? 'Вопрос'));
-        $text = trim((string) ($input['message'] ?? ''));
+        $name = trim((string) param('name', ''));
+        $email = strtolower(trim((string) param('email', '')));
+        $topic = trim((string) param('topic', 'Вопрос'));
+        $text = trim((string) param('message', ''));
 
         if (mb_strlen($name) < 2 || mb_strlen($name) > 60) {
             out(400, ['error' => 'Укажи имя (2–60 символов)']);
