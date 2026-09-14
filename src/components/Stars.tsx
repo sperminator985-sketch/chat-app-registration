@@ -25,7 +25,7 @@ const buildStars = (): Star[] =>
     return {
       left: +(rnd(i + 1) * 100).toFixed(2),
       top: +(rnd(i + 37) * 96).toFixed(2),
-      size: big ? 5 : rnd(i + 53) > 0.5 ? 3.5 : 2.5,
+      size: big ? 3 : rnd(i + 53) > 0.5 ? 2 : 1.5,
       dur: +(2.6 + rnd(i + 17) * 4.8).toFixed(2),
       delay: +(rnd(i + 71) * 6).toFixed(2),
       dim: +(0.28 + rnd(i + 23) * 0.16).toFixed(2),
