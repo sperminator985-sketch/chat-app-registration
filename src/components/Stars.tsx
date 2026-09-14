@@ -154,20 +154,15 @@ const Stars = ({ className }: { className?: string }) => {
         fs.map((s, si) => (
           <span
             key={`f${fi}-${si}`}
-            className="absolute animate-twinkle rounded-full bg-secondary"
-            style={
-              {
-                left: `${s.left}%`,
-                top: `${s.top}%`,
-                width: `${(2.2 * s.m).toFixed(2)}px`,
-                height: `${(2.2 * s.m).toFixed(2)}px`,
-                animationDelay: `${((fi * 7 + si * 3) % 11) * 0.6}s`,
-                boxShadow: `0 0 ${(5 * s.m).toFixed(1)}px hsl(var(--secondary) / .8)`,
-                '--star-dur': `${(4.4 + ((fi + si) % 5) * 0.9).toFixed(2)}s`,
-                '--star-dim': 0.45,
-                '--star-lit': 1,
-              } as React.CSSProperties
-            }
+            className="absolute rounded-full bg-secondary"
+            style={{
+              left: `${s.left}%`,
+              top: `${s.top}%`,
+              width: `${(2.2 * s.m).toFixed(2)}px`,
+              height: `${(2.2 * s.m).toFixed(2)}px`,
+              opacity: 1,
+              boxShadow: `0 0 ${(5 * s.m).toFixed(1)}px hsl(var(--secondary) / .8)`,
+            }}
           />
         )),
       )}
