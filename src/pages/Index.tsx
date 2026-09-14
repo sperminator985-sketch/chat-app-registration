@@ -123,8 +123,8 @@ const PageBody = () => {
         ) : (
           <>
             <div className="relative flex min-h-[calc(100svh-var(--top-offset,4.5rem))] flex-col overflow-hidden md:min-h-[calc(100vh-var(--top-offset,4.5rem))] md:justify-between">
-              <Stars className="z-0" />
-              <Moon className="left-[6%] top-[3%] z-[1] h-[54px] w-[54px] md:left-[7%] md:top-[4%] md:h-[76px] md:w-[76px]" />
+              <Stars className="z-0 hidden md:block" />
+              <Moon className="left-[7%] top-[4%] z-[1] hidden h-[76px] w-[76px] md:block" />
               <div className="relative z-10 -mt-[2px] md:hidden">
                 <Ticker />
               </div>
