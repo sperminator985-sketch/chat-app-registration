@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { cn } from '@/lib/utils';
 
 type Star = {
@@ -44,15 +44,23 @@ type Shot = {
   angle: number;
 };
 
-const makeShot = (id: number): Shot => {
-  const angle = 26 + Math.random() * 20;
-  const dist = 320 + Math.random() * 380;
+const makeShot = (id: number, box: { w: number; h: number }): Shot => {
+  const angle = 22 + Math.random() * 30;
+  const left = Math.random() * 62;
+  const top = Math.random() * 36;
+  const rad = (angle * Math.PI) / 180;
+
+  const startX = (left / 100) * box.w;
+  const startY = (top / 100) * box.h;
+  const toBottom = (box.h - startY + 40) / Math.sin(rad);
+  const toRight = (box.w - startX + 40) / Math.cos(rad);
+
   return {
     id,
-    left: Math.random() * 55,
-    top: Math.random() * 38,
+    left,
+    top,
     len: 70 + Math.random() * 60,
-    dist: +dist.toFixed(1),
+    dist: +Math.min(toBottom, toRight).toFixed(1),
     dur: +(0.9 + Math.random() * 0.7).toFixed(2),
     angle: +angle.toFixed(2),
   };
@@ -61,33 +69,33 @@ const makeShot = (id: number): Shot => {
 const Stars = ({ className }: { className?: string }) => {
   const stars = useMemo(buildStars, []);
   const [shots, setShots] = useState<Shot[]>([]);
+  const boxRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    let timer: ReturnType<typeof setTimeout>;
     let seq = 0;
 
-    const schedule = () => {
-      timer = setTimeout(
-        () => {
-          const shot = makeShot(++seq);
-          setShots((prev) => [...prev, shot]);
-          setTimeout(
-            () => setShots((prev) => prev.filter((s) => s.id !== shot.id)),
-            shot.dur * 1000 + 200,
-          );
-          schedule();
-        },
-        7000 + Math.random() * 13000,
+    const launch = () => {
+      if (document.hidden) return;
+      const box = {
+        w: boxRef.current?.offsetWidth || window.innerWidth,
+        h: boxRef.current?.offsetHeight || window.innerHeight,
+      };
+      const shot = makeShot(++seq, box);
+      setShots((prev) => [...prev, shot]);
+      setTimeout(
+        () => setShots((prev) => prev.filter((s) => s.id !== shot.id)),
+        shot.dur * 1000 + 120,
       );
     };
 
-    schedule();
-    return () => clearTimeout(timer);
+    const timer = setInterval(launch, 10000);
+    return () => clearInterval(timer);
   }, []);
 
   return (
     <div
+      ref={boxRef}
       aria-hidden
       className={cn('stars-layer pointer-events-none absolute inset-0 overflow-hidden', className)}
     >

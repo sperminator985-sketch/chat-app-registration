@@ -148,10 +148,9 @@ export default {
 				},
 				shoot: {
 					'0%': { opacity: '0', transform: 'translate3d(0,0,0) scaleX(.3)' },
-					'12%': { opacity: '1' },
-					'80%': { opacity: '1' },
+					'10%': { opacity: '1', transform: 'translate3d(0,0,0) scaleX(.6)' },
 					'100%': {
-						opacity: '0',
+						opacity: '1',
 						transform: 'translate3d(var(--shoot-x), var(--shoot-y), 0) scaleX(1)'
 					}
 				}
