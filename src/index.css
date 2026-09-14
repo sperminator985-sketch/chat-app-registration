@@ -217,10 +217,10 @@
   @keyframes moon-glow {
     0%,
     100% {
-      filter: drop-shadow(0 0 14px hsl(var(--secondary) / 0.3));
+      filter: drop-shadow(0 0 14px rgb(255 255 255 / 0.35));
     }
     50% {
-      filter: drop-shadow(0 0 26px hsl(var(--secondary) / 0.5));
+      filter: drop-shadow(0 0 26px rgb(255 255 255 / 0.55));
     }
   }
 

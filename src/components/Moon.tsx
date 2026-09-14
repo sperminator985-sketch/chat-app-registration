@@ -6,7 +6,7 @@ const Moon = ({ className }: { className?: string }) => (
       className="absolute -inset-[130%] rounded-full"
       style={{
         background:
-          'radial-gradient(circle, hsl(var(--secondary) / 0.3) 0%, hsl(var(--secondary) / 0.12) 32%, transparent 62%)',
+          'radial-gradient(circle, rgb(255 255 255 / 0.3) 0%, rgb(255 255 255 / 0.12) 32%, transparent 62%)',
       }}
     />
     <img
