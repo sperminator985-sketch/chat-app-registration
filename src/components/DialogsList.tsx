@@ -36,7 +36,7 @@ const DialogsList = () => {
             type="button"
             onClick={closeList}
             aria-label="Закрыть"
-            className="flex h-8 w-8 shrink-0 items-center justify-center border-2 border-foreground/30 text-muted-foreground transition-colors hover:border-primary hover:text-foreground"
+            className="flex h-8 w-8 shrink-0 items-center justify-center border-2 border-destructive text-destructive transition-colors hover:bg-destructive hover:text-destructive-foreground"
           >
             <Icon name="X" size={16} />
           </button>

@@ -444,7 +444,7 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
                 onClick={() => setWhoOpen(false)}
                 title="Закрыть"
                 aria-label="Закрыть"
-                className="absolute right-3 top-1/2 flex -translate-y-1/2 items-center justify-center border-2 border-foreground px-2.5 py-1 text-foreground transition-colors hover:border-secondary hover:text-secondary lg:hidden"
+                className="absolute right-3 top-1/2 flex -translate-y-1/2 items-center justify-center border-2 border-destructive px-2.5 py-1 text-destructive transition-colors hover:bg-destructive hover:text-destructive-foreground lg:hidden"
               >
                 <Icon name="X" size={16} />
               </button>
