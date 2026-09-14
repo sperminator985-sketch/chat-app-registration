@@ -209,8 +209,19 @@
     background-color: hsl(var(--card) / 0.88);
   }
 
-  .day .stars-layer {
+  .day .stars-layer,
+  .day .moon-layer {
     display: none;
+  }
+
+  @keyframes moon-glow {
+    0%,
+    100% {
+      filter: drop-shadow(0 0 14px hsl(var(--secondary) / 0.3));
+    }
+    50% {
+      filter: drop-shadow(0 0 26px hsl(var(--secondary) / 0.5));
+    }
   }
 
   h1,
