@@ -341,9 +341,12 @@ const Header = ({ onProfile }: HeaderProps) => {
           {user && tickerButton()}
           {user && soundButton()}
           <button
-            className="flex h-10 w-10 items-center justify-center border-2 border-foreground/40 text-foreground"
+            className={cn(
+              'flex h-10 w-10 items-center justify-center border-2',
+              open ? 'border-destructive text-destructive' : 'border-foreground/40 text-foreground',
+            )}
             onClick={() => setOpen((v) => !v)}
-            aria-label="Меню"
+            aria-label={open ? 'Закрыть меню' : 'Меню'}
           >
             <Icon name={open ? 'X' : 'Menu'} size={20} />
           </button>
