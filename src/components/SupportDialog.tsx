@@ -5,15 +5,30 @@ import { api } from '@/lib/api';
 import { toast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
-const TOPICS = ['Вопрос', 'Проблема в чате', 'Жалоба', 'Реклама', 'Другое'];
+const TOPICS = [
+  { id: 'Вопрос', icon: 'MessageCircleQuestion' },
+  { id: 'Проблема в чате', icon: 'TriangleAlert' },
+  { id: 'Жалоба', icon: 'Gavel' },
+  { id: 'Реклама', icon: 'Megaphone' },
+  { id: 'Другое', icon: 'Sparkles' },
+] as const;
 
 const SupportDialog = () => {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
-  const [topic, setTopic] = useState(TOPICS[0]);
+  const [topic, setTopic] = useState<string>(TOPICS[0].id);
   const [message, setMessage] = useState('');
   const [sending, setSending] = useState(false);
+  const [sent, setSent] = useState(false);
+
+  const reset = () => {
+    setName('');
+    setEmail('');
+    setTopic(TOPICS[0].id);
+    setMessage('');
+    setSent(false);
+  };
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,12 +54,7 @@ const SupportDialog = () => {
         topic,
         message: message.trim(),
       });
-      toast({ title: 'Письмо ушло', description: 'Ответим на указанную почту' });
-      setOpen(false);
-      setName('');
-      setEmail('');
-      setTopic(TOPICS[0]);
-      setMessage('');
+      setSent(true);
     } catch (err) {
       toast({
         title: 'Не отправилось',
@@ -57,108 +67,161 @@ const SupportDialog = () => {
   };
 
   const field =
-    'w-full border-2 border-foreground/35 bg-input px-3 py-2 text-[0.86rem] font-medium normal-case tracking-normal text-foreground outline-none placeholder:text-muted-foreground/70 focus:border-secondary';
+    'w-full border-2 border-foreground/35 bg-input px-3 py-2.5 text-[0.9rem] font-medium normal-case tracking-normal text-foreground outline-none transition-colors placeholder:text-muted-foreground/60 focus:border-secondary';
+
+  const step = (n: string, label: string) => (
+    <span className="mb-1.5 flex items-center gap-2">
+      <span className="flex h-5 w-5 shrink-0 items-center justify-center border-2 border-foreground/35 font-mono text-[0.6rem] font-bold text-secondary">
+        {n}
+      </span>
+      <span className="text-[0.7rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+        {label}
+      </span>
+    </span>
+  );
 
   return (
     <>
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="flex shrink-0 items-center gap-1.5 border-2 border-foreground/35 px-3 py-1.5 text-[0.72rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground transition-colors hover:border-secondary hover:text-secondary"
+        className="group flex shrink-0 items-center gap-2 border-2 border-foreground/35 px-3 py-1.5 text-[0.72rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground transition-all duration-150 hover:-translate-x-[2px] hover:-translate-y-[2px] hover:border-secondary hover:text-secondary"
       >
-        <Icon name="Mail" size={14} />
+        <Icon name="Mail" size={14} className="transition-transform group-hover:-rotate-12" />
         Письмо в поддержку
       </button>
 
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="top-[5vh] max-h-[90vh] max-w-[520px] translate-y-0 overflow-y-auto border-2 border-foreground/40 bg-card p-0 text-card-foreground">
-          <DialogTitle className="border-b-2 border-foreground/35 px-5 py-4 font-display text-sm font-extrabold uppercase tracking-[0.08em]">
-            Письмо в поддержку
-          </DialogTitle>
-
-          <form onSubmit={submit} className="space-y-3 px-5 pb-5">
-            <p className="font-mono text-[0.72rem] normal-case tracking-normal text-muted-foreground">
-              Напиши нам — ответим на указанный e-mail.
-            </p>
-
-            <label className="block space-y-1">
-              <span className="text-[0.68rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground">
-                Имя
-              </span>
-              <input
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                maxLength={60}
-                placeholder="Как тебя зовут"
-                className={field}
-              />
-            </label>
-
-            <label className="block space-y-1">
-              <span className="text-[0.68rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground">
-                Обратный e-mail
-              </span>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                maxLength={120}
-                placeholder="you@mail.ru"
-                className={field}
-              />
-            </label>
-
-            <div className="space-y-1">
-              <span className="text-[0.68rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground">
-                Тема
-              </span>
-              <div className="flex flex-wrap gap-1.5">
-                {TOPICS.map((t) => (
-                  <button
-                    key={t}
-                    type="button"
-                    onClick={() => setTopic(t)}
-                    className={cn(
-                      'border-2 px-2.5 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.06em] transition-colors',
-                      topic === t
-                        ? 'border-secondary bg-secondary text-secondary-foreground'
-                        : 'border-foreground/35 text-muted-foreground hover:border-secondary hover:text-secondary',
-                    )}
-                  >
-                    {t}
-                  </button>
-                ))}
-              </div>
+      <Dialog
+        open={open}
+        onOpenChange={(v) => {
+          setOpen(v);
+          if (!v) setTimeout(reset, 200);
+        }}
+      >
+        <DialogContent className="top-[4vh] max-h-[92vh] max-w-[540px] translate-y-0 overflow-y-auto border-2 border-foreground/40 bg-card p-0 text-card-foreground [&>button]:hidden">
+          <div className="flex items-stretch border-b-2 border-foreground/35 bg-secondary text-secondary-foreground">
+            <div className="flex flex-1 items-center gap-2.5 px-5 py-3.5">
+              <Icon name="Mail" size={18} className="shrink-0" />
+              <DialogTitle className="font-display text-[0.95rem] font-extrabold uppercase tracking-[0.06em]">
+                Письмо в поддержку
+              </DialogTitle>
             </div>
+            <button
+              onClick={() => setOpen(false)}
+              aria-label="Закрыть"
+              className="flex w-12 shrink-0 items-center justify-center border-l-2 border-secondary-foreground/30 transition-colors hover:bg-secondary-foreground/15"
+            >
+              <Icon name="X" size={18} />
+            </button>
+          </div>
 
-            <label className="block space-y-1">
-              <span className="text-[0.68rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground">
-                Сообщение
-              </span>
-              <textarea
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                maxLength={3000}
-                rows={5}
-                placeholder="Опиши вопрос подробно"
-                className={cn(field, 'resize-none')}
-              />
-            </label>
-
-            <div className="flex items-center gap-2 pt-1">
-              <button type="submit" disabled={sending} className="btn-brut !py-2 !text-xs disabled:opacity-60">
-                <Icon name="Send" size={14} />
-                {sending ? 'Отправляем…' : 'Отправить'}
-              </button>
+          {sent ? (
+            <div className="animate-fade-in space-y-4 px-6 py-10 text-center">
+              <div className="mx-auto flex h-14 w-14 items-center justify-center border-2 border-secondary text-secondary">
+                <Icon name="Check" size={28} />
+              </div>
+              <p className="font-display text-lg font-extrabold uppercase tracking-[0.06em]">
+                Письмо улетело
+              </p>
+              <p className="text-[0.92rem] leading-[1.45] text-muted-foreground">
+                Ответ придёт на <span className="text-secondary">{email.trim()}</span>. Обычно
+                отвечаем в течение дня.
+              </p>
               <button
                 type="button"
                 onClick={() => setOpen(false)}
-                className="border-2 border-foreground/35 px-3 py-2 text-[0.72rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground transition-colors hover:border-primary hover:text-primary"
+                className="btn-brut w-full justify-center"
               >
-                Отмена
+                Готово
               </button>
             </div>
-          </form>
+          ) : (
+            <form onSubmit={submit} className="space-y-4 px-5 py-5 sm:px-6">
+              <p className="border-l-2 border-secondary bg-muted/50 px-3 py-2 font-mono text-[0.74rem] normal-case leading-[1.5] tracking-normal text-muted-foreground">
+                Комендант общаги на связи. Опиши вопрос — ответим на указанную почту.
+              </p>
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                <label className="block">
+                  {step('01', 'Имя')}
+                  <input
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    maxLength={60}
+                    placeholder="Как тебя зовут"
+                    className={field}
+                  />
+                </label>
+
+                <label className="block">
+                  {step('02', 'Обратный e-mail')}
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    maxLength={120}
+                    placeholder="you@mail.ru"
+                    className={field}
+                  />
+                </label>
+              </div>
+
+              <div>
+                {step('03', 'Тема обращения')}
+                <div className="flex flex-wrap gap-1.5">
+                  {TOPICS.map((t) => (
+                    <button
+                      key={t.id}
+                      type="button"
+                      onClick={() => setTopic(t.id)}
+                      className={cn(
+                        'flex items-center gap-1.5 border-2 px-2.5 py-1.5 text-[0.68rem] font-semibold uppercase tracking-[0.06em] transition-colors',
+                        topic === t.id
+                          ? 'border-secondary bg-secondary text-secondary-foreground'
+                          : 'border-foreground/35 text-muted-foreground hover:border-secondary hover:text-secondary',
+                      )}
+                    >
+                      <Icon name={t.icon} size={13} />
+                      {t.id}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <label className="block">
+                {step('04', 'Сообщение')}
+                <textarea
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                  maxLength={3000}
+                  rows={5}
+                  placeholder="Опиши вопрос подробно — так мы быстрее поможем"
+                  className={cn(field, 'resize-none')}
+                />
+                <span className="mt-1 block text-right font-mono text-[0.66rem] normal-case tracking-normal text-muted-foreground/70">
+                  {message.length} / 3000
+                </span>
+              </label>
+
+              <div className="flex flex-col gap-2 border-t-2 border-foreground/20 pt-4 sm:flex-row sm:items-center">
+                <button
+                  type="submit"
+                  disabled={sending}
+                  className="btn-brut flex-1 justify-center !py-2.5 !text-xs disabled:opacity-60"
+                >
+                  <Icon name="Send" size={14} />
+                  {sending ? 'Отправляем…' : 'Отправить письмо'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setOpen(false)}
+                  className="btn-ghost-brut justify-center !py-2.5 !text-xs"
+                >
+                  Отмена
+                </button>
+              </div>
+            </form>
+          )}
         </DialogContent>
       </Dialog>
     </>
