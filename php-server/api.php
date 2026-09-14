@@ -367,6 +367,7 @@ function vaultPublicJwk(): ?string
     return $row ? (string) $row['public_jwk'] : null;
 }
 
+const SUPPORT_EMAIL = 'daumsam@mail.ru';
 const PRIVATE_INVITE_SEC = 60;
 const PRIVATE_ALIVE_SEC = 120;
 
@@ -1889,6 +1890,51 @@ try {
             q('UPDATE users SET typing_at = NULL, typing_room = NULL WHERE id = ?', [$user['id']]);
         }
         touch_user($user['id']);
+        out(200, ['ok' => true]);
+    }
+
+    // --- Письмо в поддержку ---
+    if ($method === 'POST' && $action === 'support_mail') {
+        $name = trim((string) ($input['name'] ?? ''));
+        $email = strtolower(trim((string) ($input['email'] ?? '')));
+        $topic = trim((string) ($input['topic'] ?? 'Вопрос'));
+        $text = trim((string) ($input['message'] ?? ''));
+
+        if (mb_strlen($name) < 2 || mb_strlen($name) > 60) {
+            out(400, ['error' => 'Укажи имя (2–60 символов)']);
+        }
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            out(400, ['error' => 'Укажи корректный e-mail для ответа']);
+        }
+        if (mb_strlen($text) < 10 || mb_strlen($text) > 3000) {
+            out(400, ['error' => 'Сообщение — от 10 до 3000 символов']);
+        }
+
+        $ip = $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0';
+        $flood = sys_get_temp_dir() . '/support_' . md5($ip) . '.lock';
+        if (file_exists($flood) && time() - filemtime($flood) < 120) {
+            out(429, ['error' => 'Слишком часто. Подожди пару минут']);
+        }
+        @touch($flood);
+
+        $host = $_SERVER['HTTP_HOST'] ?? 'chat-tom.ru';
+        $from = 'noreply@' . preg_replace('/^www\./', '', $host);
+        $esc = fn(string $v): string => htmlspecialchars($v, ENT_QUOTES, 'UTF-8');
+        $subject = '=?UTF-8?B?' . base64_encode('Поддержка ЧАТ-ОБЩАГА: ' . $topic) . '?=';
+        $body = '<p><b>Тема:</b> ' . $esc($topic) . '</p>'
+            . '<p><b>Имя:</b> ' . $esc($name) . '</p>'
+            . '<p><b>E-mail:</b> ' . $esc($email) . '</p>'
+            . '<p><b>Сообщение:</b></p><p>' . nl2br($esc($text)) . '</p>'
+            . '<hr><p style="color:#888;font-size:12px">IP: ' . $esc($ip) . '</p>';
+        $headers = "MIME-Version: 1.0\r\n"
+            . "Content-type: text/html; charset=utf-8\r\n"
+            . 'From: =?UTF-8?B?' . base64_encode('ЧАТ-ОБЩАГА') . "?= <{$from}>\r\n"
+            . 'Reply-To: ' . $email . "\r\n";
+
+        $sent = @mail(SUPPORT_EMAIL, $subject, $body, $headers);
+        if (!$sent) {
+            out(500, ['error' => 'Письмо не ушло. Напиши напрямую: ' . SUPPORT_EMAIL]);
+        }
         out(200, ['ok' => true]);
     }
 

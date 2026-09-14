@@ -344,6 +344,8 @@ export const api = {
       method: 'POST',
       body: { roomId, accept },
     }),
+  supportMail: (body: { name: string; email: string; topic: string; message: string }) =>
+    request<{ ok: boolean }>('support_mail', { method: 'POST', body }),
   privateState: () => request<PrivateState>('private_state'),
   privateTyping: () => request<{ ok: boolean }>('private_typing', { method: 'POST' }),
   privateSend: (body: { text?: string; cipher?: string }) =>

@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import SupportDialog from '@/components/SupportDialog';
 
 const Footer = () => (
   <footer className="border-t-2 border-foreground/35 bg-card">
@@ -22,6 +23,10 @@ const Footer = () => (
         >
           Пользовательское соглашение
         </Link>
+      </div>
+
+      <div className="order-1 shrink-0 sm:order-none">
+        <SupportDialog />
       </div>
 
       <div
