@@ -56,21 +56,23 @@ const Hero = () => {
           style={{ animationDelay: '.12s' }}
         />
 
-        <div
-          className="relative mt-3 flex animate-rise flex-col items-center gap-6 md:flex-row md:items-start md:justify-center md:gap-9"
-          style={{ animationDelay: '.18s' }}
-        >
-          <Stars className="-inset-x-5 -top-3 bottom-0 z-0 hidden w-auto md:-inset-x-10 md:block" />
-          <Moon className="left-[2%] top-1/2 z-[1] hidden h-[86px] w-[86px] -translate-y-1/2 md:block" />
-          <h1 className="relative z-10 text-center font-extrabold uppercase tracking-[-0.035em] md:text-left">
-            <span className="block whitespace-nowrap text-[clamp(1.6rem,4.6vw,4.4rem)] leading-[.92] tracking-[-0.03em] text-foreground text-stroke-plate">
-              ТОМСК НА СВЯЗИ
-            </span>
-          </h1>
+        <div className="relative">
+          <Stars className="-inset-x-5 bottom-[-38vh] top-0 z-0 hidden w-auto md:-inset-x-10 md:block" />
+          <div
+            className="relative z-10 mt-3 flex animate-rise flex-col items-center gap-6 md:flex-row md:items-start md:justify-center md:gap-9"
+            style={{ animationDelay: '.18s' }}
+          >
+            <Moon className="left-[2%] top-1/2 z-[1] hidden h-[86px] w-[86px] -translate-y-1/2 md:block" />
+            <h1 className="relative z-10 text-center font-extrabold uppercase tracking-[-0.035em] md:text-left">
+              <span className="block whitespace-nowrap text-[clamp(1.6rem,4.6vw,4.4rem)] leading-[.92] tracking-[-0.03em] text-foreground text-stroke-plate">
+                ТОМСК НА СВЯЗИ
+              </span>
+            </h1>
+          </div>
         </div>
       </div>
 
-      <div className="mt-5 flex flex-col items-center gap-2 rule-top pt-3 md:mt-10 text-center text-[0.78rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground sm:flex-row sm:items-center sm:justify-between sm:text-left">
+      <div className="relative z-10 mt-5 flex flex-col items-center gap-2 rule-top pt-3 md:mt-10 text-center text-[0.78rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground sm:flex-row sm:items-center sm:justify-between sm:text-left">
         <span className="hidden text-[1.02rem] font-normal normal-case leading-[1.45] tracking-normal text-foreground sm:inline md:text-[1.15rem]">
           Чат для студентов Томских вузов. Этажи, курилка, барахолка, «кто идёт за&nbsp;хлебом» — всё
           в&nbsp;одном чате.
