@@ -229,7 +229,7 @@ const Header = ({ onProfile }: HeaderProps) => {
       <div
         className={cn(
           'mx-auto flex max-w-[1400px] items-center justify-between gap-2 py-4 pl-2.5 pr-5 md:gap-4 md:px-10',
-          !user && 'rule-bottom',
+          user ? 'rule-bottom md:border-b-0' : 'rule-bottom',
         )}
       >
         {user ? (

@@ -106,7 +106,7 @@ const DirectMessages = () => {
 
   return (
     <Dialog open={Boolean(nick)} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="flex max-h-[calc(100svh-2rem)] w-[calc(100vw-1.5rem)] max-w-[560px] flex-col border-2 border-foreground/40 bg-background p-0 sm:h-svh sm:max-h-svh sm:w-screen sm:!max-w-none sm:border-x-0">
+      <DialogContent className="max-w-[560px] border-2 border-foreground/40 bg-background p-0 md:flex md:h-svh md:max-h-svh md:w-screen md:!max-w-none md:flex-col md:border-x-0">
         <div className="flex shrink-0 items-center gap-3 border-b-2 border-foreground/35 px-5 py-4">
           <Icon name="Mail" size={18} className="shrink-0 text-secondary" />
           <div>
@@ -167,7 +167,7 @@ const DirectMessages = () => {
           )}
         </div>
 
-        <div ref={feedRef} className="scrollbar-brut h-[240px] min-h-0 space-y-2 overflow-y-auto px-5 py-4 sm:h-auto sm:flex-1">
+        <div ref={feedRef} className="scrollbar-brut h-[240px] min-h-0 space-y-2 overflow-y-auto px-5 py-4 sm:h-[320px] md:h-auto md:flex-1">
           {!loaded && <p className="font-mono text-[0.85rem] text-muted-foreground">открываем переписку…</p>}
           {loaded && messages.length === 0 && (
             <p className="border-l-2 border-secondary bg-muted/60 px-3 py-2 font-mono text-[0.82rem] uppercase tracking-[0.08em] text-muted-foreground">
