@@ -128,28 +128,6 @@ const Stars = ({ className }: { className?: string }) => {
         />
       ))}
 
-      <svg
-        viewBox="0 0 100 100"
-        preserveAspectRatio="none"
-        className="absolute inset-0 h-full w-full"
-      >
-        <g
-          stroke="hsl(var(--secondary))"
-          strokeWidth="0.12"
-          opacity="0.2"
-          strokeLinecap="round"
-          vectorEffect="non-scaling-stroke"
-        >
-          {figures.map((f, fi) =>
-            f.lines.map(([a, b], li) => {
-              const A = figureStars[fi][a];
-              const B = figureStars[fi][b];
-              return <line key={`${fi}-${li}`} x1={A.left} y1={A.top} x2={B.left} y2={B.top} />;
-            }),
-          )}
-        </g>
-      </svg>
-
       {figureStars.map((fs, fi) =>
         fs.map((s, si) => (
           <span
