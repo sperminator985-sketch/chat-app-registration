@@ -109,7 +109,7 @@ const SupportDialog = () => {
             <button
               onClick={() => setOpen(false)}
               aria-label="Закрыть"
-              className="flex w-12 shrink-0 items-center justify-center border-l-2 border-destructive bg-destructive text-destructive-foreground transition-opacity hover:opacity-80"
+              className="flex w-12 shrink-0 items-center justify-center border-l-2 border-destructive text-destructive transition-opacity hover:opacity-80"
             >
               <Icon name="X" size={18} />
             </button>
