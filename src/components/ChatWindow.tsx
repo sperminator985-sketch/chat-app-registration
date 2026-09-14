@@ -444,9 +444,9 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
                 onClick={() => setWhoOpen(false)}
                 title="Закрыть"
                 aria-label="Закрыть"
-                className="absolute right-3 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center text-foreground transition-opacity hover:opacity-70 lg:hidden"
+                className="absolute right-3 top-1/2 flex -translate-y-1/2 items-center justify-center border-2 border-foreground px-2.5 py-1 text-foreground transition-colors hover:border-secondary hover:text-secondary lg:hidden"
               >
-                <Icon name="X" size={22} />
+                <Icon name="X" size={16} />
               </button>
             </div>
             <ul className="scrollbar-brut min-h-0 flex-1 divide-y divide-foreground/15 overflow-y-auto overscroll-contain">
