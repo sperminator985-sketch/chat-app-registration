@@ -202,8 +202,8 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
       style={{ height: 'calc(var(--app-h, 100svh) - var(--top-offset, 4.5rem))' }}
       className="flex min-h-0 flex-col overflow-hidden bg-card"
     >
-      <div className="mx-auto flex w-full min-h-0 flex-1 flex-col items-center justify-center px-3 py-4 md:px-4 md:py-4">
-        <div className="grid min-h-0 w-full flex-1 gap-[2px] overflow-hidden border-2 border-foreground/35 bg-foreground/35 md:m-auto md:aspect-[16/9] md:h-full md:max-h-full md:w-auto md:max-w-full md:flex-none lg:grid-cols-[1fr_280px]">
+      <div className="flex w-full min-h-0 flex-1 flex-col px-3 py-4 md:px-0 md:py-0">
+        <div className="grid min-h-0 w-full flex-1 gap-[2px] overflow-hidden border-2 border-foreground/35 bg-foreground/35 md:border-x-0 lg:grid-cols-[1fr_280px]">
           <div className="flex min-h-0 min-w-0 flex-col bg-background">
             <div className="relative flex flex-wrap items-center gap-x-3 gap-y-2 border-b-2 border-foreground/35 px-4 py-3 md:px-5 md:py-4 lg:h-[68px]">
               <div className="flex min-w-0 shrink items-center gap-1.5 md:max-w-[34%] md:gap-3">
