@@ -221,7 +221,7 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
       <div className="flex w-full min-h-0 flex-1 flex-col px-1 pb-1 pt-0 md:px-0 md:py-0">
         <div className="relative grid min-h-0 w-full flex-1 gap-[2px] overflow-hidden border-b-2 border-foreground/35 bg-foreground/35 md:border-2 lg:grid-cols-[1fr_280px]">
           <div className="flex min-h-0 min-w-0 flex-col bg-background">
-            <div className="relative flex flex-wrap items-center gap-x-3 gap-y-2 border-b-2 border-foreground/35 px-4 py-3 md:px-5 md:py-4 lg:h-[68px]">
+            <div className="relative flex flex-wrap items-center gap-x-3 gap-y-2 border-x-2 border-b-2 border-foreground/35 px-4 py-3 md:border-x-0 md:px-5 md:py-4 lg:h-[68px]">
               <div className="flex min-w-0 shrink items-center gap-1.5 md:max-w-[34%] md:gap-3">
                 <Icon name={room.icon} size={16} className="shrink-0 text-secondary md:h-5 md:w-5" />
                 <span className="truncate font-display text-[0.58rem] font-extrabold uppercase tracking-[-0.03em] sm:text-base md:text-lg">
