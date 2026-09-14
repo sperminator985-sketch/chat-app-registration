@@ -610,6 +610,21 @@ function hasTypingColumns(): bool
     return $ok;
 }
 
+function dropOldAvatar(?string $url): void
+{
+    if (!$url) {
+        return;
+    }
+    $name = basename(parse_url($url, PHP_URL_PATH) ?: '');
+    if ($name === '' || !preg_match('/^avatar-\d+-[a-f0-9]+\.(png|jpg|webp|gif)$/', $name)) {
+        return;
+    }
+    $path = __DIR__ . '/uploads/' . $name;
+    if (is_file($path)) {
+        @unlink($path);
+    }
+}
+
 function ensureProfileColumns(): bool
 {
     static $ok = null;
@@ -1373,6 +1388,7 @@ try {
 
         $avatarUrl = $user['avatarUrl'];
         if (param('removeImage')) {
+            dropOldAvatar($avatarUrl);
             $avatarUrl = null;
         } elseif ($image = param('image')) {
             [$head, $payload] = array_pad(explode(',', (string) $image, 2), 2, null);
@@ -1399,6 +1415,7 @@ try {
                 fail(500, 'Папка uploads недоступна для записи');
             }
             $avatarUrl = rtrim(cfg()['base_url'], '/') . '/uploads/' . $name;
+            dropOldAvatar($user['avatarUrl'] ?? null);
         }
 
         ensureProfileColumns();
