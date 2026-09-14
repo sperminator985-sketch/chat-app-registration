@@ -1,4 +1,5 @@
 import { cn } from '@/lib/utils';
+import moonImg from '@/assets/moon.png';
 
 const Moon = ({ className }: { className?: string }) => (
   <div aria-hidden className={cn('moon-layer pointer-events-none absolute', className)}>
@@ -10,7 +11,7 @@ const Moon = ({ className }: { className?: string }) => (
       }}
     />
     <img
-      src="/moon.png"
+      src={moonImg}
       alt=""
       className="relative h-full w-full select-none rounded-full object-contain"
       style={{ animation: 'moon-glow 7s ease-in-out infinite' }}
