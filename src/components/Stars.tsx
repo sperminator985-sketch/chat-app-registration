@@ -10,6 +10,7 @@ type Star = {
   dim: number;
   lit: number;
   big: boolean;
+  still: boolean;
 };
 
 const COUNT = 64;
@@ -20,17 +21,20 @@ const rnd = (seed: number) => {
 };
 
 const buildStars = (): Star[] =>
-  Array.from({ length: COUNT }, (_, i) => {
-    const big = rnd(i + 91) > 0.78;
+  Array.from({ length: COUNT * 2 }, (_, i) => {
+    const still = i >= COUNT;
+    const s = still ? i + 1013 : i;
+    const big = rnd(s + 91) > 0.78;
     return {
-      left: +(rnd(i + 1) * 100).toFixed(2),
-      top: +(rnd(i + 37) * 96).toFixed(2),
-      size: big ? 3 : rnd(i + 53) > 0.5 ? 2 : 1.5,
-      dur: +(2.6 + rnd(i + 17) * 4.8).toFixed(2),
-      delay: +(rnd(i + 71) * 6).toFixed(2),
-      dim: +(0.28 + rnd(i + 23) * 0.16).toFixed(2),
-      lit: +(0.82 + rnd(i + 11) * 0.18).toFixed(2),
+      left: +(rnd(s + 1) * 100).toFixed(2),
+      top: +(rnd(s + 37) * 96).toFixed(2),
+      size: big ? 3 : rnd(s + 53) > 0.5 ? 2 : 1.5,
+      dur: +(2.6 + rnd(s + 17) * 4.8).toFixed(2),
+      delay: +(rnd(s + 71) * 6).toFixed(2),
+      dim: +(0.28 + rnd(s + 23) * 0.16).toFixed(2),
+      lit: +(0.82 + rnd(s + 11) * 0.18).toFixed(2),
       big,
+      still,
     };
   });
 
@@ -102,14 +106,15 @@ const Stars = ({ className }: { className?: string }) => {
       {stars.map((s, i) => (
         <span
           key={i}
-          className="absolute animate-twinkle rounded-full bg-secondary"
+          className={cn('absolute rounded-full bg-secondary', !s.still && 'animate-twinkle')}
           style={
             {
               left: `${s.left}%`,
               top: `${s.top}%`,
               width: `${s.size}px`,
               height: `${s.size}px`,
-              animationDelay: `${s.delay}s`,
+              opacity: s.still ? s.lit : undefined,
+              animationDelay: s.still ? undefined : `${s.delay}s`,
               boxShadow: s.big
                 ? '0 0 8px hsl(var(--secondary)), 0 0 18px hsl(var(--secondary) / .65)'
                 : '0 0 6px hsl(var(--secondary) / .75)',
