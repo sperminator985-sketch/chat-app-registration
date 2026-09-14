@@ -106,7 +106,7 @@ const DirectMessages = () => {
 
   return (
     <Dialog open={Boolean(nick)} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="flex max-h-[calc(100svh-2rem)] w-[calc(100vw-1.5rem)] max-w-[560px] flex-col border-2 border-foreground/40 bg-background p-0 sm:h-[min(calc(100svh-4rem),calc((100vw-4rem)*9/16))] sm:w-auto sm:!max-w-[calc(100vw-4rem)] sm:[aspect-ratio:16/9]">
+      <DialogContent className="flex max-h-[calc(100svh-2rem)] w-[calc(100vw-1.5rem)] max-w-[560px] flex-col border-2 border-foreground/40 bg-background p-0 sm:h-[calc(100svh-1cm)] sm:w-[calc(100vw-1cm)] sm:!max-w-[calc(100vw-1cm)]">
         <div className="flex shrink-0 items-center gap-3 border-b-2 border-foreground/35 px-5 py-4">
           <Icon name="Mail" size={18} className="shrink-0 text-secondary" />
           <div>
