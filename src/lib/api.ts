@@ -19,6 +19,9 @@ export type ApiUser = {
   uni?: string | null;
   email?: string | null;
   emailVerified?: boolean;
+  firstName?: string | null;
+  lastName?: string | null;
+  birthDate?: string | null;
 };
 
 export type AdminUser = {
@@ -119,7 +122,7 @@ export type VaultMessage = {
 export type FeedResponse = {
   messages: ApiMessage[];
   typing?: { nick: string; color: NickColor }[];
-  online: { nick: string; color: NickColor; status: string; avatar?: number; avatarUrl?: string | null; isAdmin?: boolean; inPrivate?: boolean }[];
+  online: { nick: string; color: NickColor; status: string; avatar?: number; avatarUrl?: string | null; isAdmin?: boolean; inPrivate?: boolean; firstName?: string | null; lastName?: string | null; birthDate?: string | null; since?: string | null; uni?: string | null }[];
   onlineTotal?: number;
   adminOnline?: boolean;
   tickerPending?: number;
@@ -263,7 +266,7 @@ export const api = {
   typing: (room: string) => request<{ ok: boolean }>('typing', { method: 'POST', body: { room } }),
   send: (body: { text: string; room: string }) =>
     request<{ message: ApiMessage }>('send', { method: 'POST', body }),
-  profile: (body: { status: string; color: number; avatar: number; image?: string; removeImage?: boolean }) =>
+  profile: (body: { status: string; color: number; avatar: number; image?: string; removeImage?: boolean; firstName?: string; lastName?: string; birthDate?: string }) =>
     request<{ user: ApiUser }>('profile', { method: 'POST', body }),
   logout: () => request<{ ok: boolean }>('logout', { method: 'POST' }),
   ticker: () =>

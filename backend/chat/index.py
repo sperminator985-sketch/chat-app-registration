@@ -83,6 +83,9 @@ def user_row(row) -> dict:
         'avatarUrl': row[7] if len(row) > 7 else None,
         'isAdmin': bool(row[8]) if len(row) > 8 else False,
         'uni': row[9] if len(row) > 9 else None,
+        'firstName': row[12] if len(row) > 12 else None,
+        'lastName': row[13] if len(row) > 13 else None,
+        'birthDate': row[14].strftime('%Y-%m-%d') if len(row) > 14 and row[14] else None,
     }
 
 
@@ -95,7 +98,7 @@ def get_user_by_token(cur, token: str):
         return None
     cur.execute(
         f"SELECT u.id, u.nick, u.color, u.status, u.room, u.created_at, u.avatar, u.avatar_url, u.is_admin, u.uni, "
-        f"u.banned_at, u.ban_reason FROM {SCHEMA}.sessions s "
+        f"u.banned_at, u.ban_reason, u.first_name, u.last_name, u.birth_date FROM {SCHEMA}.sessions s "
         f"JOIN {SCHEMA}.users u ON u.id = s.user_id WHERE s.token = '{esc(token)}'"
     )
     row = cur.fetchone()
@@ -146,14 +149,17 @@ def handler(event: dict, context) -> dict:
                 for r in rows
             ]
             cur.execute(
-                f"SELECT nick, color, status, avatar, avatar_url, is_admin FROM {SCHEMA}.users "
+                f"SELECT nick, color, status, avatar, avatar_url, is_admin, first_name, last_name, birth_date, "
+                f"created_at, uni FROM {SCHEMA}.users "
                 f"WHERE last_seen > NOW() - INTERVAL '2 minutes' AND room = '{esc(room)}' "
                 f"AND is_admin IS NOT TRUE "
                 f"ORDER BY last_seen DESC LIMIT 40"
             )
             online = [
                 {'nick': r[0], 'color': r[1], 'status': r[2], 'avatar': r[3], 'avatarUrl': r[4],
-                 'isAdmin': bool(r[5])}
+                 'isAdmin': bool(r[5]), 'firstName': r[6], 'lastName': r[7],
+                 'birthDate': r[8].strftime('%Y-%m-%d') if r[8] else None,
+                 'since': tomsk(r[9]).strftime('%d.%m.%Y') if r[9] else None, 'uni': r[10]}
                 for r in cur.fetchall()
             ]
             cur.execute(
@@ -226,7 +232,8 @@ def handler(event: dict, context) -> dict:
             cur.execute(
                 f"INSERT INTO {SCHEMA}.users (nick, nick_lower, password_hash, color, status, room, avatar, is_admin, secret_question, secret_answer_hash, uni) "
                 f"VALUES ('{esc(nick)}', '{esc(nick.lower())}', '{esc(pwd)}', {color}, 'только заселился', '{esc(room)}', {avatar}, {owner}, {sql_str(question or None)}, {sql_str(ans_hash)}, {sql_str(uni)}) "
-                f"RETURNING id, nick, color, status, room, created_at, avatar, avatar_url, is_admin, uni"
+                f"RETURNING id, nick, color, status, room, created_at, avatar, avatar_url, is_admin, uni, "
+                f"NULL, NULL, first_name, last_name, birth_date"
             )
             user = user_row(cur.fetchone())
             new_token = secrets.token_hex(24)
@@ -237,14 +244,14 @@ def handler(event: dict, context) -> dict:
             nick = (body.get('nick') or '').strip()
             password = body.get('password') or ''
             cur.execute(
-                f"SELECT id, nick, color, status, room, created_at, avatar, avatar_url, is_admin, uni, password_hash, banned_at, ban_reason FROM {SCHEMA}.users "
+                f"SELECT id, nick, color, status, room, created_at, avatar, avatar_url, is_admin, uni, password_hash, banned_at, first_name, last_name, birth_date, ban_reason FROM {SCHEMA}.users "
                 f"WHERE nick_lower = '{esc(nick.lower())}'"
             )
             row = cur.fetchone()
             if not row or not check_password(password, row[10]):
                 return respond(401, {'error': 'Ник или пароль не подходят'})
             if row[11] is not None:
-                reason = row[12] or 'нарушение правил'
+                reason = row[15] or 'нарушение правил'
                 return respond(403, {'error': f'Ты выселен из общаги: {reason}'})
             if nick.lower() in OWNER_NICKS and not row[8]:
                 cur.execute(f"UPDATE {SCHEMA}.users SET is_admin = TRUE WHERE id = {row[0]}")
@@ -370,10 +377,17 @@ def handler(event: dict, context) -> dict:
                 s3.put_object(Bucket='files', Key=key, Body=raw, ContentType=f'image/{ext}')
                 avatar_url = f"https://cdn.poehali.dev/projects/{os.environ['AWS_ACCESS_KEY_ID']}/bucket/{key}"
 
+            first_name = (body.get('firstName') or '').strip()[:40] or None
+            last_name = (body.get('lastName') or '').strip()[:40] or None
+            birth_raw = (body.get('birthDate') or '').strip()
+            birth_date = birth_raw if re.fullmatch(r'\d{4}-\d{2}-\d{2}', birth_raw) else None
+
             cur.execute(
                 f"UPDATE {SCHEMA}.users SET status = '{esc(status)}', color = {color}, avatar = {avatar}, "
-                f"avatar_url = {sql_str(avatar_url)}, last_seen = NOW() "
-                f"WHERE id = {user['id']} RETURNING id, nick, color, status, room, created_at, avatar, avatar_url, is_admin, uni"
+                f"avatar_url = {sql_str(avatar_url)}, first_name = {sql_str(first_name)}, "
+                f"last_name = {sql_str(last_name)}, birth_date = {sql_str(birth_date)}::date, last_seen = NOW() "
+                f"WHERE id = {user['id']} RETURNING id, nick, color, status, room, created_at, avatar, avatar_url, "
+                f"is_admin, uni, NULL, NULL, first_name, last_name, birth_date"
             )
             return respond(200, {'user': user_row(cur.fetchone())})
 

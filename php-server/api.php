@@ -164,6 +164,9 @@ function shapeUser(array $r): array
         'uni' => $r['uni'] ?? null,
         'email' => $r['email'] ?? null,
         'emailVerified' => !empty($r['email_verified_at']),
+        'firstName' => $r['first_name'] ?? null,
+        'lastName' => $r['last_name'] ?? null,
+        'birthDate' => $r['birth_date'] ?? null,
     ];
 }
 
@@ -607,6 +610,36 @@ function hasTypingColumns(): bool
     return $ok;
 }
 
+function ensureProfileColumns(): bool
+{
+    static $ok = null;
+    if ($ok !== null) {
+        return $ok;
+    }
+    try {
+        $found = (int) scalar(
+            "SELECT COUNT(*) FROM information_schema.COLUMNS
+             WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users'
+               AND COLUMN_NAME IN ('first_name', 'last_name', 'birth_date')"
+        );
+        if ($found < 3) {
+            try {
+                db()->exec("ALTER TABLE users
+                    ADD COLUMN first_name VARCHAR(40) NULL,
+                    ADD COLUMN last_name VARCHAR(40) NULL,
+                    ADD COLUMN birth_date DATE NULL");
+                $found = 3;
+            } catch (Throwable $e) {
+                // нет прав на ALTER
+            }
+        }
+        $ok = $found >= 3;
+    } catch (Throwable $e) {
+        $ok = false;
+    }
+    return $ok;
+}
+
 function hasUniColumn(): bool
 {
     static $ok = null;
@@ -894,9 +927,14 @@ try {
                 'avatarUrl' => $r['avatar_url'],
                 'isAdmin' => (bool) $r['is_admin'],
                 'inPrivate' => in_array((int) $r['id'], $busyIds, true),
+                'firstName' => $r['first_name'] ?? null,
+                'lastName' => $r['last_name'] ?? null,
+                'birthDate' => $r['birth_date'] ?? null,
+                'since' => !empty($r['created_at']) ? gmdate('d.m.Y', tomskTs($r['created_at'])) : null,
+                'uni' => $r['uni'] ?? null,
             ];
         }, q(
-            'SELECT id, nick, color, status, avatar, avatar_url, is_admin FROM users
+            'SELECT ' . (ensureProfileColumns() ? '*' : 'id, nick, color, status, avatar, avatar_url, is_admin, created_at') . ' FROM users
              WHERE last_seen > UTC_TIMESTAMP() - INTERVAL ? SECOND AND room = ? AND is_admin = 0'
              . verifiedCond() . '
              ORDER BY last_seen DESC LIMIT 40',
@@ -1363,11 +1401,26 @@ try {
             $avatarUrl = rtrim(cfg()['base_url'], '/') . '/uploads/' . $name;
         }
 
-        q(
-            'UPDATE users SET status = ?, color = ?, avatar = ?, avatar_url = ?, last_seen = UTC_TIMESTAMP()
-             WHERE id = ?',
-            [$status, $color, $avatar, $avatarUrl, $user['id']]
-        );
+        ensureProfileColumns();
+        $firstName = mb_substr(trim((string) param('firstName', '')), 0, 40);
+        $lastName = mb_substr(trim((string) param('lastName', '')), 0, 40);
+        $birthRaw = trim((string) param('birthDate', ''));
+        $birthDate = preg_match('/^\d{4}-\d{2}-\d{2}$/', $birthRaw) ? $birthRaw : null;
+
+        if (ensureProfileColumns()) {
+            q(
+                'UPDATE users SET status = ?, color = ?, avatar = ?, avatar_url = ?,
+                 first_name = ?, last_name = ?, birth_date = ?, last_seen = UTC_TIMESTAMP()
+                 WHERE id = ?',
+                [$status, $color, $avatar, $avatarUrl, $firstName ?: null, $lastName ?: null, $birthDate, $user['id']]
+            );
+        } else {
+            q(
+                'UPDATE users SET status = ?, color = ?, avatar = ?, avatar_url = ?, last_seen = UTC_TIMESTAMP()
+                 WHERE id = ?',
+                [$status, $color, $avatar, $avatarUrl, $user['id']]
+            );
+        }
         out(200, ['user' => shapeUser(one('SELECT * FROM users WHERE id = ?', [$user['id']]))]);
     }
 

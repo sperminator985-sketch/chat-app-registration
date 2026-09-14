@@ -20,7 +20,7 @@ type AuthState = {
   verifyEmail: (code: string) => Promise<void>;
   cancelRegister: () => Promise<void>;
   signOut: () => void;
-  saveProfile: (body: { status: string; color: number; avatar: number; image?: string; removeImage?: boolean }) => Promise<void>;
+  saveProfile: (body: { status: string; color: number; avatar: number; image?: string; removeImage?: boolean; firstName?: string; lastName?: string; birthDate?: string }) => Promise<void>;
 };
 
 const AuthContext = createContext<AuthState | null>(null);
@@ -132,7 +132,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     };
   }, []);
 
-  const saveProfile = useCallback(async (body: { status: string; color: number; avatar: number; image?: string; removeImage?: boolean }) => {
+  const saveProfile = useCallback(async (body: { status: string; color: number; avatar: number; image?: string; removeImage?: boolean; firstName?: string; lastName?: string; birthDate?: string }) => {
     const res = await api.profile(body);
     setUser(res.user);
   }, []);

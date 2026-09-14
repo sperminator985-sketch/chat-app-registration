@@ -12,6 +12,7 @@ import { useCall } from '@/hooks/use-call';
 import { usePrivate } from '@/hooks/use-private';
 import EmojiPicker from '@/components/EmojiPicker';
 import { useTicker } from '@/hooks/use-ticker';
+import UserCardDialog, { CardPerson } from '@/components/UserCardDialog';
 
 type ChatWindowProps = {
   activeRoom: string;
@@ -26,6 +27,10 @@ type OnlineItem = {
   avatarUrl?: string | null;
   seenAgo?: number | null;
   inPrivate?: boolean;
+  firstName?: string | null;
+  lastName?: string | null;
+  birthDate?: string | null;
+  since?: string | null;
 };
 
 const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
@@ -37,6 +42,7 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
   const [sending, setSending] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const [whoOpen, setWhoOpen] = useState(false);
+  const [cardPerson, setCardPerson] = useState<CardPerson | null>(null);
 
   const [clearedAt, setClearedAt] = useState(0);
   const [clearedDm, setClearedDm] = useState(0);
@@ -441,8 +447,18 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
                 const waiting = pendingNick === u.nick;
                 return (
                   <li key={u.nick} className={cn('relative', isMe && 'bg-muted/60', busy && !isMe && 'opacity-45')}>
-                    {!isMe && (
-                      <div className="absolute right-2.5 top-1/2 z-10 flex -translate-y-1/2 items-center gap-1.5">
+                    <div className="absolute right-2.5 top-1/2 z-10 flex -translate-y-1/2 items-center gap-1.5">
+                      <button
+                        type="button"
+                        onClick={() => setCardPerson(u as CardPerson)}
+                        title={isMe ? 'Моя анкета' : `Анкета: ${u.nick}`}
+                        aria-label={isMe ? 'Моя анкета' : `Анкета: ${u.nick}`}
+                        className="flex h-7 w-7 items-center justify-center border-2 border-foreground/30 text-muted-foreground transition-colors hover:border-secondary hover:text-secondary"
+                      >
+                        <Icon name="Info" size={13} />
+                      </button>
+                      {!isMe && (
+                        <>
                         <button
                           type="button"
                           onClick={() => invitePeer(u.nick)}
@@ -469,8 +485,9 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
                         >
                           <Icon name="Video" size={13} />
                         </button>
-                      </div>
-                    )}
+                        </>
+                      )}
+                    </div>
                     <button
                       type="button"
                       onClick={() => {
@@ -478,7 +495,7 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
                         setPrivateTo(u.nick);
                       }}
                       disabled={isMe || busy}
-                      className="w-full py-3 pl-4 pr-[5.5rem] text-left transition-colors hover:bg-muted/50 disabled:cursor-default disabled:hover:bg-transparent"
+                      className="w-full py-3 pl-4 pr-[7.5rem] text-left transition-colors hover:bg-muted/50 disabled:cursor-default disabled:hover:bg-transparent"
                     >
                       <div className="flex items-center gap-2">
                         <span className={cn('font-normal', staffNickClass(u.nick, nickColorClass[u.color as 1]))}>{u.nick}</span>
@@ -504,6 +521,8 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
           </aside>
         </div>
       </div>
+
+      <UserCardDialog person={cardPerson} onOpenChange={(v) => !v && setCardPerson(null)} />
     </section>
   );
 };
