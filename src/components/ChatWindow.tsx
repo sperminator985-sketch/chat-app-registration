@@ -219,7 +219,7 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
       className="flex min-h-0 flex-col overflow-hidden bg-card"
     >
       <div className="flex w-full min-h-0 flex-1 flex-col px-3 py-4 md:px-0 md:py-0">
-        <div className="grid min-h-0 w-full flex-1 gap-[2px] overflow-hidden border-2 border-foreground/35 bg-foreground/35 lg:grid-cols-[1fr_280px]">
+        <div className="relative grid min-h-0 w-full flex-1 gap-[2px] overflow-hidden border-2 border-foreground/35 bg-foreground/35 lg:grid-cols-[1fr_280px]">
           <div className="flex min-h-0 min-w-0 flex-col bg-background">
             <div className="relative flex flex-wrap items-center gap-x-3 gap-y-2 border-b-2 border-foreground/35 px-4 py-3 md:px-5 md:py-4 lg:h-[68px]">
               <div className="flex min-w-0 shrink items-center gap-1.5 md:max-w-[34%] md:gap-3">
@@ -428,12 +428,26 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
             </form>
           </div>
 
-          <aside className={cn('min-h-0 flex-col overflow-hidden bg-background lg:flex', whoOpen ? 'flex' : 'hidden')}>
-            <div className="flex shrink-0 flex-col items-center justify-center border-b-2 border-foreground/35 px-4 py-4 text-center lg:h-[68px] lg:py-3">
+          <aside
+            className={cn(
+              'min-h-0 flex-col overflow-hidden bg-background lg:static lg:z-auto lg:flex',
+              whoOpen ? 'absolute inset-0 z-30 flex' : 'hidden',
+            )}
+          >
+            <div className="relative flex shrink-0 flex-col items-center justify-center border-b-2 border-foreground/35 px-4 py-4 text-center lg:h-[68px] lg:py-3">
               <h3 className="text-[0.8rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
                 Кто в чате · {onlineList.length}
               </h3>
               <p className="mt-1 text-[0.8rem] leading-tight text-muted-foreground/80">Кликни по нику — откроется личка</p>
+              <button
+                type="button"
+                onClick={() => setWhoOpen(false)}
+                title="Закрыть"
+                aria-label="Закрыть"
+                className="absolute right-3 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center text-foreground transition-opacity hover:opacity-70 lg:hidden"
+              >
+                <Icon name="X" size={22} />
+              </button>
             </div>
             <ul className="scrollbar-brut min-h-0 flex-1 divide-y divide-foreground/15 overflow-y-auto overscroll-contain">
               {onlineList.length === 0 && (
