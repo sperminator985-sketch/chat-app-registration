@@ -210,18 +210,8 @@
   }
 
   .day .stars-layer,
-  .day .moon-layer,
-  .day .cloud-layer {
+  .day .moon-layer {
     display: none;
-  }
-
-  @keyframes cloud-drift {
-    from {
-      transform: translateX(-30%);
-    }
-    to {
-      transform: translateX(130%);
-    }
   }
 
   @keyframes moon-glow {
