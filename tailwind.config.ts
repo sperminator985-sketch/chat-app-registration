@@ -141,6 +141,10 @@ export default {
 				caret: {
 					'0%, 49%': { opacity: '1' },
 					'50%, 100%': { opacity: '0' }
+				},
+				twinkle: {
+					'0%, 100%': { opacity: 'var(--star-dim, .18)', transform: 'scale(.72)' },
+					'50%': { opacity: 'var(--star-lit, .95)', transform: 'scale(1)' }
 				}
 			},
 			animation: {
@@ -154,7 +158,8 @@ export default {
 				'window-flicker': 'window-flicker 18s ease-in-out infinite',
 				marquee: 'marquee 45s linear infinite',
 				'marquee-solo': 'marquee-solo 30s linear infinite',
-				caret: 'caret 1s steps(1,end) infinite'
+				caret: 'caret 1s steps(1,end) infinite',
+				twinkle: 'twinkle var(--star-dur, 4s) ease-in-out infinite'
 			}
 		}
 	},
