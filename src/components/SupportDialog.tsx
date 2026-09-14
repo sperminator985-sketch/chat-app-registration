@@ -124,8 +124,8 @@ const SupportDialog = () => {
                 Письмо улетело
               </p>
               <p className="text-[0.92rem] leading-[1.45] text-muted-foreground">
-                Ответ придёт на <span className="text-secondary">{email.trim()}</span>. Обычно
-                отвечаем в течение дня.
+                На <span className="text-secondary">{email.trim()}</span> уже ушло подтверждение,
+                что заявка принята. Ответ придёт на этот же адрес.
               </p>
               <button
                 type="button"

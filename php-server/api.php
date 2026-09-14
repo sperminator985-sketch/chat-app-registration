@@ -1935,6 +1935,22 @@ try {
         if (!$sent) {
             out(500, ['error' => 'Письмо не ушло. Напиши напрямую: ' . SUPPORT_EMAIL]);
         }
+
+        $copySubject = '=?UTF-8?B?' . base64_encode('Заявка принята — ЧАТ-ОБЩАГА') . '?=';
+        $copyBody = '<p>Привет, ' . $esc($name) . '!</p>'
+            . '<p>Ваша заявка принята и будет рассмотрена в ближайшее время.</p>'
+            . '<p><b>Тема:</b> ' . $esc($topic) . '</p>'
+            . '<p><b>Ваше сообщение:</b></p>'
+            . '<p style="border-left:3px solid #ddd;padding-left:10px;color:#555">'
+            . nl2br($esc($text)) . '</p>'
+            . '<p>Ответ придёт на этот адрес. Отвечать на это письмо не нужно.</p>'
+            . '<hr><p style="color:#888;font-size:12px">ЧАТ-ОБЩАГА · ' . $esc(SUPPORT_EMAIL) . '</p>';
+        $copyHeaders = "MIME-Version: 1.0\r\n"
+            . "Content-type: text/html; charset=utf-8\r\n"
+            . 'From: =?UTF-8?B?' . base64_encode('ЧАТ-ОБЩАГА') . "?= <{$from}>\r\n"
+            . 'Reply-To: ' . SUPPORT_EMAIL . "\r\n";
+        @mail($email, $copySubject, $copyBody, $copyHeaders);
+
         out(200, ['ok' => true]);
     }
 
