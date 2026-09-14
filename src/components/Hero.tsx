@@ -1,4 +1,6 @@
 import Facade from '@/components/Facade';
+import Stars from '@/components/Stars';
+import Moon from '@/components/Moon';
 import { useLiveStats } from '@/hooks/use-live-stats';
 import { rooms } from '@/data/chat';
 
@@ -11,7 +13,9 @@ const Hero = () => {
   return (
     <section id="top" className="mx-auto w-full max-w-[1400px] overflow-x-clip px-5 pb-4 pt-3 md:px-10 md:py-8">
       <div className="flex flex-col justify-center gap-2.5">
-        <p className="-mt-1 mb-1 whitespace-nowrap text-center font-display text-[clamp(0.7rem,3.1vw,1.1rem)] font-semibold uppercase tracking-[0.34em] text-secondary md:hidden">
+        <div className="relative flex flex-col gap-2.5">
+        <Stars className="-inset-x-5 -top-3 bottom-0 hidden w-auto md:-inset-x-10 md:-top-8 md:block" />
+        <p className="relative z-10 -mt-1 mb-1 whitespace-nowrap text-center font-display text-[clamp(0.7rem,3.1vw,1.1rem)] font-semibold uppercase tracking-[0.34em] text-secondary md:hidden">
           the rebirth of a legend
         </p>
 
@@ -46,6 +50,7 @@ const Hero = () => {
         <p className="hidden -mt-1 md:-mt-[3.1cm] whitespace-nowrap text-center font-display text-[clamp(0.7rem,3.1vw,1.1rem)] font-semibold uppercase tracking-[0.34em] text-secondary md:block md:text-left md:text-[clamp(0.95rem,2.42vw,2.1rem)]">
           the rebirth of a legend
         </p>
+        </div>
 
         <div
           className="animate-rise h-[3px] w-full bg-foreground md:mt-[1.85cm]"
@@ -53,10 +58,11 @@ const Hero = () => {
         />
 
         <div
-          className="mt-3 flex animate-rise flex-col items-center gap-6 md:flex-row md:items-start md:justify-center md:gap-9"
+          className="relative mt-3 flex animate-rise flex-col items-center gap-6 md:flex-row md:items-start md:justify-center md:gap-9"
           style={{ animationDelay: '.18s' }}
         >
-          <h1 className="text-center font-extrabold uppercase tracking-[-0.035em] md:text-left">
+          <Moon className="left-[2%] top-1/2 z-0 hidden h-[86px] w-[86px] -translate-y-1/2 md:block" />
+          <h1 className="relative z-10 text-center font-extrabold uppercase tracking-[-0.035em] md:text-left">
             <span className="block whitespace-nowrap text-[clamp(1.6rem,4.6vw,4.4rem)] leading-[.92] tracking-[-0.03em] text-foreground text-stroke-plate">
               ТОМСК НА СВЯЗИ
             </span>
