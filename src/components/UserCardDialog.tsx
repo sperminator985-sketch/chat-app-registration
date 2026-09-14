@@ -57,10 +57,14 @@ const UserCardDialog = ({ person, onOpenChange }: Props) => {
   const [lastName, setLastName] = useState('');
   const [birthDate, setBirthDate] = useState('');
   const [preview, setPreview] = useState<string | null>(null);
-  const [imageData, setImageData] = useState<string | null>(null);
+  const [rawImage, setRawImage] = useState<string | null>(null);
   const [dropImage, setDropImage] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [offset, setOffset] = useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
+  const [natural, setNatural] = useState({ w: 0, h: 0 });
   const fileRef = useRef<HTMLInputElement>(null);
+  const dragRef = useRef<{ x: number; y: number; ox: number; oy: number } | null>(null);
 
   useEffect(() => {
     if (!person) return;
@@ -69,32 +73,83 @@ const UserCardDialog = ({ person, onOpenChange }: Props) => {
     setLastName(src.lastName ?? '');
     setBirthDate(src.birthDate ?? '');
     setPreview(src.avatarUrl ?? null);
-    setImageData(null);
+    setRawImage(null);
     setDropImage(false);
+    setOffset({ x: 0, y: 0 });
+    setZoom(1);
   }, [person, isMe, user]);
 
   if (!person) return null;
 
   const pickFile = (file?: File | null) => {
     if (!file) return;
-    if (file.size > 2 * 1024 * 1024) {
-      toast({ title: 'Файл тяжелее 2 МБ', description: 'Выбери фото поменьше', variant: 'destructive' });
+    if (file.size > 8 * 1024 * 1024) {
+      toast({ title: 'Файл тяжелее 8 МБ', description: 'Выбери фото поменьше', variant: 'destructive' });
       return;
     }
     const reader = new FileReader();
     reader.onload = () => {
       const data = String(reader.result);
-      setImageData(data);
-      setPreview(data);
-      setDropImage(false);
+      const img = new Image();
+      img.onload = () => {
+        setNatural({ w: img.naturalWidth, h: img.naturalHeight });
+        setRawImage(data);
+        setPreview(data);
+        setOffset({ x: 0, y: 0 });
+        setZoom(1);
+        setDropImage(false);
+      };
+      img.src = data;
     };
     reader.readAsDataURL(file);
+  };
+
+  const startDrag = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!rawImage) return;
+    e.currentTarget.setPointerCapture(e.pointerId);
+    dragRef.current = { x: e.clientX, y: e.clientY, ox: offset.x, oy: offset.y };
+  };
+
+  const onDrag = (e: React.PointerEvent<HTMLDivElement>) => {
+    const d = dragRef.current;
+    if (!d) return;
+    setOffset({ x: d.ox + (e.clientX - d.x), y: d.oy + (e.clientY - d.y) });
+  };
+
+  const endDrag = () => {
+    dragRef.current = null;
+  };
+
+  const cropToSquare = async (): Promise<string | null> => {
+    if (!rawImage || !natural.w) return null;
+    const BOX = 160;
+    const OUT = 400;
+    const base = Math.max(BOX / natural.w, BOX / natural.h) * zoom;
+    const drawW = natural.w * base;
+    const drawH = natural.h * base;
+    const left = (BOX - drawW) / 2 + offset.x;
+    const top = (BOX - drawH) / 2 + offset.y;
+
+    const canvas = document.createElement('canvas');
+    canvas.width = OUT;
+    canvas.height = OUT;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return rawImage;
+    const k = OUT / BOX;
+    const img = new Image();
+    await new Promise((res) => {
+      img.onload = res;
+      img.src = rawImage;
+    });
+    ctx.drawImage(img, left * k, top * k, drawW * k, drawH * k);
+    return canvas.toDataURL('image/jpeg', 0.9);
   };
 
   const save = async () => {
     if (busy || !user) return;
     setBusy(true);
     try {
+      const imageData = rawImage ? await cropToSquare() : null;
       await saveProfile({
         status: user.status,
         color: user.color,
@@ -121,18 +176,47 @@ const UserCardDialog = ({ person, onOpenChange }: Props) => {
   const shown = isMe && user ? user : person;
   const fullName = [shown.firstName, shown.lastName].filter(Boolean).join(' ');
   const age = ageFrom(shown.birthDate);
+  const fit = natural.w && natural.h ? Math.max(160 / natural.w, 160 / natural.h) * zoom : 1;
+  const drawW = natural.w * fit;
+  const drawH = natural.h * fit;
 
   return (
     <Dialog open onOpenChange={onOpenChange}>
       <DialogContent className="max-w-[420px] border-2 border-foreground/40 bg-card p-0 text-card-foreground">
-        <div className="flex items-center gap-4 border-b-2 border-foreground/35 px-5 py-4">
+        <div className="flex flex-col items-center gap-3 border-b-2 border-foreground/35 px-5 py-5">
           <div className="relative shrink-0">
-            <div className="h-16 w-16 overflow-hidden rounded-full border-2 border-foreground/35 bg-muted">
+            <div
+              onPointerDown={startDrag}
+              onPointerMove={onDrag}
+              onPointerUp={endDrag}
+              onPointerCancel={endDrag}
+              className={cn(
+                'relative h-40 w-40 touch-none overflow-hidden rounded-full border-2 border-foreground/35 bg-muted',
+                rawImage && 'cursor-grab active:cursor-grabbing',
+              )}
+            >
               {preview ? (
-                <img src={preview} alt={shown.nick} className="h-full w-full object-cover" />
+                rawImage ? (
+                  <img
+                    src={preview}
+                    alt={shown.nick}
+                    draggable={false}
+                    style={{
+                      position: 'absolute',
+                      width: drawW,
+                      height: drawH,
+                      left: (160 - drawW) / 2 + offset.x,
+                      top: (160 - drawH) / 2 + offset.y,
+                      maxWidth: 'none',
+                    }}
+                    className="select-none"
+                  />
+                ) : (
+                  <img src={preview} alt={shown.nick} className="h-full w-full object-cover" />
+                )
               ) : (
                 <div className="flex h-full w-full items-center justify-center text-muted-foreground">
-                  <Icon name="User" size={28} />
+                  <Icon name="User" size={56} />
                 </div>
               )}
             </div>
@@ -142,9 +226,9 @@ const UserCardDialog = ({ person, onOpenChange }: Props) => {
                 onClick={() => fileRef.current?.click()}
                 title="Загрузить фото"
                 aria-label="Загрузить фото"
-                className="absolute -bottom-1 -right-1 flex h-7 w-7 items-center justify-center rounded-full border-2 border-foreground/40 bg-background text-foreground transition-colors hover:border-secondary hover:text-secondary"
+                className="absolute bottom-1 right-1 flex h-10 w-10 items-center justify-center rounded-full border-2 border-foreground/40 bg-background text-foreground transition-colors hover:border-secondary hover:text-secondary"
               >
-                <Icon name="Camera" size={13} />
+                <Icon name="Camera" size={18} />
               </button>
             )}
             <input
@@ -155,7 +239,25 @@ const UserCardDialog = ({ person, onOpenChange }: Props) => {
               onChange={(e) => pickFile(e.target.files?.[0])}
             />
           </div>
-          <div className="min-w-0">
+
+          {isMe && rawImage && (
+            <div className="w-full max-w-[240px] space-y-1.5">
+              <p className="text-center font-mono text-[0.68rem] uppercase tracking-[0.08em] text-muted-foreground">
+                потяни фото мышкой · ползунок — размер
+              </p>
+              <input
+                type="range"
+                min={1}
+                max={3}
+                step={0.01}
+                value={zoom}
+                onChange={(e) => setZoom(Number(e.target.value))}
+                className="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-foreground/25 accent-secondary"
+              />
+            </div>
+          )}
+
+          <div className="min-w-0 text-center">
             <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
               Анкета жильца
             </p>
@@ -167,7 +269,7 @@ const UserCardDialog = ({ person, onOpenChange }: Props) => {
                 type="button"
                 onClick={() => {
                   setPreview(null);
-                  setImageData(null);
+                  setRawImage(null);
                   setDropImage(true);
                 }}
                 className="mt-1 font-mono text-[0.68rem] uppercase tracking-[0.08em] text-muted-foreground underline-offset-2 hover:text-destructive hover:underline"
