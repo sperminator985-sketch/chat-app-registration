@@ -90,8 +90,8 @@ const PrivateRoom = () => {
 
   return (
     <div className="fixed inset-0 z-[60] flex flex-col bg-card">
-      <div className="flex w-full min-h-0 flex-1 flex-col px-3 py-4 md:px-[0.5cm] md:py-0">
-        <div className="flex min-h-0 w-full flex-1 flex-col overflow-hidden border-2 border-sky-400 bg-background">
+      <div className="flex w-full min-h-0 flex-1 flex-col px-3 py-4 md:px-0 md:py-0">
+        <div className="flex min-h-0 w-full flex-1 flex-col overflow-hidden border-2 border-sky-400 bg-background md:border-t-0">
           <div className="flex flex-wrap items-center gap-x-3 gap-y-2 border-b-2 border-sky-400 bg-sky-400/10 px-4 py-3 md:px-5 md:py-4">
             <Icon name="Lock" size={16} className="shrink-0 text-sky-300 md:h-5 md:w-5" />
             <span className="truncate font-display text-[0.7rem] font-extrabold uppercase tracking-[-0.03em] sm:text-base md:text-lg">

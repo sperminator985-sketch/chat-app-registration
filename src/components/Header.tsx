@@ -226,7 +226,12 @@ const Header = ({ onProfile }: HeaderProps) => {
         scrolled ? 'bg-background' : 'bg-transparent',
       )}
     >
-      <div className="mx-auto flex max-w-[1400px] items-center justify-between gap-2 rule-bottom py-4 pl-2.5 pr-5 md:gap-4 md:px-10">
+      <div
+        className={cn(
+          'mx-auto flex max-w-[1400px] items-center justify-between gap-2 py-4 pl-2.5 pr-5 md:gap-4 md:px-10',
+          !user && 'rule-bottom',
+        )}
+      >
         {user ? (
           <>
             <Logo size="xs" iconAsLetter className="md:hidden" />
