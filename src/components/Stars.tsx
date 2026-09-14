@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { cn } from '@/lib/utils';
+import { figures } from '@/components/constellations';
 
 type Star = {
   left: number;
@@ -28,11 +29,19 @@ const buildStars = (): Star[] =>
       size: big ? 3 : rnd(i + 53) > 0.5 ? 2 : 1.5,
       dur: +(2.6 + rnd(i + 17) * 4.8).toFixed(2),
       delay: +(rnd(i + 71) * 6).toFixed(2),
-      dim: +(0.1 + rnd(i + 23) * 0.16).toFixed(2),
-      lit: +(0.65 + rnd(i + 11) * 0.35).toFixed(2),
+      dim: +(0.06 + rnd(i + 23) * 0.12).toFixed(2),
+      lit: +(0.4 + rnd(i + 11) * 0.28).toFixed(2),
       big,
     };
   });
+
+const figureStars = figures.map((f) =>
+  f.stars.map((s) => ({
+    left: +(f.box.x + s.x * f.box.w).toFixed(2),
+    top: +(f.box.y + s.y * f.box.h).toFixed(2),
+    m: s.m,
+  })),
+);
 
 type Shot = {
   id: number;
@@ -118,6 +127,50 @@ const Stars = ({ className }: { className?: string }) => {
           }
         />
       ))}
+
+      <svg
+        viewBox="0 0 100 100"
+        preserveAspectRatio="none"
+        className="absolute inset-0 h-full w-full"
+      >
+        <g
+          stroke="hsl(var(--secondary))"
+          strokeWidth="0.12"
+          opacity="0.2"
+          strokeLinecap="round"
+          vectorEffect="non-scaling-stroke"
+        >
+          {figures.map((f, fi) =>
+            f.lines.map(([a, b], li) => {
+              const A = figureStars[fi][a];
+              const B = figureStars[fi][b];
+              return <line key={`${fi}-${li}`} x1={A.left} y1={A.top} x2={B.left} y2={B.top} />;
+            }),
+          )}
+        </g>
+      </svg>
+
+      {figureStars.map((fs, fi) =>
+        fs.map((s, si) => (
+          <span
+            key={`f${fi}-${si}`}
+            className="absolute animate-twinkle rounded-full bg-secondary"
+            style={
+              {
+                left: `${s.left}%`,
+                top: `${s.top}%`,
+                width: `${(2.2 * s.m).toFixed(2)}px`,
+                height: `${(2.2 * s.m).toFixed(2)}px`,
+                animationDelay: `${((fi * 7 + si * 3) % 11) * 0.6}s`,
+                boxShadow: `0 0 ${(5 * s.m).toFixed(1)}px hsl(var(--secondary) / .8)`,
+                '--star-dur': `${(4.4 + ((fi + si) % 5) * 0.9).toFixed(2)}s`,
+                '--star-dim': 0.45,
+                '--star-lit': 1,
+              } as React.CSSProperties
+            }
+          />
+        )),
+      )}
 
       {shots.map((s) => (
         <span
