@@ -8,7 +8,7 @@ export type Figure = {
 export const figures: Figure[] = [
   {
     name: 'Большая Медведица',
-    box: { x: 30, y: 4, w: 34, h: 30 },
+    box: { x: 46, y: 12, w: 26, h: 22 },
     stars: [
       { x: 0.012, y: 0.0, m: 1.2 },
       { x: 0.0, y: 0.432, m: 0.95 },
@@ -89,9 +89,9 @@ export const figures: Figure[] = [
   },
   {
     name: 'Малая Медведица',
-    box: { x: 76, y: 8, w: 15, h: 14 },
+    box: { x: 46.6, y: 2.5, w: 14, h: 11 },
     stars: [
-      { x: 0.0, y: 0.0, m: 1 },
+      { x: 0.0, y: 0.0, m: 1.75 },
       { x: 0.26, y: 0.26, m: 0.7 },
       { x: 0.5, y: 0.5, m: 0.7 },
       { x: 0.72, y: 0.62, m: 0.75 },

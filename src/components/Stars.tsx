@@ -36,10 +36,11 @@ const buildStars = (): Star[] =>
   });
 
 const figureStars = figures.map((f) =>
-  f.stars.map((s) => ({
+  f.stars.map((s, si) => ({
     left: +(f.box.x + s.x * f.box.w).toFixed(2),
     top: +(f.box.y + s.y * f.box.h).toFixed(2),
     m: s.m,
+    polar: f.name === 'Малая Медведица' && si === 0,
   })),
 );
 
@@ -129,20 +130,42 @@ const Stars = ({ className }: { className?: string }) => {
       ))}
 
       {figureStars.map((fs, fi) =>
-        fs.map((s, si) => (
-          <span
-            key={`f${fi}-${si}`}
-            className="absolute rounded-full bg-secondary"
-            style={{
-              left: `${s.left}%`,
-              top: `${s.top}%`,
-              width: `${(2.2 * s.m).toFixed(2)}px`,
-              height: `${(2.2 * s.m).toFixed(2)}px`,
-              opacity: 1,
-              boxShadow: `0 0 ${(5 * s.m).toFixed(1)}px hsl(var(--secondary) / .8)`,
-            }}
-          />
-        )),
+        fs.map((s, si) =>
+          s.polar ? (
+            <span key={`f${fi}-${si}`} className="absolute" style={{ left: `${s.left}%`, top: `${s.top}%` }}>
+              <span
+                className="absolute -translate-x-1/2 -translate-y-1/2 rounded-full bg-secondary"
+                style={{
+                  width: `${(2.2 * s.m).toFixed(2)}px`,
+                  height: `${(2.2 * s.m).toFixed(2)}px`,
+                  boxShadow:
+                    '0 0 7px hsl(var(--secondary)), 0 0 16px hsl(var(--secondary) / .85), 0 0 30px hsl(var(--secondary) / .5)',
+                }}
+              />
+              <span
+                className="absolute -translate-x-1/2 -translate-y-1/2 bg-secondary"
+                style={{ width: '22px', height: '1.2px', opacity: 0.5, borderRadius: '999px' }}
+              />
+              <span
+                className="absolute -translate-x-1/2 -translate-y-1/2 bg-secondary"
+                style={{ width: '1.2px', height: '22px', opacity: 0.5, borderRadius: '999px' }}
+              />
+            </span>
+          ) : (
+            <span
+              key={`f${fi}-${si}`}
+              className="absolute rounded-full bg-secondary"
+              style={{
+                left: `${s.left}%`,
+                top: `${s.top}%`,
+                width: `${(2.2 * s.m).toFixed(2)}px`,
+                height: `${(2.2 * s.m).toFixed(2)}px`,
+                opacity: 1,
+                boxShadow: `0 0 ${(5 * s.m).toFixed(1)}px hsl(var(--secondary) / .8)`,
+              }}
+            />
+          ),
+        ),
       )}
 
       {shots.map((s) => (
