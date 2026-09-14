@@ -498,7 +498,14 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
                       className="w-full py-3 pl-4 pr-[7.5rem] text-left transition-colors hover:bg-muted/50 disabled:cursor-default disabled:hover:bg-transparent"
                     >
                       <div className="flex items-center gap-2">
-                        <span className={cn('font-normal', staffNickClass(u.nick, nickColorClass[u.color as 1]))}>{u.nick}</span>
+                        <span className="flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded-full border border-foreground/25 bg-muted">
+                          {u.avatarUrl ? (
+                            <img src={u.avatarUrl} alt="" className="h-full w-full object-cover" />
+                          ) : (
+                            <Icon name="User" size={14} className="text-muted-foreground" />
+                          )}
+                        </span>
+                        <span className={cn('truncate font-normal', staffNickClass(u.nick, nickColorClass[u.color as 1]))}>{u.nick}</span>
                         {isMe ? (
                           <span className="ml-auto font-mono text-[0.7rem] uppercase text-secondary">это ты</span>
                         ) : busy ? (
