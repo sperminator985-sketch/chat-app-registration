@@ -126,6 +126,10 @@ const SupportDialog = () => {
               <p className="text-[0.92rem] leading-[1.45] text-muted-foreground">
                 На <span className="text-secondary">{email.trim()}</span> уже ушло подтверждение,
                 что заявка принята. Ответ придёт на этот же адрес.
+                <br />
+                <span className="mt-2 inline-block text-secondary">
+                  Не нашли письмо — загляните в папку «Спам».
+                </span>
               </p>
               <button
                 type="button"
