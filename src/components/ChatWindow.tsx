@@ -219,7 +219,7 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
       className="flex min-h-0 flex-col overflow-hidden bg-card"
     >
       <div className="flex w-full min-h-0 flex-1 flex-col px-1 pb-1 pt-0 md:px-0 md:py-0">
-        <div className="relative grid min-h-0 w-full flex-1 gap-[2px] overflow-hidden border-b-2 border-foreground/35 bg-foreground/35 lg:grid-cols-[1fr_280px]">
+        <div className="relative grid min-h-0 w-full flex-1 gap-[2px] overflow-hidden border-b-2 border-foreground/35 bg-foreground/35 md:border-2 md:border-t-0 lg:grid-cols-[1fr_280px]">
           <div className="flex min-h-0 min-w-0 flex-col bg-background">
             <div className="relative flex flex-wrap items-center gap-x-3 gap-y-2 border-b-2 border-foreground/35 px-4 py-3 md:px-5 md:py-4 lg:h-[68px]">
               <div className="flex min-w-0 shrink items-center gap-1.5 md:max-w-[34%] md:gap-3">
@@ -300,7 +300,7 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
 
             <div
               ref={feedRef}
-              className="scrollbar-brut min-h-0 flex-1 space-y-1 overflow-y-auto overscroll-contain border-x-2 border-foreground/35 px-4 py-3 sm:px-5 lg:border-l-2 lg:border-r-0"
+              className="scrollbar-brut min-h-0 flex-1 space-y-1 overflow-y-auto overscroll-contain border-x-2 border-foreground/35 px-4 py-3 sm:px-5 md:border-x-0"
             >
               {!loaded && (
                 <p className="font-mono text-[0.85rem] text-muted-foreground">соединяемся с этажом…</p>
@@ -389,7 +389,7 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
               </div>
             )}
 
-            <form onSubmit={send} className="flex flex-row items-center gap-2 border-x-2 border-t-2 border-foreground/35 px-3 py-2 sm:gap-2.5 sm:px-5 sm:py-2.5 lg:border-l-2 lg:border-r-0">
+            <form onSubmit={send} className="flex flex-row items-center gap-2 border-x-2 border-t-2 border-foreground/35 px-3 py-2 sm:gap-2.5 sm:px-5 sm:py-2.5 md:border-x-0">
               <div className="flex flex-1 items-center gap-2 border-2 border-foreground/35 bg-input px-3 py-1.5 focus-within:border-secondary">
                 <input
                   ref={inputRef}
@@ -449,7 +449,7 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
                 <Icon name="X" size={22} />
               </button>
             </div>
-            <ul className="scrollbar-brut min-h-0 flex-1 divide-y divide-foreground/15 overflow-y-auto overscroll-contain lg:border-r-2 lg:border-foreground/35">
+            <ul className="scrollbar-brut min-h-0 flex-1 divide-y divide-foreground/15 overflow-y-auto overscroll-contain">
               {onlineList.length === 0 && (
                 <li className="px-4 py-4 text-center text-[0.8rem] text-muted-foreground/80">
                   Пока никого — ты первый
