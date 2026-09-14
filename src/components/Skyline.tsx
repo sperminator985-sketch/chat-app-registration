@@ -56,45 +56,53 @@ const Skyline = ({ className }: { className?: string }) => (
       const gapX = b.w / (cols * 2 + 1);
       const gapY = body / (rows * 2 + 1);
 
+      const shapes = (
+        <>
+          <rect x={b.x} y={bodyTop} width={b.w} height={body} />
+
+          {b.kind === 'roof' && (
+            <>
+              <polygon points={`${b.x - 8},${bodyTop} ${cx},${top} ${b.x + b.w + 8},${bodyTop}`} />
+              <rect x={b.x + b.w * 0.68} y={top - 14} width={11} height={22} />
+            </>
+          )}
+
+          {b.kind === 'church' && (
+            <>
+              <polygon
+                points={`${b.x - 6},${bodyTop} ${cx},${bodyTop - 20} ${b.x + b.w + 6},${bodyTop}`}
+              />
+              <rect x={cx - 16} y={bodyTop - 52} width={32} height={34} />
+              <path d={dome(cx, bodyTop - 50, 17, 30)} />
+              <rect x={cx - 2} y={bodyTop - 96} width={4} height={18} />
+              <rect x={cx - 9} y={bodyTop - 90} width={18} height={4} />
+              <rect x={b.x + 6} y={bodyTop - 26} width={22} height={28} />
+              <path d={dome(b.x + 17, bodyTop - 24, 11, 19)} />
+              <rect x={b.x + b.w - 28} y={bodyTop - 26} width={22} height={28} />
+              <path d={dome(b.x + b.w - 17, bodyTop - 24, 11, 19)} />
+            </>
+          )}
+
+          {b.kind === 'spire' && (
+            <>
+              <rect x={cx - b.w * 0.3} y={top - 26} width={b.w * 0.6} height={30} />
+              <polygon
+                points={`${cx - b.w * 0.3},${top - 24} ${cx},${top - 62} ${cx + b.w * 0.3},${top - 24}`}
+              />
+              <rect x={cx - 2} y={top - 88} width={4} height={30} />
+            </>
+          )}
+        </>
+      );
+
       return (
         <g key={bi}>
+          <g fill="hsl(var(--background))" fillOpacity="1" className="[.day_&]:hidden">
+            {shapes}
+          </g>
+
           <g fill="currentColor" fillOpacity="0.22">
-            <rect x={b.x} y={bodyTop} width={b.w} height={body} />
-
-            {b.kind === 'roof' && (
-              <>
-                <polygon
-                  points={`${b.x - 8},${bodyTop} ${cx},${top} ${b.x + b.w + 8},${bodyTop}`}
-                />
-                <rect x={b.x + b.w * 0.68} y={top - 14} width={11} height={22} />
-              </>
-            )}
-
-            {b.kind === 'church' && (
-              <>
-                <polygon
-                  points={`${b.x - 6},${bodyTop} ${cx},${bodyTop - 20} ${b.x + b.w + 6},${bodyTop}`}
-                />
-                <rect x={cx - 16} y={bodyTop - 52} width={32} height={34} />
-                <path d={dome(cx, bodyTop - 50, 17, 30)} />
-                <rect x={cx - 2} y={bodyTop - 96} width={4} height={18} />
-                <rect x={cx - 9} y={bodyTop - 90} width={18} height={4} />
-                <rect x={b.x + 6} y={bodyTop - 26} width={22} height={28} />
-                <path d={dome(b.x + 17, bodyTop - 24, 11, 19)} />
-                <rect x={b.x + b.w - 28} y={bodyTop - 26} width={22} height={28} />
-                <path d={dome(b.x + b.w - 17, bodyTop - 24, 11, 19)} />
-              </>
-            )}
-
-            {b.kind === 'spire' && (
-              <>
-                <rect x={cx - b.w * 0.3} y={top - 26} width={b.w * 0.6} height={30} />
-                <polygon
-                  points={`${cx - b.w * 0.3},${top - 24} ${cx},${top - 62} ${cx + b.w * 0.3},${top - 24}`}
-                />
-                <rect x={cx - 2} y={top - 88} width={4} height={30} />
-              </>
-            )}
+            {shapes}
           </g>
 
           <g
