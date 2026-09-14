@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { cn } from '@/lib/utils';
 
 type Star = {
@@ -34,8 +34,57 @@ const buildStars = (): Star[] =>
     };
   });
 
+type Shot = {
+  id: number;
+  left: number;
+  top: number;
+  len: number;
+  dist: number;
+  dur: number;
+  angle: number;
+};
+
+const makeShot = (id: number): Shot => {
+  const angle = 26 + Math.random() * 20;
+  const dist = 320 + Math.random() * 380;
+  return {
+    id,
+    left: Math.random() * 55,
+    top: Math.random() * 38,
+    len: 70 + Math.random() * 60,
+    dist: +dist.toFixed(1),
+    dur: +(0.9 + Math.random() * 0.7).toFixed(2),
+    angle: +angle.toFixed(2),
+  };
+};
+
 const Stars = ({ className }: { className?: string }) => {
   const stars = useMemo(buildStars, []);
+  const [shots, setShots] = useState<Shot[]>([]);
+
+  useEffect(() => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    let timer: ReturnType<typeof setTimeout>;
+    let seq = 0;
+
+    const schedule = () => {
+      timer = setTimeout(
+        () => {
+          const shot = makeShot(++seq);
+          setShots((prev) => [...prev, shot]);
+          setTimeout(
+            () => setShots((prev) => prev.filter((s) => s.id !== shot.id)),
+            shot.dur * 1000 + 200,
+          );
+          schedule();
+        },
+        7000 + Math.random() * 13000,
+      );
+    };
+
+    schedule();
+    return () => clearTimeout(timer);
+  }, []);
 
   return (
     <div
@@ -57,6 +106,30 @@ const Stars = ({ className }: { className?: string }) => {
               '--star-dur': `${s.dur}s`,
               '--star-dim': s.dim,
               '--star-lit': s.lit,
+            } as React.CSSProperties
+          }
+        />
+      ))}
+
+      {shots.map((s) => (
+        <span
+          key={s.id}
+          className="absolute animate-shoot"
+          style={
+            {
+              left: `${s.left}%`,
+              top: `${s.top}%`,
+              width: `${s.len}px`,
+              height: '2px',
+              transformOrigin: 'left center',
+              rotate: `${s.angle}deg`,
+              borderRadius: '999px',
+              background:
+                'linear-gradient(90deg, hsl(var(--secondary) / 0) 0%, hsl(var(--secondary) / .55) 55%, hsl(var(--secondary)) 100%)',
+              boxShadow: '0 0 8px hsl(var(--secondary) / .8)',
+              '--shoot-x': `${s.dist}px`,
+              '--shoot-y': '0px',
+              '--shoot-dur': `${s.dur}s`,
             } as React.CSSProperties
           }
         />

@@ -145,6 +145,15 @@ export default {
 				twinkle: {
 					'0%, 100%': { opacity: 'var(--star-dim, .18)', transform: 'scale(.72)' },
 					'50%': { opacity: 'var(--star-lit, .95)', transform: 'scale(1)' }
+				},
+				shoot: {
+					'0%': { opacity: '0', transform: 'translate3d(0,0,0) scaleX(.3)' },
+					'12%': { opacity: '1' },
+					'80%': { opacity: '1' },
+					'100%': {
+						opacity: '0',
+						transform: 'translate3d(var(--shoot-x), var(--shoot-y), 0) scaleX(1)'
+					}
 				}
 			},
 			animation: {
@@ -159,7 +168,8 @@ export default {
 				marquee: 'marquee 45s linear infinite',
 				'marquee-solo': 'marquee-solo 30s linear infinite',
 				caret: 'caret 1s steps(1,end) infinite',
-				twinkle: 'twinkle var(--star-dur, 4s) ease-in-out infinite'
+				twinkle: 'twinkle var(--star-dur, 4s) ease-in-out infinite',
+				shoot: 'shoot var(--shoot-dur, 1.1s) cubic-bezier(.25,.6,.4,1) forwards'
 			}
 		}
 	},
