@@ -188,7 +188,17 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
     [typingUsers, user],
   );
 
-  const onlineList: OnlineItem[] = online;
+  const onlineList: OnlineItem[] = useMemo(
+    () =>
+      [...online].sort((a, b) => {
+        if (user) {
+          if (a.nick === user.nick) return -1;
+          if (b.nick === user.nick) return 1;
+        }
+        return a.nick.localeCompare(b.nick, 'ru', { sensitivity: 'base' });
+      }),
+    [online, user],
+  );
   const busyNicks = useMemo(
     () => new Set(online.filter((u) => u.inPrivate).map((u) => u.nick)),
     [online],
