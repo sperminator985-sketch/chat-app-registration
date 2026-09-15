@@ -219,7 +219,7 @@ const SupportDialog = () => {
                 <button
                   type="button"
                   onClick={() => setOpen(false)}
-                  className="btn-ghost-brut justify-center !py-2.5 !text-xs"
+                  className="btn-cancel-brut justify-center px-6 py-2.5 text-xs"
                 >
                   Отмена
                 </button>

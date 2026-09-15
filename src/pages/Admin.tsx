@@ -805,7 +805,7 @@ const AdminPanel = () => {
                         </button>
                         <button
                           onClick={() => setEditId(null)}
-                          className="border-2 border-foreground/35 px-3 py-1 text-[0.68rem] font-bold uppercase tracking-[0.1em] text-muted-foreground transition-colors hover:border-primary hover:text-primary"
+                          className="btn-cancel-brut px-3 py-1 text-[0.68rem]"
                         >
                           Отмена
                         </button>

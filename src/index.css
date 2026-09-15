@@ -261,6 +261,16 @@
     }
   }
 
+  .btn-cancel-brut {
+    @apply inline-flex items-center justify-center gap-2 border-2 border-foreground/35 font-display font-bold uppercase tracking-[0.1em] text-muted-foreground transition-colors duration-150 outline-none;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .btn-cancel-brut:hover {
+      @apply border-destructive text-destructive;
+    }
+  }
+
   .btn-close-brut {
     @apply border-white text-white transition-colors duration-150 outline-none;
   }

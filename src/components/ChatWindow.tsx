@@ -373,7 +373,7 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
                 <button
                   type="button"
                   onClick={() => setPrivateTo(null)}
-                  className="ml-auto shrink-0 border-2 border-sky-400 px-2 py-0.5 text-[0.66rem] uppercase text-sky-200 transition-colors hover:bg-sky-400 hover:text-background"
+                  className="btn-cancel-brut ml-auto shrink-0 px-2 py-0.5 text-[0.66rem]"
                 >
                   Отмена
                 </button>
