@@ -100,19 +100,12 @@ const SupportDialog = () => {
       >
         <DialogContent className="top-[4vh] max-h-[92vh] max-w-[540px] translate-y-0 overflow-y-auto border-2 border-foreground/40 bg-card p-0 text-card-foreground [&>button]:hidden">
           <div className="flex items-stretch border-b-2 border-foreground/35 bg-secondary text-secondary-foreground">
-            <div className="flex flex-1 items-center gap-2.5 px-5 py-3.5">
+            <div className="flex flex-1 items-center justify-center gap-2.5 px-5 py-3.5">
               <Icon name="Mail" size={18} className="shrink-0" />
               <DialogTitle className="font-display text-[0.95rem] font-extrabold uppercase tracking-[0.06em]">
                 Письмо в поддержку
               </DialogTitle>
             </div>
-            <button
-              onClick={() => setOpen(false)}
-              aria-label="Закрыть"
-              className="flex w-12 shrink-0 items-center justify-center border-l-2 border-secondary-foreground text-secondary-foreground outline-none transition-colors duration-150 hover:border-destructive hover:text-destructive"
-            >
-              <Icon name="X" size={18} />
-            </button>
           </div>
 
           {sent ? (
