@@ -261,6 +261,21 @@
     }
   }
 
+  .btn-close-brut {
+    @apply border-white text-white transition-colors duration-150 outline-none;
+  }
+
+  .day .btn-close-brut {
+    @apply border-foreground text-foreground;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .btn-close-brut:hover,
+    .day .btn-close-brut:hover {
+      @apply border-destructive text-destructive;
+    }
+  }
+
   .nav-link {
     @apply border-b-2 border-transparent pb-0.5 text-[0.82rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground transition-colors duration-200;
   }
