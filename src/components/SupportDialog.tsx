@@ -9,7 +9,6 @@ const TOPICS = [
   { id: 'Вопрос', icon: 'MessageCircleQuestion' },
   { id: 'Проблема в чате', icon: 'TriangleAlert' },
   { id: 'Жалоба', icon: 'Gavel' },
-  { id: 'Реклама', icon: 'Megaphone' },
   { id: 'Другое', icon: 'Sparkles' },
 ] as const;
 
