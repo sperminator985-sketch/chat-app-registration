@@ -29,13 +29,10 @@ const Footer = () => (
         <SupportDialog />
       </div>
 
-      <div
-        className="order-4 hidden shrink-0 border-2 border-foreground/35 bg-background p-1 sm:order-none sm:block"
-        title="Яндекс.Метрика: данные за сегодня (просмотры, визиты и уникальные посетители)"
-      >
+      <div className="order-4 hidden shrink-0 border-2 border-foreground/35 bg-background p-1 sm:order-none sm:block">
         <img
           src="https://informer.yandex.ru/informer/112321183/3_1_FFFFFFFF_EFEFEFFF_0_pageviews"
-          alt="Яндекс.Метрика"
+          alt=""
           width={88}
           height={31}
           className="block"
