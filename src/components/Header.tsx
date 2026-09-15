@@ -141,7 +141,7 @@ const Header = ({ onProfile }: HeaderProps) => {
         const el = document.querySelector(l.href);
         if (el && el.getBoundingClientRect().top <= line) current = l.href;
       });
-      setActive(current);
+      setActive(current || guestLinks[0].href);
     };
     onScroll();
     window.addEventListener('scroll', onScroll, { passive: true });
