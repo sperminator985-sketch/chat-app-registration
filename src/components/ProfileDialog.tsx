@@ -53,7 +53,7 @@ const ProfileDialog = ({ open, onOpenChange }: ProfileDialogProps) => {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[520px] border-2 border-foreground/40 bg-card p-0 text-card-foreground">
+      <DialogContent className="max-w-[520px] border-2 border-foreground/40 bg-card p-0 text-card-foreground [&>button]:border-white [&>button]:text-white [&>button]:opacity-100 [&>button]:ring-0 [&>button]:ring-offset-0 [&>button:hover]:border-destructive [&>button:hover]:text-destructive [&>button:focus]:ring-0 [&>button:focus]:ring-offset-0 [&>button:focus-visible]:ring-0">
         <div className="flex items-center gap-4 border-b-2 border-foreground/35 px-6 py-5">
           <div>
             <p className="text-[0.78rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
