@@ -25,7 +25,7 @@ const ServerDownBanner = () => {
         .feed('kurilka')
         .then(() => window.location.reload())
         .catch(() => undefined);
-    }, 60000);
+    }, 15000);
     return () => window.clearInterval(timer);
   }, [down]);
 

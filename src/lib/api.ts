@@ -174,6 +174,7 @@ export const clearBanned = () => {
 };
 
 let serverDown = false;
+let failStreak = 0;
 const downListeners = new Set<(v: boolean) => void>();
 
 export const isServerDown = () => serverDown;
@@ -182,6 +183,12 @@ export const onServerStatus = (fn: (v: boolean) => void) => {
   return () => downListeners.delete(fn);
 };
 const setServerDown = (v: boolean) => {
+  if (v) {
+    failStreak += 1;
+    if (failStreak < 3) return;
+  } else {
+    failStreak = 0;
+  }
   if (serverDown === v) return;
   serverDown = v;
   downListeners.forEach((fn) => fn(v));
