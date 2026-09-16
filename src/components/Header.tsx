@@ -239,7 +239,7 @@ const Header = ({ onProfile }: HeaderProps) => {
           </>
         ) : (
           <>
-            <a href="#top" onClick={go('#top')} className="min-w-0 md:hidden">
+            <a href="#top" onClick={go('#top')} className="shrink-0 md:hidden">
               <Logo size="xs" iconAsLetter />
             </a>
             <Logo size="sm" iconAsLetter className="hidden md:flex" />
@@ -317,26 +317,27 @@ const Header = ({ onProfile }: HeaderProps) => {
           )}
         </nav>
 
+        {temp !== null && (
+          <a
+            href="https://yandex.ru/pogoda/ru/tomsk"
+            target="_blank"
+            rel="noopener noreferrer"
+            title="Погода в Томске"
+            className="mx-auto flex min-w-0 shrink items-center gap-1 border-2 border-foreground/30 px-2 py-1 text-[0.55rem] font-semibold uppercase leading-tight tracking-[0.04em] text-muted-foreground md:hidden"
+          >
+            <Icon
+              name={temp <= 0 ? 'Snowflake' : 'Sun'}
+              size={13}
+              className={cn('shrink-0', temp < 0 ? 'text-primary' : 'text-secondary')}
+            />
+            <span className="whitespace-nowrap">В Томске</span>
+            <span className={cn('text-[0.72rem] font-bold', temp < 0 ? 'text-primary' : 'text-secondary')}>
+              {formatTemp(temp)}°
+            </span>
+          </a>
+        )}
+
         <div className="flex shrink-0 items-center gap-2.5 md:hidden">
-          {temp !== null && !user && (
-            <a
-              href="https://yandex.ru/pogoda/ru/tomsk"
-              target="_blank"
-              rel="noopener noreferrer"
-              title="Погода в Томске"
-              className="flex min-w-0 items-center gap-1 border-2 border-foreground/30 px-2 py-1 text-[0.55rem] font-semibold uppercase leading-tight tracking-[0.04em] text-muted-foreground"
-            >
-              <Icon
-                name={temp <= 0 ? 'Snowflake' : 'Sun'}
-                size={13}
-                className={cn('shrink-0', temp < 0 ? 'text-primary' : 'text-secondary')}
-              />
-              <span className="whitespace-nowrap">В Томске</span>
-              <span className={cn('text-[0.72rem] font-bold', temp < 0 ? 'text-primary' : 'text-secondary')}>
-                {formatTemp(temp)}°
-              </span>
-            </a>
-          )}
           {user && mailButton()}
           {user && tickerButton()}
           {user && soundButton()}
