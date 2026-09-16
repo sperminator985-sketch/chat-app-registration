@@ -230,14 +230,20 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
               </div>
               <div className="order-last flex w-full items-center justify-center gap-1.5 md:pointer-events-none md:absolute md:inset-x-0 md:order-none md:w-full md:gap-2">
                 {rooms.map((r) => {
-                  const locked = !canEnterRoom(r.id, user?.uni, user?.isAdmin);
+                  const locked = Boolean(user) && !canEnterRoom(r.id, user?.uni, user?.isAdmin);
                   return (
                     <button
                       key={r.id}
                       onClick={() => onPick(r.id)}
                       disabled={locked}
                       aria-disabled={locked}
-                      title={locked ? `${r.title} — этаж другого вуза` : r.title}
+                      title={
+                        locked
+                          ? user?.uni
+                            ? `${r.title} — этаж другого вуза`
+                            : `${r.title} — только для студентов`
+                          : r.title
+                      }
                       className={cn(
                         'pointer-events-auto h-7 w-7 shrink-0 border-2 font-mono text-[0.7rem] font-semibold transition-colors',
                         r.id === room.id

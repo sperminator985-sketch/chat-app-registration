@@ -139,14 +139,17 @@ export const roomUni: Record<string, string> = {
 
 export const openRooms = ['kurilka', 'baraholka', 'znakomstva'];
 
+export const tomichRoom = 'znakomstva';
+
 export const canEnterRoom = (
   roomId: string,
   uni?: string | null,
   isAdmin?: boolean,
 ) => {
   if (isAdmin) return true;
+  if (!uni) return roomId === tomichRoom;
   if (openRooms.includes(roomId)) return true;
-  return Boolean(uni) && roomUni[roomId] === uni;
+  return roomUni[roomId] === uni;
 };
 
 export type OnlineUser = {

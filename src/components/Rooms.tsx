@@ -65,7 +65,7 @@ const Rooms = ({ activeRoom, onPick }: RoomsProps) => {
             {locked && (
               <span className="absolute right-0 top-0 flex items-center gap-1 bg-foreground/70 px-2 py-1 font-mono text-[0.66rem] font-bold uppercase tracking-[0.1em] text-background">
                 <Icon name="Lock" size={11} />
-                Другой вуз
+                {user?.uni ? 'Другой вуз' : 'Для студентов'}
               </span>
             )}
             {hot && !active && !locked && (

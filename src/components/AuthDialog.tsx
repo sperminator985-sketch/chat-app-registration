@@ -82,6 +82,12 @@ const AuthDialog = () => {
   }, [authOpen, authRoom]);
 
   useEffect(() => {
+    if (canEnterRoom(room, uni)) return;
+    const first = rooms.find((r) => canEnterRoom(r.id, uni));
+    if (first) setRoom(first.id);
+  }, [uni, room]);
+
+  useEffect(() => {
     if (!isRegister || checkNick(nick)) {
       setNickFree('idle');
       return;

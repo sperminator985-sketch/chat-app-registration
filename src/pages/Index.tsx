@@ -78,6 +78,13 @@ const PageBody = () => {
   }, [user?.room]);
 
   useEffect(() => {
+    if (!user) return;
+    if (canEnterRoom(activeRoom, user.uni, user.isAdmin)) return;
+    const first = rooms.find((r) => canEnterRoom(r.id, user.uni, user.isAdmin));
+    if (first) setActiveRoom(first.id);
+  }, [user, activeRoom]);
+
+  useEffect(() => {
     localStorage.setItem('lastRoom', activeRoom);
   }, [activeRoom]);
 
@@ -101,7 +108,9 @@ const PageBody = () => {
     if (!canEnterRoom(id, user.uni, user.isAdmin)) {
       toast({
         title: 'Этаж закрыт',
-        description: `Сюда пускают только студентов ${roomUni[id]}`,
+        description: roomUni[id]
+          ? `Сюда пускают только студентов ${roomUni[id]}`
+          : 'Этот этаж только для студентов. Твой этаж — 02 «Томск»',
         variant: 'destructive',
       });
       return;

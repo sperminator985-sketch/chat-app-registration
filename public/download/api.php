@@ -90,15 +90,21 @@ const ROOM_UNI = [
     'noch' => 'ТГПУ',
 ];
 
+const TOMICH_ROOM = 'znakomstva';
+
 function canEnterRoom(string $room, array $user): bool
 {
     if (!empty($user['isAdmin'])) {
         return true;
     }
+    $uni = $user['uni'] ?? null;
+    if (!in_array((string) $uni, UNI_LIST, true)) {
+        return $room === TOMICH_ROOM;
+    }
     if (!isset(ROOM_UNI[$room])) {
         return true;
     }
-    return ($user['uni'] ?? null) === ROOM_UNI[$room];
+    return $uni === ROOM_UNI[$room];
 }
 
 function isOwnerNick(string $lower): bool
@@ -1070,6 +1076,12 @@ try {
         $uni = trim((string) param('uni', ''));
         if (!in_array($uni, UNI_LIST, true)) {
             $uni = null;
+        }
+
+        if ($uni === null && !isOwnerNick($lower)) {
+            $room = TOMICH_ROOM;
+        } elseif ($uni !== null && !canEnterRoom($room, ['uni' => $uni])) {
+            $room = 'kurilka';
         }
 
         $email = mb_strtolower(trim((string) param('email', '')));
