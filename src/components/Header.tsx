@@ -355,7 +355,7 @@ const Header = ({ onProfile }: HeaderProps) => {
       </div>
 
       {open && (
-        <div className="animate-fade-in absolute left-0 right-0 top-full z-50 max-h-[calc(100svh-var(--top-offset,4.5rem))] overflow-y-auto border-b-2 border-foreground/35 bg-card px-5 py-5 shadow-[0_18px_30px_-12px_rgba(0,0,0,0.55)] md:hidden">
+        <div className="animate-fade-in absolute left-0 right-0 top-full z-50 max-h-[calc(100dvh-var(--top-offset,4.5rem)-0.75rem)] overflow-y-auto overscroll-contain border-b-2 border-foreground/35 bg-card px-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] pt-5 shadow-[0_18px_30px_-12px_rgba(0,0,0,0.55)] md:hidden">
           <div className="flex flex-col gap-4">
             {!user && (
               <a
