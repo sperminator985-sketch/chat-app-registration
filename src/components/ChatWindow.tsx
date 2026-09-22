@@ -440,7 +440,7 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
               whoOpen ? 'absolute inset-0 z-30 flex' : 'hidden',
             )}
           >
-            <div className="relative flex shrink-0 flex-col items-center justify-center border-b-2 border-foreground/35 px-4 py-4 text-center lg:h-[68px] lg:py-3">
+            <div className="relative flex shrink-0 flex-col items-center justify-center border-b-2 border-foreground/35 px-2 py-4 text-center sm:px-4 lg:h-[68px] lg:py-3">
               <h3 className="text-[0.8rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
                 Кто в чате · {onlineList.length}
               </h3>
@@ -516,7 +516,7 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
                       }}
                       disabled={isMe || busy}
                       className={cn(
-                        'w-full py-3 pl-4 text-left transition-colors hover:bg-muted/50 disabled:cursor-default disabled:hover:bg-transparent',
+                        'w-full py-3 pl-2 text-left transition-colors hover:bg-muted/50 disabled:cursor-default disabled:hover:bg-transparent sm:pl-4',
                         isMe ? 'pr-12' : 'pr-[7.5rem]',
                       )}
                     >
