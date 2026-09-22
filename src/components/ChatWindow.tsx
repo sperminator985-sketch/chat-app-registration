@@ -416,7 +416,7 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
                         ? `Лично для ${privateTo}…`
                         : 'Напиши что-нибудь…'
                   }
-                  className="w-full min-w-0 bg-transparent text-[0.82rem] text-foreground outline-none placeholder:text-muted-foreground/70 sm:text-[0.92rem]"
+                  className="chat-font w-full min-w-0 bg-transparent text-[0.95rem] text-foreground outline-none placeholder:text-muted-foreground/70 sm:text-[0.94rem]"
                 />
               </div>
               <div className="flex shrink-0 items-center gap-2 sm:gap-2.5">

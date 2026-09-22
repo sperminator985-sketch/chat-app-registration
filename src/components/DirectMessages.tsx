@@ -231,7 +231,7 @@ const DirectMessages = () => {
             onChange={(e) => setDraft(e.target.value)}
             maxLength={480}
             placeholder="Записка соседу…"
-            className="flex-1 border-2 border-foreground/35 bg-input px-3 py-2 text-[1rem] outline-none focus:border-secondary placeholder:text-muted-foreground/70"
+            className="chat-font flex-1 border-2 border-foreground/35 bg-input px-3 py-2 text-[1rem] outline-none focus:border-secondary placeholder:text-muted-foreground/70"
           />
           <EmojiPicker onPick={(e) => setDraft((prev) => (prev + e).slice(0, 480))} />
           <button type="submit" disabled={sending} className="btn-brut shrink-0 disabled:opacity-60">
