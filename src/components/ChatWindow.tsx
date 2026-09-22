@@ -327,7 +327,7 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
                       'border-l-4 border-sky-400 bg-sky-400/25 px-2 py-1 [.day_&]:border-sky-600 [.day_&]:bg-sky-500/20',
                   )}
                 >
-                  <p className="flex flex-wrap items-baseline gap-x-1.5">
+                  <p className="chat-font flex flex-wrap items-baseline gap-x-1.5">
                     {m.private && (
                       <button
                         type="button"
@@ -353,7 +353,7 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
                     </button>
                     <span
                       className={cn(
-                        'text-[0.84rem] sm:text-[0.94rem]',
+                        'text-[0.95rem] leading-[1.35] sm:text-[0.94rem]',
                         m.private
                           ? 'font-medium text-foreground'
                           : user && m.nick === user.nick
