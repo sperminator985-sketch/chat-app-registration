@@ -515,9 +515,12 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
                         setPrivateTo(u.nick);
                       }}
                       disabled={isMe || busy}
-                      className="w-full py-3 pl-4 pr-[7.5rem] text-left transition-colors hover:bg-muted/50 disabled:cursor-default disabled:hover:bg-transparent"
+                      className={cn(
+                        'w-full py-3 pl-4 text-left transition-colors hover:bg-muted/50 disabled:cursor-default disabled:hover:bg-transparent',
+                        isMe ? 'pr-12' : 'pr-[7.5rem]',
+                      )}
                     >
-                      <div className="flex items-center gap-2">
+                      <div className="flex min-w-0 items-center gap-2">
                         <span className="flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded-full border border-foreground/25 bg-muted">
                           {u.avatarUrl ? (
                             <img src={u.avatarUrl} alt="" className="h-full w-full object-cover" />
@@ -525,11 +528,11 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
                             <Icon name="User" size={14} className="text-muted-foreground" />
                           )}
                         </span>
-                        <span className={cn('truncate font-normal', staffNickClass(u.nick, nickColorClass[u.color as 1]))}>{u.nick}</span>
+                        <span className={cn('min-w-0 truncate font-normal', staffNickClass(u.nick, nickColorClass[u.color as 1]))}>{u.nick}</span>
                         {isMe ? (
-                          <span className="ml-auto font-mono text-[0.7rem] uppercase text-secondary">это ты</span>
+                          <span className="ml-auto shrink-0 whitespace-nowrap font-mono text-[0.7rem] uppercase text-secondary">это ты</span>
                         ) : busy ? (
-                          <span className="ml-auto flex items-center gap-1 font-mono text-[0.66rem] uppercase text-sky-300/70">
+                          <span className="ml-auto flex shrink-0 items-center gap-1 whitespace-nowrap font-mono text-[0.66rem] uppercase text-sky-300/70">
                             <Icon name="Lock" size={11} />
                             приват
                           </span>
