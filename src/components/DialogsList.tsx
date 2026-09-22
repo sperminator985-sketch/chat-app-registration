@@ -12,8 +12,8 @@ const DialogsList = () => {
 
   return (
     <Dialog open={listOpen} onOpenChange={(open) => !open && closeList()}>
-      <DialogContent className="max-w-[460px] border-2 border-foreground/40 bg-background p-0 [&>button]:hidden">
-        <div className="flex items-center gap-2 border-b-2 border-foreground/35 px-4 py-4 sm:gap-3 sm:px-5">
+      <DialogContent className="max-w-[460px] border-y-2 border-x-0 border-foreground/40 bg-background p-0 sm:border-x-2 [&>button]:hidden">
+        <div className="flex items-center gap-2 border-b-2 border-foreground/35 px-2 py-4 sm:gap-3 sm:px-5">
           <Icon name="Mail" size={18} className="shrink-0 text-secondary" />
           <p className="font-display text-base font-extrabold uppercase leading-none tracking-[-0.02em] sm:text-lg">
             Личные сообщения
@@ -53,7 +53,7 @@ const DialogsList = () => {
                 <button
                   type="button"
                   onClick={() => openDm(d.nick)}
-                  className="flex w-full items-center gap-3 py-2 pl-5 pr-16 text-left transition-colors hover:bg-muted/50 sm:py-3.5"
+                  className="flex w-full items-center gap-3 py-2 pl-2 pr-16 text-left transition-colors hover:bg-muted/50 sm:py-3.5 sm:pl-5"
                 >
                   <span
                     className={cn(
