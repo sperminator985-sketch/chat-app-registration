@@ -289,7 +289,7 @@ const AuthDialog = () => {
         onPointerDownOutside={(e) => mode === 'verify' && e.preventDefault()}
         onInteractOutside={(e) => mode === 'verify' && e.preventDefault()}
         onEscapeKeyDown={(e) => mode === 'verify' && e.preventDefault()}
-        className="top-[5vh] max-h-[90vh] max-w-[520px] translate-y-0 overflow-y-auto border-2 border-foreground/40 bg-card p-0 text-card-foreground [&>button]:hidden">
+        className="top-[max(0.75rem,env(safe-area-inset-top))] max-h-[calc(100dvh-1.5rem)] max-w-[520px] translate-y-0 overscroll-contain overflow-y-auto border-2 border-foreground/40 bg-card p-0 text-card-foreground [&>button]:hidden">
         <div className="sticky top-0 z-20 flex border-b-2 border-foreground/35 bg-card">
           {(['register', 'login'] as const).map((tab) => (
             <button
@@ -320,7 +320,7 @@ const AuthDialog = () => {
         </div>
 
         {mode === 'verify' ? (
-          <div className="space-y-5 px-6 pb-6 pt-5 sm:space-y-3 sm:pb-4 sm:pt-4">
+          <div className="space-y-5 px-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] pt-5 sm:space-y-3 sm:pb-4 sm:pt-4">
             <div className="text-center">
               <p className="font-display text-lg font-extrabold uppercase tracking-[0.06em]">
                 Подтвердите почту
@@ -369,7 +369,7 @@ const AuthDialog = () => {
             </button>
           </div>
         ) : mode === 'recover' ? (
-          <div className="space-y-5 px-6 pb-6 pt-5 sm:space-y-3 sm:pb-4 sm:pt-4">
+          <div className="space-y-5 px-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] pt-5 sm:space-y-3 sm:pb-4 sm:pt-4">
             <div>
               <p className="font-display text-lg font-extrabold uppercase tracking-[0.06em]">
                 Восстановление доступа
@@ -484,7 +484,7 @@ const AuthDialog = () => {
             </button>
           </div>
         ) : (
-        <form onSubmit={submit} className="space-y-5 px-6 pb-6 pt-5 sm:space-y-3 sm:pb-4 sm:pt-4">
+        <form onSubmit={submit} className="space-y-5 px-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] pt-5 sm:space-y-3 sm:pb-4 sm:pt-4">
           <p className="text-[0.98rem] leading-[1.4] text-muted-foreground sm:text-[0.85rem]">
             {isRegister
               ? 'На почту придёт код подтверждения.'
