@@ -310,13 +310,11 @@
 }
 
 @layer utilities {
-  @media (max-width: 767px) {
-    .chat-font {
-      font-family:
-        -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
-        Arial, sans-serif;
-      letter-spacing: 0;
-    }
+  .chat-font {
+    font-family:
+      -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
+      Arial, sans-serif;
+    letter-spacing: 0;
   }
 
   .text-stroke-plate {
