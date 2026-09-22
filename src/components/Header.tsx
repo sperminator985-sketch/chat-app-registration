@@ -317,7 +317,7 @@ const Header = ({ onProfile }: HeaderProps) => {
           )}
         </nav>
 
-        {temp !== null && (
+        {temp !== null && !user && (
           <a
             href="https://yandex.ru/pogoda/ru/tomsk"
             target="_blank"
