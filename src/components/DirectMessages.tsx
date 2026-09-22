@@ -219,7 +219,7 @@ const DirectMessages = () => {
                   <span className={cn('text-[0.84rem] font-semibold sm:text-[1rem]', staffNickClass(m.nick, nickColorClass[m.color]))}>{m.nick}</span>
                   <span className="font-mono text-[0.64rem] text-muted-foreground sm:text-[0.72rem]">{m.time}</span>
                 </p>
-                <p className="mt-1 text-[0.86rem] text-foreground/90 sm:text-[1rem]">{body}</p>
+                <p className="chat-font mt-1 text-[0.95rem] leading-[1.35] text-foreground/90 sm:text-[1rem]">{body}</p>
               </div>
             );
           })}
