@@ -45,14 +45,14 @@ def handler(event: dict, context) -> dict:
     if event.get('httpMethod') == 'OPTIONS':
         return {'statusCode': 200, 'headers': CORS, 'body': ''}
 
-    source = 'yandex'
+    source = 'open-meteo'
     reason = None
     try:
-        temp = from_yandex()
+        temp = from_open_meteo()
     except Exception as exc:
         reason = f'{type(exc).__name__}: {exc}'
-        source = 'open-meteo'
-        temp = from_open_meteo()
+        source = 'yandex'
+        temp = from_yandex()
 
     payload = {'temp': temp, 'city': 'Томск', 'source': source}
     if reason and (event.get('queryStringParameters') or {}).get('debug') == '1':
