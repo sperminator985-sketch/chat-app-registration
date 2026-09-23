@@ -9,6 +9,7 @@ import { useDm } from '@/hooks/use-dm';
 import { useWeather, formatTemp, degreeWord, weatherIcon } from '@/hooks/use-weather';
 import { useTheme } from '@/hooks/use-theme';
 import { useTicker } from '@/hooks/use-ticker';
+import { useInstall } from '@/hooks/use-install';
 
 const guestLinks = [
   { href: '#top', label: 'Главная' },
@@ -29,6 +30,7 @@ const Header = ({ onProfile }: HeaderProps) => {
   const temp = useWeather();
   const { theme, toggle } = useTheme();
   const { openTicker, pending } = useTicker();
+  const { canInstall, install } = useInstall();
   const navigate = useNavigate();
   const links = user ? [] : guestLinks;
 
@@ -365,6 +367,18 @@ const Header = ({ onProfile }: HeaderProps) => {
                 <Icon name="Home" size={16} />
                 Главная
               </a>
+            )}
+            {canInstall && (
+              <button
+                onClick={async () => {
+                  setOpen(false);
+                  await install();
+                }}
+                className="btn-ghost-brut flex items-center justify-center gap-2 border-secondary/70 text-secondary"
+              >
+                <Icon name="Smartphone" size={16} />
+                Установить на телефон
+              </button>
             )}
             <button onClick={toggle} className="btn-ghost-brut flex items-center justify-center gap-2">
               <Icon name={theme === 'day' ? 'Sun' : 'Moon'} size={16} />
