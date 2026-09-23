@@ -129,7 +129,7 @@ const PrivateRoom = () => {
           >
             {messages.map((m) => (
               <div key={m.id} className="animate-fade-in leading-[1.3]">
-                <p className="flex flex-wrap items-baseline gap-x-1.5">
+                <p className="chat-font flex flex-wrap items-baseline gap-x-1.5">
                   <span className="font-mono text-[0.66rem] text-muted-foreground sm:text-[0.78rem]">[{m.time}]</span>
                   <span
                     className={cn(
@@ -139,7 +139,7 @@ const PrivateRoom = () => {
                   >
                     &lt;{m.nick}&gt;
                   </span>
-                  <span className="text-[0.84rem] text-foreground sm:text-[0.94rem]">{textOf(m)}</span>
+                  <span className="text-[0.95rem] leading-[1.35] text-foreground sm:text-[0.94rem]">{textOf(m)}</span>
                 </p>
               </div>
             ))}
@@ -169,7 +169,7 @@ const PrivateRoom = () => {
                 }}
                 maxLength={480}
                 placeholder={`В привате с ${peer.nick}…`}
-                className="w-full min-w-0 bg-transparent text-[0.82rem] text-foreground outline-none placeholder:text-muted-foreground/70 sm:text-[0.92rem]"
+                className="chat-font w-full min-w-0 bg-transparent text-[0.95rem] text-foreground outline-none placeholder:text-muted-foreground/70 sm:text-[0.94rem]"
               />
             </div>
             <div className="flex shrink-0 items-center gap-2 sm:gap-2.5">
