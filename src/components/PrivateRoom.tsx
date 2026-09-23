@@ -115,7 +115,7 @@ const PrivateRoom = () => {
               <button
                 type="button"
                 onClick={leave}
-                className="flex items-center gap-1.5 border-2 border-primary px-2.5 py-1 text-[0.72rem] font-semibold uppercase tracking-[0.1em] text-primary transition-colors hover:bg-primary hover:text-primary-foreground"
+                className="flex items-center gap-1.5 border-2 border-foreground/35 px-2.5 py-1 text-[0.72rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground transition-colors hover:border-primary hover:text-primary"
               >
                 <Icon name="LogOut" size={14} />
                 <span className="hidden sm:inline">Выйти</span>
