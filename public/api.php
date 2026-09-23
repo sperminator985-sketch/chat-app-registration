@@ -2527,6 +2527,103 @@ try {
         }
     }
 
+    // --- Погода в Томске (через свой домен, кэш 10 минут) ---
+    if ($method === 'GET' && $action === 'weather') {
+        $cacheFile = sys_get_temp_dir() . '/obshaga_weather.json';
+
+        if (is_readable($cacheFile)) {
+            $cached = json_decode((string) file_get_contents($cacheFile), true);
+            $age = time() - (int) ($cached['ts'] ?? 0);
+            if (is_array($cached) && isset($cached['temp']) && $age >= 0 && $age < 600) {
+                out(200, [
+                    'temp' => (int) $cached['temp'],
+                    'city' => 'Томск',
+                    'sky' => (string) ($cached['sky'] ?? 'cloudy'),
+                    'isDay' => (bool) ($cached['isDay'] ?? true),
+                ]);
+            }
+        }
+
+        $url = 'https://api.open-meteo.com/v1/forecast?latitude=56.4977&longitude=84.9744'
+            . '&current=temperature_2m,weather_code,is_day&timezone=Asia%2FTomsk';
+
+        $raw = null;
+        if (function_exists('curl_init')) {
+            $ch = curl_init($url);
+            curl_setopt_array($ch, [
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_FOLLOWLOCATION => true,
+                CURLOPT_TIMEOUT => 6,
+                CURLOPT_CONNECTTIMEOUT => 4,
+                CURLOPT_SSL_VERIFYPEER => false,
+                CURLOPT_USERAGENT => 'ObshagaChat/1.0',
+            ]);
+            $res = curl_exec($ch);
+            $code = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            curl_close($ch);
+            if (is_string($res) && $res !== '' && $code < 400) {
+                $raw = $res;
+            }
+        }
+        if ($raw === null) {
+            $ctx = stream_context_create([
+                'http' => ['timeout' => 6, 'header' => "User-Agent: ObshagaChat/1.0\r\n"],
+                'ssl' => ['verify_peer' => false, 'verify_peer_name' => false],
+            ]);
+            $res = @file_get_contents($url, false, $ctx);
+            $raw = is_string($res) && $res !== '' ? $res : null;
+        }
+
+        $data = $raw !== null ? json_decode($raw, true) : null;
+        $cur = is_array($data) ? ($data['current'] ?? null) : null;
+
+        if (!is_array($cur) || !isset($cur['temperature_2m'])) {
+            if (isset($cached) && is_array($cached) && isset($cached['temp'])) {
+                out(200, [
+                    'temp' => (int) $cached['temp'],
+                    'city' => 'Томск',
+                    'sky' => (string) ($cached['sky'] ?? 'cloudy'),
+                    'isDay' => (bool) ($cached['isDay'] ?? true),
+                    'stale' => true,
+                ]);
+            }
+            out(503, ['error' => 'Погода недоступна']);
+        }
+
+        $code = (int) ($cur['weather_code'] ?? 3);
+        if ($code === 0) {
+            $sky = 'clear';
+        } elseif (in_array($code, [1, 2], true)) {
+            $sky = 'partly';
+        } elseif ($code === 3) {
+            $sky = 'cloudy';
+        } elseif (in_array($code, [45, 48], true)) {
+            $sky = 'fog';
+        } elseif (in_array($code, [95, 96, 99], true)) {
+            $sky = 'storm';
+        } elseif (in_array($code, [71, 73, 75, 77, 85, 86], true)) {
+            $sky = 'snow';
+        } elseif (in_array($code, [51, 53, 55, 56, 57], true)) {
+            $sky = 'drizzle';
+        } elseif (in_array($code, [61, 63, 65, 66, 67, 80, 81, 82], true)) {
+            $sky = 'rain';
+        } else {
+            $sky = 'cloudy';
+        }
+
+        $temp = (int) round((float) $cur['temperature_2m']);
+        $isDay = (bool) ($cur['is_day'] ?? 1);
+
+        @file_put_contents($cacheFile, json_encode([
+            'ts' => time(),
+            'temp' => $temp,
+            'sky' => $sky,
+            'isDay' => $isDay,
+        ]));
+
+        out(200, ['temp' => $temp, 'city' => 'Томск', 'sky' => $sky, 'isDay' => $isDay]);
+    }
+
     // --- Новости Томска (обновляются каждые 15 минут) ---
     if ($method === 'GET' && $action === 'news') {
         $cacheFile = sys_get_temp_dir() . '/obshaga_news.json';

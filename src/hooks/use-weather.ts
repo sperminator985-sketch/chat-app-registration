@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 
+const OWN_URL = 'https://chat-tom.ru/chat/api.php?action=weather';
 const WEATHER_URL = 'https://functions.poehali.dev/2c6a74d1-2f8a-481c-ac3e-49927c9727a9';
 
 export type Sky = 'clear' | 'partly' | 'cloudy' | 'fog' | 'drizzle' | 'rain' | 'snow' | 'storm';
@@ -35,17 +36,34 @@ export const useWeather = () => {
 
   useEffect(() => {
     let alive = true;
-    const load = () =>
-      fetch(`${WEATHER_URL}?t=${Math.floor(Date.now() / 600000)}`, { cache: 'no-store' })
-        .then((r) => r.json())
-        .then((d) => {
-          if (!alive) return;
-          const t = typeof d?.temp === 'number' ? d.temp : d?.current?.temperature_2m;
-          if (typeof d?.sky === 'string') lastSky = d.sky as Sky;
-          if (typeof d?.isDay === 'boolean') lastIsDay = d.isDay;
-          setTemp(typeof t === 'number' ? Math.round(t) : null);
-        })
-        .catch(() => undefined);
+
+    const grab = async (url: string) => {
+      const stamp = Math.floor(Date.now() / 600000);
+      const sep = url.includes('?') ? '&' : '?';
+      const r = await fetch(`${url}${sep}t=${stamp}`, { cache: 'no-store' });
+      if (!r.ok) throw new Error('bad status');
+      const d = await r.json();
+      const t = typeof d?.temp === 'number' ? d.temp : d?.current?.temperature_2m;
+      if (typeof t !== 'number') throw new Error('no temp');
+      return { t, sky: d?.sky, isDay: d?.isDay };
+    };
+
+    const load = async () => {
+      let data: { t: number; sky?: unknown; isDay?: unknown } | null = null;
+      try {
+        data = await grab(OWN_URL);
+      } catch {
+        try {
+          data = await grab(WEATHER_URL);
+        } catch {
+          return;
+        }
+      }
+      if (!alive || !data) return;
+      if (typeof data.sky === 'string') lastSky = data.sky as Sky;
+      if (typeof data.isDay === 'boolean') lastIsDay = data.isDay;
+      setTemp(Math.round(data.t));
+    };
 
     load();
     let timer = window.setInterval(load, 900000);
