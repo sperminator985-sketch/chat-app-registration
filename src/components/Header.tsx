@@ -234,7 +234,7 @@ const Header = ({ onProfile }: HeaderProps) => {
       >
         {user ? (
           <>
-            <Logo size="xs" iconAsLetter className="md:hidden" />
+            <Logo size="xs" iconAsLetter className="min-w-0 shrink overflow-hidden md:hidden" />
             <Logo size="sm" iconAsLetter className="hidden md:flex" />
           </>
         ) : (
@@ -337,7 +337,7 @@ const Header = ({ onProfile }: HeaderProps) => {
           </a>
         )}
 
-        <div className="flex shrink-0 items-center gap-2.5 md:hidden">
+        <div className="flex shrink-0 items-center gap-1.5 md:hidden">
           {user && mailButton()}
           {user && tickerButton()}
           {user && soundButton()}
