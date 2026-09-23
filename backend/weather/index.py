@@ -10,7 +10,8 @@ CORS = {
     'Content-Type': 'application/json',
 }
 
-YANDEX_URL = 'https://api.weather.yandex.ru/v2/informers?lat=56.4977&lon=84.9744&lang=ru_RU'
+YANDEX_URL = 'https://api.weather.yandex.ru/graphql/query'
+YANDEX_QUERY = '{ weatherByPoint(request: { lat: 56.4977, lon: 84.9744 }) { now { temperature } } }'
 FALLBACK_URL = (
     'https://api.open-meteo.com/v1/forecast'
     '?latitude=56.4977&longitude=84.9744&current=temperature_2m&timezone=Asia%2FTomsk'
@@ -21,10 +22,16 @@ def from_yandex() -> int:
     key = os.environ.get('YANDEX_WEATHER_KEY')
     if not key:
         raise RuntimeError('no key')
-    req = urllib.request.Request(YANDEX_URL, headers={'X-Yandex-Weather-Key': key})
+    body = json.dumps({'query': YANDEX_QUERY}).encode('utf-8')
+    req = urllib.request.Request(
+        YANDEX_URL,
+        data=body,
+        headers={'X-Yandex-Weather-Key': key, 'Content-Type': 'application/json'},
+        method='POST',
+    )
     with urllib.request.urlopen(req, timeout=4) as resp:
         data = json.loads(resp.read().decode('utf-8'))
-    return round(data['fact']['temp'])
+    return round(data['data']['weatherByPoint']['now']['temperature'])
 
 
 def from_open_meteo() -> int:
