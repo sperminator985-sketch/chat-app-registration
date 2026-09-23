@@ -106,7 +106,10 @@ const DirectMessages = () => {
 
   return (
     <Dialog open={Boolean(nick)} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-[560px] border-y-2 border-x-0 border-foreground/40 bg-background p-0 sm:border-x-2 md:flex md:h-svh md:max-h-svh md:w-screen md:!max-w-none md:flex-col md:border-x-0">
+      <DialogContent
+        className="max-w-[560px] border-y-2 border-x-0 border-foreground/40 bg-background p-0 sm:border-x-2 md:flex md:h-svh md:max-h-svh md:w-screen md:!max-w-none md:flex-col md:border-x-0"
+        closeClassName="md:hidden"
+      >
         <div className="flex shrink-0 items-center gap-3 border-b-2 border-foreground/35 px-5 py-4">
           <Icon name="Mail" size={18} className="shrink-0 text-secondary" />
           <div>
@@ -139,7 +142,7 @@ const DirectMessages = () => {
             </span>
           )}
           {nick && (
-            <div className={cn('mr-8 flex shrink-0 items-center gap-2', !cryptoOn && 'ml-auto')}>
+            <div className={cn('mr-8 flex shrink-0 items-center gap-2 md:mr-0', !cryptoOn && 'ml-auto')}>
               <button
                 type="button"
                 onClick={() => {
@@ -162,6 +165,15 @@ const DirectMessages = () => {
                 className="flex h-9 w-9 items-center justify-center border-2 border-foreground/35 text-foreground transition-colors hover:border-secondary hover:text-secondary disabled:cursor-not-allowed disabled:border-foreground/20 disabled:text-muted-foreground/40 disabled:hover:border-foreground/20 disabled:hover:text-muted-foreground/40"
               >
                 <Icon name="Video" size={18} />
+              </button>
+              <button
+                type="button"
+                onClick={onClose}
+                title="Закрыть личку"
+                className="hidden items-center gap-1.5 border-2 border-foreground/35 px-2.5 py-1 text-[0.72rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground transition-colors hover:border-primary hover:text-primary md:flex"
+              >
+                <Icon name="LogOut" size={14} />
+                <span>Выйти</span>
               </button>
             </div>
           )}
