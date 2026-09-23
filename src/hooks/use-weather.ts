@@ -8,7 +8,7 @@ export const useWeather = () => {
   useEffect(() => {
     let alive = true;
     const load = () =>
-      fetch(WEATHER_URL)
+      fetch(`${WEATHER_URL}?t=${Math.floor(Date.now() / 600000)}`, { cache: 'no-store' })
         .then((r) => r.json())
         .then((d) => {
           if (!alive) return;
