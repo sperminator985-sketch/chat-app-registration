@@ -1,4 +1,5 @@
 import json
+import os
 import urllib.request
 
 CORS = {
@@ -9,10 +10,27 @@ CORS = {
     'Content-Type': 'application/json',
 }
 
-URL = (
+YANDEX_URL = 'https://api.weather.yandex.ru/v2/informers?lat=56.4977&lon=84.9744&lang=ru_RU'
+FALLBACK_URL = (
     'https://api.open-meteo.com/v1/forecast'
     '?latitude=56.4977&longitude=84.9744&current=temperature_2m&timezone=Asia%2FTomsk'
 )
+
+
+def from_yandex() -> int:
+    key = os.environ.get('YANDEX_WEATHER_KEY')
+    if not key:
+        raise RuntimeError('no key')
+    req = urllib.request.Request(YANDEX_URL, headers={'X-Yandex-Weather-Key': key})
+    with urllib.request.urlopen(req, timeout=4) as resp:
+        data = json.loads(resp.read().decode('utf-8'))
+    return round(data['fact']['temp'])
+
+
+def from_open_meteo() -> int:
+    with urllib.request.urlopen(FALLBACK_URL, timeout=4) as resp:
+        data = json.loads(resp.read().decode('utf-8'))
+    return round(data['current']['temperature_2m'])
 
 
 def handler(event: dict, context) -> dict:
@@ -20,13 +38,22 @@ def handler(event: dict, context) -> dict:
     if event.get('httpMethod') == 'OPTIONS':
         return {'statusCode': 200, 'headers': CORS, 'body': ''}
 
-    with urllib.request.urlopen(URL, timeout=4) as resp:
-        data = json.loads(resp.read().decode('utf-8'))
+    source = 'yandex'
+    reason = None
+    try:
+        temp = from_yandex()
+    except Exception as exc:
+        reason = f'{type(exc).__name__}: {exc}'
+        source = 'open-meteo'
+        temp = from_open_meteo()
 
-    temp = round(data['current']['temperature_2m'])
+    payload = {'temp': temp, 'city': 'Томск', 'source': source}
+    if reason and (event.get('queryStringParameters') or {}).get('debug') == '1':
+        payload['reason'] = reason
+
     return {
         'statusCode': 200,
         'headers': {**CORS, 'Cache-Control': 'public, max-age=600'},
-        'body': json.dumps({'temp': temp, 'city': 'Томск'}, ensure_ascii=False),
+        'body': json.dumps(payload, ensure_ascii=False),
         'isBase64Encoded': False,
     }
