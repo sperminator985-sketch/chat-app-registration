@@ -6,7 +6,7 @@ import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/use-auth';
 import { nickColorClass, staffNickClass } from '@/data/chat';
 import { useDm } from '@/hooks/use-dm';
-import { useWeather, formatTemp, degreeWord } from '@/hooks/use-weather';
+import { useWeather, formatTemp, degreeWord, weatherIcon } from '@/hooks/use-weather';
 import { useTheme } from '@/hooks/use-theme';
 import { useTicker } from '@/hooks/use-ticker';
 
@@ -256,7 +256,7 @@ const Header = ({ onProfile }: HeaderProps) => {
               className="hidden items-center gap-2 border-2 border-foreground/30 px-3 py-1.5 text-[0.76rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground transition-colors hover:border-secondary hover:text-foreground lg:flex"
             >
               <Icon
-                name={temp <= 0 ? 'Snowflake' : 'Sun'}
+                name={weatherIcon(temp)}
                 size={14}
                 className={temp < 0 ? 'text-primary' : 'text-secondary'}
               />
@@ -326,7 +326,7 @@ const Header = ({ onProfile }: HeaderProps) => {
             className="mx-auto flex min-w-0 shrink items-center gap-1 border-2 border-foreground/30 px-2 py-1 text-[0.55rem] font-semibold uppercase leading-tight tracking-[0.04em] text-muted-foreground md:hidden"
           >
             <Icon
-              name={temp <= 0 ? 'Snowflake' : 'Sun'}
+              name={weatherIcon(temp)}
               size={13}
               className={cn('shrink-0', temp < 0 ? 'text-primary' : 'text-secondary')}
             />
