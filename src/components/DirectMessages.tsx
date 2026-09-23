@@ -215,11 +215,11 @@ const DirectMessages = () => {
                     : 'border-foreground/25 bg-muted/50',
                 )}
               >
-                <p className="flex items-center gap-2">
-                  <span className={cn('text-[0.84rem] font-semibold sm:text-[1rem]', staffNickClass(m.nick, nickColorClass[m.color]))}>{m.nick}</span>
-                  <span className="font-mono text-[0.64rem] text-muted-foreground sm:text-[0.72rem]">{m.time}</span>
+                <p className="chat-font flex items-center gap-2">
+                  <span className={cn('text-[0.82rem] font-semibold sm:text-[0.92rem]', staffNickClass(m.nick, nickColorClass[m.color]))}>{m.nick}</span>
+                  <span className="font-mono text-[0.66rem] text-muted-foreground sm:text-[0.78rem]">{m.time}</span>
                 </p>
-                <p className="chat-font mt-1 text-[0.95rem] leading-[1.35] text-foreground/90 sm:text-[1rem]">{body}</p>
+                <p className="chat-font mt-1 text-[0.95rem] leading-[1.35] text-foreground/90 sm:text-[0.94rem]">{body}</p>
               </div>
             );
           })}
@@ -231,7 +231,7 @@ const DirectMessages = () => {
             onChange={(e) => setDraft(e.target.value)}
             maxLength={480}
             placeholder="Записка соседу…"
-            className="chat-font flex-1 border-2 border-foreground/35 bg-input px-3 py-2 text-[1rem] outline-none focus:border-secondary placeholder:text-muted-foreground/70"
+            className="chat-font flex-1 border-2 border-foreground/35 bg-input px-3 py-2 text-[0.95rem] outline-none focus:border-secondary placeholder:text-muted-foreground/70 sm:text-[0.94rem]"
           />
           <EmojiPicker onPick={(e) => setDraft((prev) => (prev + e).slice(0, 480))} />
           <button type="submit" disabled={sending} className="btn-brut shrink-0 disabled:opacity-60">
