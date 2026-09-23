@@ -341,7 +341,6 @@ const Header = ({ onProfile }: HeaderProps) => {
 
         <div className="flex shrink-0 items-center gap-1.5 md:hidden">
           {user && mailButton()}
-          {user && tickerButton()}
           <button
             className={cn(
               'flex h-10 w-10 items-center justify-center border-2',
@@ -420,6 +419,24 @@ const Header = ({ onProfile }: HeaderProps) => {
                     </span>
                   )}
                 </button>
+                {(user.isAdmin || user.uni) && (
+                  <button
+                    onClick={() => {
+                      setOpen(false);
+                      if (user.isAdmin) navigate('/admin');
+                      else openTicker();
+                    }}
+                    className="btn-ghost-brut flex items-center justify-center gap-2"
+                  >
+                    <Icon name="Megaphone" size={16} />
+                    Бегущая строка
+                    {user.isAdmin && pending > 0 && (
+                      <span className="min-w-[22px] bg-primary px-1 font-mono text-[0.72rem] font-bold leading-[18px] text-primary-foreground">
+                        {pending > 99 ? '99+' : pending}
+                      </span>
+                    )}
+                  </button>
+                )}
                 <button
                   onClick={() => {
                     setOpen(false);
