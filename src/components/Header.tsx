@@ -341,6 +341,7 @@ const Header = ({ onProfile }: HeaderProps) => {
 
         <div className="flex shrink-0 items-center gap-1.5 md:hidden">
           {user && mailButton()}
+          {user && soundButton()}
           <button
             className={cn(
               'flex h-10 w-10 items-center justify-center border-2',
@@ -383,15 +384,7 @@ const Header = ({ onProfile }: HeaderProps) => {
               <Icon name={theme === 'day' ? 'Sun' : 'Moon'} size={16} />
               {themeLabel}
             </button>
-            {user && (
-              <button
-                onClick={toggleSound}
-                className="btn-ghost-brut flex items-center justify-center gap-2"
-              >
-                <Icon name={soundOn ? 'Volume2' : 'VolumeX'} size={16} />
-                {soundOn ? 'Звук включён' : 'Звук выключен'}
-              </button>
-            )}
+
             {links.filter((l) => l.href !== '#top').map((l) => (
               <a
                 key={l.href}
