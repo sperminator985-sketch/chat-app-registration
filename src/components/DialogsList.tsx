@@ -12,8 +12,8 @@ const DialogsList = () => {
 
   return (
     <Dialog open={listOpen} onOpenChange={(open) => !open && closeList()}>
-      <DialogContent className="max-w-[460px] border-y-2 border-x-0 border-foreground/40 bg-background p-0 sm:border-x-2 [&>button]:hidden">
-        <div className="flex items-center gap-2 border-b-2 border-foreground/35 px-2 py-4 sm:gap-3 sm:px-5">
+      <DialogContent className="flex h-svh max-h-svh w-screen !max-w-none flex-col overflow-hidden border-0 bg-background p-0 sm:h-auto sm:max-h-[90dvh] sm:w-[calc(100%-1.5rem)] sm:!max-w-[460px] sm:border-2 sm:border-foreground/40 [&>button]:hidden">
+        <div className="flex shrink-0 items-center gap-2 border-b-2 border-foreground/35 px-3 py-3.5 sm:gap-3 sm:px-5 sm:py-4">
           <Icon name="Mail" size={18} className="shrink-0 text-secondary" />
           <p className="font-display text-base font-extrabold uppercase leading-none tracking-[-0.02em] sm:text-lg">
             Личные сообщения
@@ -43,11 +43,11 @@ const DialogsList = () => {
         </div>
 
         {dialogs.length === 0 ? (
-          <p className="px-5 py-8 text-center text-[0.95rem] leading-[1.5] text-muted-foreground">
+          <p className="flex-1 px-5 py-8 text-center text-[0.95rem] leading-[1.5] text-muted-foreground">
             Пока тишина. Кликни по нику соседа в чате — и завяжется переписка.
           </p>
         ) : (
-          <ul className="scrollbar-brut divide-y divide-foreground/15 overflow-y-auto" style={{ maxHeight: 380 }}>
+          <ul className="scrollbar-brut min-h-0 flex-1 divide-y divide-foreground/15 overflow-y-auto sm:max-h-[380px] sm:flex-none">
             {dialogs.map((d) => (
               <li key={d.nick} className="relative">
                 <button
