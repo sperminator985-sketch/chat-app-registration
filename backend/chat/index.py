@@ -395,10 +395,14 @@ def handler(event: dict, context) -> dict:
             user = get_user_by_token(cur, token)
             if not user or user.get('banned'):
                 return respond(401, {'error': 'Не авторизован'})
+            staff_filter = (
+                "" if user.get('isAdmin')
+                else " AND is_admin IS NOT TRUE AND LOWER(nick) NOT IN ('админ', 'комендант', 'admin')"
+            )
             cur.execute(
                 f"SELECT nick, color, status, avatar, avatar_url, is_admin, uni, first_name, last_name, "
                 f"birth_date, created_at, EXTRACT(EPOCH FROM (NOW() - last_seen)) "
-                f"FROM {SCHEMA}.users WHERE banned_at IS NULL AND is_admin IS NOT TRUE "
+                f"FROM {SCHEMA}.users WHERE banned_at IS NULL{staff_filter} "
                 f"ORDER BY nick ASC LIMIT 1000"
             )
             residents = [

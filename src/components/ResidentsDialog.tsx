@@ -20,6 +20,7 @@ const ResidentsDialog = ({ open, onOpenChange, onCard, onWrite, myNick }: Props)
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [query, setQuery] = useState('');
+  const [uni, setUni] = useState('all');
 
   useEffect(() => {
     if (!open) return;
@@ -36,11 +37,21 @@ const ResidentsDialog = ({ open, onOpenChange, onCard, onWrite, myNick }: Props)
     };
   }, [open]);
 
+  const unis = useMemo(() => {
+    const set = new Set<string>();
+    list.forEach((r) => r.uni && set.add(r.uni));
+    return [...set].sort((a, b) => a.localeCompare(b, 'ru'));
+  }, [list]);
+
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return list;
-    return list.filter((r) => r.nick.toLowerCase().includes(q));
-  }, [list, query]);
+    return list.filter((r) => {
+      if (q && !r.nick.toLowerCase().includes(q)) return false;
+      if (uni === 'all') return true;
+      if (uni === 'none') return !r.uni;
+      return r.uni === uni;
+    });
+  }, [list, query, uni]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -51,7 +62,7 @@ const ResidentsDialog = ({ open, onOpenChange, onCard, onWrite, myNick }: Props)
             Кто зарегистрирован
           </p>
           <span className="shrink-0 border-2 border-foreground/25 px-1.5 font-mono text-[0.72rem] text-muted-foreground">
-            {list.length}
+            {filtered.length}
           </span>
           <button
             type="button"
@@ -85,6 +96,30 @@ const ResidentsDialog = ({ open, onOpenChange, onCard, onWrite, myNick }: Props)
               </button>
             )}
           </div>
+
+          {unis.length > 0 && (
+            <div className="scrollbar-brut mt-2 flex gap-1.5 overflow-x-auto pb-1">
+              {[
+                { id: 'all', label: `Все · ${list.length}` },
+                ...unis.map((u) => ({ id: u, label: u })),
+                { id: 'none', label: 'Без вуза' },
+              ].map((t) => (
+                <button
+                  key={t.id}
+                  type="button"
+                  onClick={() => setUni(t.id)}
+                  className={cn(
+                    'shrink-0 border-2 px-2 py-1 font-mono text-[0.68rem] uppercase tracking-[0.06em] transition-colors',
+                    uni === t.id
+                      ? 'border-secondary bg-secondary text-secondary-foreground'
+                      : 'border-foreground/25 text-muted-foreground hover:border-secondary',
+                  )}
+                >
+                  {t.label}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         {loading ? (
@@ -157,8 +192,8 @@ const ResidentsDialog = ({ open, onOpenChange, onCard, onWrite, myNick }: Props)
                         )}
                       </span>
                       <span className="mt-0.5 block truncate font-mono text-[0.66rem] uppercase tracking-[0.06em] text-muted-foreground">
+                        {r.uni ? `${r.uni} · ` : ''}
                         {r.online ? 'в сети' : lastSeenText(r.seenAgo)}
-                        {r.since ? ` · с ${r.since}` : ''}
                       </span>
                     </span>
                   </div>

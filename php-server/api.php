@@ -1504,12 +1504,15 @@ try {
 
     // --- Все зарегистрированные жильцы ---
     if ($method === 'GET' && $action === 'residents') {
-        requireUser();
+        $me = requireUser();
+        $staffFilter = !empty($me['isAdmin'])
+            ? ''
+            : " AND (u.is_admin IS NULL OR u.is_admin = 0) AND u.nick_lower NOT IN ('админ', 'комендант', 'admin')";
         $rows = q(
             'SELECT u.nick, u.color, u.status, u.avatar, u.avatar_url, u.is_admin, u.uni,
                     u.first_name, u.last_name, u.birth_date, u.created_at,
                     TIMESTAMPDIFF(SECOND, u.last_seen, UTC_TIMESTAMP()) AS ago
-             FROM users u WHERE u.banned_at IS NULL AND u.is_admin IS NOT TRUE
+             FROM users u WHERE u.banned_at IS NULL' . $staffFilter . '
              ORDER BY u.nick ASC LIMIT 1000'
         )->fetchAll();
         out(200, ['residents' => array_map(static function (array $r): array {
