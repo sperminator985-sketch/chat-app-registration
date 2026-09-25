@@ -6,6 +6,7 @@ import { api, Resident } from '@/lib/api';
 import { nickColorClass, staffNickClass } from '@/data/chat';
 import { lastSeenText } from '@/lib/last-seen';
 import { CardPerson } from '@/components/UserCardDialog';
+import { useCall } from '@/hooks/use-call';
 
 type Props = {
   open: boolean;
@@ -22,6 +23,7 @@ const ResidentsDialog = ({ open, onOpenChange, onCard, onWrite, myNick }: Props)
   const [query, setQuery] = useState('');
   const [uni, setUni] = useState('all');
   const [onlyOnline, setOnlyOnline] = useState(false);
+  const { startCall } = useCall();
 
   useEffect(() => {
     if (!open) return;
@@ -190,21 +192,36 @@ const ResidentsDialog = ({ open, onOpenChange, onCard, onWrite, myNick }: Props)
                       <Icon name="Info" size={13} />
                     </button>
                     {!isMe && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          onWrite(r.nick);
-                          onOpenChange(false);
-                        }}
-                        title={`Написать лично: ${r.nick}`}
-                        aria-label={`Написать лично: ${r.nick}`}
-                        className="flex h-7 w-7 items-center justify-center border-2 border-foreground/30 text-muted-foreground transition-colors hover:border-sky-400 hover:text-sky-300"
-                      >
-                        <Icon name="Mail" size={13} />
-                      </button>
+                      <>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            onWrite(r.nick);
+                            onOpenChange(false);
+                          }}
+                          title={`Написать лично: ${r.nick}`}
+                          aria-label={`Написать лично: ${r.nick}`}
+                          className="flex h-7 w-7 items-center justify-center border-2 border-foreground/30 text-muted-foreground transition-colors hover:border-sky-400 hover:text-sky-300"
+                        >
+                          <Icon name="Mail" size={13} />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            onOpenChange(false);
+                            startCall(r.nick);
+                          }}
+                          disabled={!r.online}
+                          title={r.online ? `Видеозвонок: ${r.nick}` : `${r.nick} не в сети`}
+                          aria-label={`Видеозвонок: ${r.nick}`}
+                          className="flex h-7 w-7 items-center justify-center border-2 border-foreground/30 text-muted-foreground transition-colors hover:border-secondary hover:text-secondary disabled:cursor-not-allowed disabled:border-foreground/15 disabled:text-muted-foreground/30 disabled:hover:border-foreground/15 disabled:hover:text-muted-foreground/30"
+                        >
+                          <Icon name="Video" size={13} />
+                        </button>
+                      </>
                     )}
                   </div>
-                  <div className={cn('flex items-center gap-2 py-3 pl-3 sm:pl-5', isMe ? 'pr-12' : 'pr-[5.5rem]')}>
+                  <div className={cn('flex items-center gap-2 py-3 pl-3 sm:pl-5', isMe ? 'pr-12' : 'pr-[7.5rem]')}>
                     <span className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full border border-foreground/25 bg-muted">
                       {r.avatarUrl ? (
                         <img src={r.avatarUrl} alt="" className="h-full w-full object-cover" />
