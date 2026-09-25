@@ -398,20 +398,6 @@ const Header = ({ onProfile }: HeaderProps) => {
             ))}
             {user ? (
               <>
-                <button
-                  onClick={() => {
-                    setOpen(false);
-                    openList();
-                  }}
-                  className="btn-ghost-brut flex items-center justify-center gap-2"
-                >
-                  Личные сообщения
-                  {unread > 0 && (
-                    <span className="min-w-[22px] bg-primary px-1 font-mono text-[0.72rem] font-bold leading-[18px] text-primary-foreground">
-                      {unread > 99 ? '99+' : unread}
-                    </span>
-                  )}
-                </button>
                 {(user.isAdmin || user.uni) && (
                   <button
                     onClick={() => {
