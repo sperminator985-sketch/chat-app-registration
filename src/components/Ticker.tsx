@@ -84,7 +84,10 @@ const Ticker = () => {
   return (
     <div className="group my-0 overflow-hidden border-y-2 border-foreground/35 bg-card py-2.5 md:py-3">
       <div
-        className={cn('flex w-max', solo ? 'animate-marquee-solo' : 'animate-marquee')}
+        className={cn(
+          'flex w-max [backface-visibility:hidden] [transform:translateZ(0)] [will-change:transform]',
+          solo ? 'animate-marquee-solo' : 'animate-marquee',
+        )}
         style={
           {
             animationDuration: `${duration}s`,

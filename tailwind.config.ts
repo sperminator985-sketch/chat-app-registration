@@ -131,12 +131,12 @@ export default {
 					'90%, 100%': { opacity: '1' }
 				},
 				marquee: {
-					from: { transform: 'translateX(0)' },
-					to: { transform: 'translateX(-50%)' }
+					from: { transform: 'translate3d(0,0,0)' },
+					to: { transform: 'translate3d(-50%,0,0)' }
 				},
 				'marquee-solo': {
-					from: { transform: 'translateX(var(--marquee-from))' },
-					to: { transform: 'translateX(var(--marquee-to))' }
+					from: { transform: 'translate3d(var(--marquee-from),0,0)' },
+					to: { transform: 'translate3d(var(--marquee-to),0,0)' }
 				},
 				caret: {
 					'0%, 49%': { opacity: '1' },
