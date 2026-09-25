@@ -21,6 +21,7 @@ const ResidentsDialog = ({ open, onOpenChange, onCard, onWrite, myNick }: Props)
   const [error, setError] = useState('');
   const [query, setQuery] = useState('');
   const [uni, setUni] = useState('all');
+  const [onlyOnline, setOnlyOnline] = useState(false);
 
   useEffect(() => {
     if (!open) return;
@@ -47,11 +48,14 @@ const ResidentsDialog = ({ open, onOpenChange, onCard, onWrite, myNick }: Props)
     const q = query.trim().toLowerCase();
     return list.filter((r) => {
       if (q && !r.nick.toLowerCase().includes(q)) return false;
+      if (onlyOnline && !r.online) return false;
       if (uni === 'all') return true;
       if (uni === 'none') return !r.uni;
       return r.uni === uni;
     });
-  }, [list, query, uni]);
+  }, [list, query, uni, onlyOnline]);
+
+  const onlineCount = useMemo(() => list.filter((r) => r.online).length, [list]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -97,8 +101,27 @@ const ResidentsDialog = ({ open, onOpenChange, onCard, onWrite, myNick }: Props)
             )}
           </div>
 
+          <div className="scrollbar-brut mt-2 flex gap-1.5 overflow-x-auto pb-1">
+            <button
+              type="button"
+              onClick={() => setOnlyOnline((v) => !v)}
+              title="Показать только тех, кто сейчас в сети"
+              className={cn(
+                'flex shrink-0 items-center gap-1.5 border-2 px-2 py-1 font-mono text-[0.68rem] uppercase tracking-[0.06em] transition-colors',
+                onlyOnline
+                  ? 'border-secondary bg-secondary text-secondary-foreground'
+                  : 'border-foreground/25 text-muted-foreground hover:border-secondary',
+              )}
+            >
+              <span
+                className={cn('h-2 w-2 shrink-0', onlyOnline ? 'bg-secondary-foreground' : 'bg-secondary')}
+              />
+              В сети · {onlineCount}
+            </button>
+          </div>
+
           {unis.length > 0 && (
-            <div className="scrollbar-brut mt-2 flex gap-1.5 overflow-x-auto pb-1">
+            <div className="scrollbar-brut mt-1.5 flex gap-1.5 overflow-x-auto pb-1">
               {[
                 { id: 'all', label: `Все · ${list.length}` },
                 ...unis.map((u) => ({ id: u, label: u })),
@@ -130,7 +153,11 @@ const ResidentsDialog = ({ open, onOpenChange, onCard, onWrite, myNick }: Props)
           <p className="flex-1 px-5 py-8 text-center text-[0.9rem] text-destructive">{error}</p>
         ) : filtered.length === 0 ? (
           <p className="flex-1 px-5 py-8 text-center text-[0.92rem] leading-[1.5] text-muted-foreground">
-            {query ? `По запросу «${query}» никого не нашли` : 'Список пока пуст'}
+            {query
+              ? `По запросу «${query}» никого не нашли`
+              : onlyOnline
+                ? 'Сейчас в сети никого нет'
+                : 'Список пока пуст'}
           </p>
         ) : (
           <ul className="scrollbar-brut min-h-0 flex-1 divide-y divide-foreground/15 overflow-y-auto overscroll-contain">
