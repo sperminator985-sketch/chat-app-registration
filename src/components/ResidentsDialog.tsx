@@ -81,8 +81,12 @@ const ResidentsDialog = ({ open, onOpenChange, onCard, onWrite, myNick }: Props)
           <p className="min-w-0 flex-1 font-display text-[0.78rem] font-extrabold uppercase leading-none tracking-[-0.03em] sm:text-lg sm:tracking-[-0.02em]">
             Кто зарегистрирован
           </p>
-          <span className="shrink-0 border-2 border-foreground/25 px-1.5 font-mono text-[0.72rem] text-muted-foreground">
-            {filtered.length}
+          <span
+            title="Всего зарегистрировано"
+            className="flex h-8 shrink-0 items-center gap-1.5 border-2 border-foreground/35 px-2 font-mono text-[0.72rem] font-semibold text-muted-foreground sm:px-2.5"
+          >
+            <Icon name="Users" size={14} />
+            {list.length}
           </span>
           <button
             type="button"
