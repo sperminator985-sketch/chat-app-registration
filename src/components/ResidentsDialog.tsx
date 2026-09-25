@@ -7,6 +7,7 @@ import { nickColorClass, staffNickClass } from '@/data/chat';
 import { lastSeenText } from '@/lib/last-seen';
 import { CardPerson } from '@/components/UserCardDialog';
 import { useCall } from '@/hooks/use-call';
+import { usePrivate } from '@/hooks/use-private';
 
 type Props = {
   open: boolean;
@@ -24,6 +25,7 @@ const ResidentsDialog = ({ open, onOpenChange, onCard, onWrite, myNick }: Props)
   const [uni, setUni] = useState('all');
   const [onlyOnline, setOnlyOnline] = useState(false);
   const { startCall } = useCall();
+  const { invitePeer, pendingNick } = usePrivate();
 
   useEffect(() => {
     if (!open) return;
@@ -211,6 +213,22 @@ const ResidentsDialog = ({ open, onOpenChange, onCard, onWrite, myNick }: Props)
                         </button>
                         <button
                           type="button"
+                          onClick={() => invitePeer(r.nick)}
+                          disabled={!r.online || pendingNick === r.nick}
+                          title={
+                            !r.online
+                              ? `${r.nick} не в сети`
+                              : pendingNick === r.nick
+                                ? 'Ждём ответа'
+                                : `Позвать в приват: ${r.nick}`
+                          }
+                          aria-label={`Позвать в приват: ${r.nick}`}
+                          className="flex h-7 w-7 items-center justify-center border-2 border-foreground/30 text-muted-foreground transition-colors hover:border-sky-400 hover:text-sky-300 disabled:cursor-not-allowed disabled:border-foreground/15 disabled:text-muted-foreground/30 disabled:hover:border-foreground/15 disabled:hover:text-muted-foreground/30"
+                        >
+                          <Icon name={pendingNick === r.nick ? 'Hourglass' : 'Lock'} size={13} />
+                        </button>
+                        <button
+                          type="button"
                           onClick={() => {
                             onOpenChange(false);
                             startCall(r.nick);
@@ -225,7 +243,7 @@ const ResidentsDialog = ({ open, onOpenChange, onCard, onWrite, myNick }: Props)
                       </>
                     )}
                   </div>
-                  <div className={cn('flex items-center gap-2 py-3 pl-3 sm:pl-5', isMe ? 'pr-12' : 'pr-[7.5rem]')}>
+                  <div className={cn('flex items-center gap-2 py-3 pl-3 sm:pl-5', isMe ? 'pr-12' : 'pr-[9.5rem]')}>
                     <span className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full border border-foreground/25 bg-muted">
                       {r.avatarUrl ? (
                         <img src={r.avatarUrl} alt="" className="h-full w-full object-cover" />
