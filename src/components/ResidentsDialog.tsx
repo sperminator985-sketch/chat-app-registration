@@ -76,9 +76,9 @@ const ResidentsDialog = ({ open, onOpenChange, onCard, onWrite, myNick }: Props)
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="flex h-svh max-h-svh w-screen !max-w-none flex-col overflow-hidden border-0 bg-background p-0 sm:h-auto sm:max-h-[85dvh] sm:w-[calc(100%-1.5rem)] sm:!max-w-[520px] sm:border-2 sm:border-foreground/40 [&>button]:hidden">
-        <div className="flex shrink-0 items-center gap-2 border-b-2 border-foreground/35 px-3 py-3.5 sm:gap-3 sm:px-5 sm:py-4">
-          <Icon name="BookUser" size={18} className="shrink-0 text-secondary" />
-          <p className="min-w-0 flex-1 truncate font-display text-base font-extrabold uppercase leading-none tracking-[-0.02em] sm:text-lg">
+        <div className="flex shrink-0 items-center gap-1.5 border-b-2 border-foreground/35 px-2.5 py-3.5 sm:gap-3 sm:px-5 sm:py-4">
+          <Icon name="BookUser" size={16} className="shrink-0 text-secondary sm:h-[18px] sm:w-[18px]" />
+          <p className="min-w-0 flex-1 font-display text-[0.78rem] font-extrabold uppercase leading-none tracking-[-0.03em] sm:text-lg sm:tracking-[-0.02em]">
             Кто зарегистрирован
           </p>
           <span className="shrink-0 border-2 border-foreground/25 px-1.5 font-mono text-[0.72rem] text-muted-foreground">
