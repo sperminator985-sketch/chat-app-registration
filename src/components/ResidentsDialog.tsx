@@ -73,8 +73,6 @@ const ResidentsDialog = ({ open, onOpenChange, onCard, onWrite, myNick }: Props)
       });
   }, [list, query, uni, onlyOnline, myNick]);
 
-  const onlineCount = useMemo(() => list.filter((r) => r.online).length, [list]);
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="flex h-svh max-h-svh w-screen !max-w-none flex-col overflow-hidden border-0 bg-background p-0 sm:h-auto sm:max-h-[85dvh] sm:w-[calc(100%-1.5rem)] sm:!max-w-[520px] sm:border-2 sm:border-foreground/40 [&>button]:hidden">
@@ -138,7 +136,7 @@ const ResidentsDialog = ({ open, onOpenChange, onCard, onWrite, myNick }: Props)
               <span
                 className={cn('h-2 w-2 shrink-0', onlyOnline ? 'bg-secondary-foreground' : 'bg-secondary')}
               />
-              В сети · {onlineCount}
+              В сети
             </button>
           </div>
 
