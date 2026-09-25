@@ -114,15 +114,15 @@ const DirectMessages = () => {
           <Icon name="Mail" size={18} className="shrink-0 text-secondary" />
           <div className="min-w-0 flex-1">
             <p className="truncate font-display text-base font-extrabold uppercase leading-none tracking-[-0.02em] sm:text-lg">
-              Личка с{' '}
+              <span className="hidden sm:inline">Личка с </span>
               <span className={cn(staffNickClass(nick, peer ? nickColorClass[peer.color] : 'text-foreground'))}>{nick}</span>
             </p>
             {peer && (
-              <p className="mt-1 flex flex-wrap items-center gap-2 text-[0.85rem] text-muted-foreground">
-                {peer.status}
+              <p className="mt-1 flex items-center gap-2 text-[0.85rem] text-muted-foreground">
+                <span className="truncate">{peer.status}</span>
                 <span
                   className={cn(
-                    'flex items-center gap-1.5 font-mono text-[0.72rem] uppercase tracking-[0.08em]',
+                    'flex shrink-0 items-center gap-1.5 font-mono text-[0.72rem] uppercase tracking-[0.08em]',
                     peer.online ? 'text-secondary' : 'text-muted-foreground/80',
                   )}
                 >
