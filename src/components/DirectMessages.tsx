@@ -107,13 +107,13 @@ const DirectMessages = () => {
   return (
     <Dialog open={Boolean(nick)} onOpenChange={(open) => !open && onClose()}>
       <DialogContent
-        className="max-w-[560px] border-y-2 border-x-0 border-foreground/40 bg-background p-0 sm:border-x-2 md:flex md:h-svh md:max-h-svh md:w-screen md:!max-w-none md:flex-col md:border-x-0"
-        closeClassName="md:hidden"
+        className="flex h-svh max-h-svh w-screen !max-w-none flex-col overflow-hidden border-0 border-foreground/40 bg-background p-0"
+        closeClassName="hidden"
       >
-        <div className="flex shrink-0 items-center gap-3 border-b-2 border-foreground/35 px-5 py-4">
+        <div className="flex shrink-0 items-center gap-2 border-b-2 border-foreground/35 px-3 py-3 sm:gap-3 sm:px-5 sm:py-4">
           <Icon name="Mail" size={18} className="shrink-0 text-secondary" />
-          <div>
-            <p className="font-display text-lg font-extrabold uppercase leading-none tracking-[-0.02em]">
+          <div className="min-w-0 flex-1">
+            <p className="truncate font-display text-base font-extrabold uppercase leading-none tracking-[-0.02em] sm:text-lg">
               Личка с{' '}
               <span className={cn(staffNickClass(nick, peer ? nickColorClass[peer.color] : 'text-foreground'))}>{nick}</span>
             </p>
@@ -135,14 +135,14 @@ const DirectMessages = () => {
           {cryptoOn && (
             <span
               title="Переписка зашифрована — прочитать её на сервере невозможно"
-              className="ml-auto flex shrink-0 items-center gap-1 text-[0.68rem] font-bold uppercase tracking-[0.06em] text-secondary"
+              className="flex shrink-0 items-center gap-1 text-[0.68rem] font-bold uppercase tracking-[0.06em] text-secondary"
             >
               <Icon name="ShieldCheck" size={14} />
               <span className="hidden sm:inline">шифр</span>
             </span>
           )}
           {nick && (
-            <div className={cn('mr-8 flex shrink-0 items-center gap-2 md:mr-0', !cryptoOn && 'ml-auto')}>
+            <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
               <button
                 type="button"
                 onClick={() => {
@@ -170,16 +170,17 @@ const DirectMessages = () => {
                 type="button"
                 onClick={onClose}
                 title="Закрыть личку"
-                className="hidden items-center gap-1.5 border-2 border-foreground/35 px-2.5 py-1 text-[0.72rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground transition-colors hover:border-primary hover:text-primary md:flex"
+                aria-label="Закрыть личку"
+                className="flex h-9 items-center gap-1.5 border-2 border-foreground/35 px-2 py-1 text-[0.72rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground transition-colors hover:border-primary hover:text-primary sm:px-2.5"
               >
                 <Icon name="LogOut" size={14} />
-                <span>Выйти</span>
+                <span className="hidden sm:inline">Выйти</span>
               </button>
             </div>
           )}
         </div>
 
-        <div ref={feedRef} className="scrollbar-brut h-[240px] min-h-0 space-y-2 overflow-y-auto px-2 py-4 sm:h-[320px] sm:px-5 md:h-auto md:flex-1">
+        <div ref={feedRef} className="scrollbar-brut min-h-0 flex-1 space-y-2 overflow-y-auto px-3 py-4 sm:px-5">
           {!loaded && <p className="font-mono text-[0.85rem] text-muted-foreground">открываем переписку…</p>}
           {loaded && messages.length === 0 && (
             <p className="border-l-2 border-secondary bg-muted/60 px-3 py-2 font-mono text-[0.82rem] uppercase tracking-[0.08em] text-muted-foreground">
@@ -237,18 +238,18 @@ const DirectMessages = () => {
           })}
         </div>
 
-        <form onSubmit={send} className="flex shrink-0 gap-2 border-t-2 border-foreground/35 px-2 py-4 sm:px-5">
+        <form onSubmit={send} className="flex shrink-0 items-center gap-1.5 border-t-2 border-foreground/35 px-3 py-3 sm:gap-2 sm:px-5 sm:py-4">
           <input
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
             maxLength={480}
             placeholder="Записка соседу…"
-            className="chat-font flex-1 border-2 border-foreground/35 bg-input px-3 py-2 text-[0.95rem] outline-none focus:border-secondary placeholder:text-muted-foreground/70 sm:text-[0.94rem]"
+            className="chat-font min-w-0 flex-1 border-2 border-foreground/35 bg-input px-3 py-2 text-[0.95rem] outline-none focus:border-secondary placeholder:text-muted-foreground/70 sm:text-[0.94rem]"
           />
           <EmojiPicker onPick={(e) => setDraft((prev) => (prev + e).slice(0, 480))} />
-          <button type="submit" disabled={sending} className="btn-brut shrink-0 disabled:opacity-60">
+          <button type="submit" disabled={sending} className="btn-brut shrink-0 px-3 disabled:opacity-60 sm:px-4">
             <Icon name="Send" size={16} />
-            {sending ? '…' : 'Послать'}
+            <span className="hidden sm:inline">{sending ? '…' : 'Послать'}</span>
           </button>
         </form>
       </DialogContent>
