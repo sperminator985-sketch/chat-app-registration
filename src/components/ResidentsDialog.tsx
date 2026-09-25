@@ -46,14 +46,28 @@ const ResidentsDialog = ({ open, onOpenChange, onCard, onWrite, myNick }: Props)
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return list.filter((r) => {
-      if (q && !r.nick.toLowerCase().includes(q)) return false;
-      if (onlyOnline && !r.online) return false;
-      if (uni === 'all') return true;
-      if (uni === 'none') return !r.uni;
-      return r.uni === uni;
-    });
-  }, [list, query, uni, onlyOnline]);
+    return list
+      .filter((r) => {
+        if (q && !r.nick.toLowerCase().includes(q)) return false;
+        if (onlyOnline && !r.online) return false;
+        if (uni === 'all') return true;
+        if (uni === 'none') return !r.uni;
+        return r.uni === uni;
+      })
+      .sort((a, b) => {
+        if (myNick) {
+          if (a.nick === myNick) return -1;
+          if (b.nick === myNick) return 1;
+        }
+        if (Boolean(a.online) !== Boolean(b.online)) return a.online ? -1 : 1;
+        if (!a.online && !b.online) {
+          const aAgo = a.seenAgo ?? Number.MAX_SAFE_INTEGER;
+          const bAgo = b.seenAgo ?? Number.MAX_SAFE_INTEGER;
+          if (aAgo !== bAgo) return aAgo - bAgo;
+        }
+        return a.nick.localeCompare(b.nick, 'ru', { sensitivity: 'base' });
+      });
+  }, [list, query, uni, onlyOnline, myNick]);
 
   const onlineCount = useMemo(() => list.filter((r) => r.online).length, [list]);
 
