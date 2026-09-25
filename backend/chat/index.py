@@ -391,6 +391,27 @@ def handler(event: dict, context) -> dict:
             )
             return respond(200, {'user': user_row(cur.fetchone())})
 
+        if method == 'GET' and action == 'residents':
+            user = get_user_by_token(cur, token)
+            if not user or user.get('banned'):
+                return respond(401, {'error': 'Не авторизован'})
+            cur.execute(
+                f"SELECT nick, color, status, avatar, avatar_url, is_admin, uni, first_name, last_name, "
+                f"birth_date, created_at, EXTRACT(EPOCH FROM (NOW() - last_seen)) "
+                f"FROM {SCHEMA}.users WHERE banned_at IS NULL AND is_admin IS NOT TRUE "
+                f"ORDER BY nick ASC LIMIT 1000"
+            )
+            residents = [
+                {'nick': r[0], 'color': r[1], 'status': r[2], 'avatar': r[3], 'avatarUrl': r[4],
+                 'isAdmin': bool(r[5]), 'uni': r[6], 'firstName': r[7], 'lastName': r[8],
+                 'birthDate': r[9].strftime('%Y-%m-%d') if r[9] else None,
+                 'since': tomsk(r[10]).strftime('%d.%m.%Y') if r[10] else None,
+                 'seenAgo': int(r[11]) if r[11] is not None else None,
+                 'online': r[11] is not None and r[11] < 120}
+                for r in cur.fetchall()
+            ]
+            return respond(200, {'residents': residents})
+
         if method == 'GET' and action == 'dialogs':
             user = get_user_by_token(cur, token)
             if user and user.get('banned'):

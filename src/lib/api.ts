@@ -88,6 +88,22 @@ export type SecurityEvent = {
   time: string;
 };
 
+export type Resident = {
+  nick: string;
+  color: NickColor;
+  status: string;
+  avatar?: number;
+  avatarUrl?: string | null;
+  isAdmin?: boolean;
+  uni?: string | null;
+  firstName?: string | null;
+  lastName?: string | null;
+  birthDate?: string | null;
+  since?: string | null;
+  seenAgo?: number | null;
+  online?: boolean;
+};
+
 export type ApiMessage = {
   id: number;
   nick: string;
@@ -315,6 +331,7 @@ export const api = {
     request<{ ok: boolean }>('admin_ban', { method: 'POST', body }),
   adminDelete: (id: number) =>
     request<{ ok: boolean }>('admin_delete', { method: 'POST', body: { id } }),
+  residents: () => request<{ residents: Resident[] }>('residents'),
   dialogs: () =>
     request<{
       dialogs: { nick: string; color: NickColor; unread: number; avatar?: number; avatarUrl?: string | null; online?: boolean; seenAgo?: number | null }[];

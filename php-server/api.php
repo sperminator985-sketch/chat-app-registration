@@ -1502,6 +1502,36 @@ try {
         ]);
     }
 
+    // --- Все зарегистрированные жильцы ---
+    if ($method === 'GET' && $action === 'residents') {
+        requireUser();
+        $rows = q(
+            'SELECT u.nick, u.color, u.status, u.avatar, u.avatar_url, u.is_admin, u.uni,
+                    u.first_name, u.last_name, u.birth_date, u.created_at,
+                    TIMESTAMPDIFF(SECOND, u.last_seen, UTC_TIMESTAMP()) AS ago
+             FROM users u WHERE u.banned_at IS NULL AND u.is_admin IS NOT TRUE
+             ORDER BY u.nick ASC LIMIT 1000'
+        )->fetchAll();
+        out(200, ['residents' => array_map(static function (array $r): array {
+            $ago = $r['ago'] === null ? null : (int) $r['ago'];
+            return [
+                'nick' => $r['nick'],
+                'color' => (int) $r['color'],
+                'status' => (string) $r['status'],
+                'avatar' => (int) $r['avatar'],
+                'avatarUrl' => $r['avatar_url'],
+                'isAdmin' => (bool) $r['is_admin'],
+                'uni' => $r['uni'] ?? null,
+                'firstName' => $r['first_name'] ?? null,
+                'lastName' => $r['last_name'] ?? null,
+                'birthDate' => !empty($r['birth_date']) ? gmdate('Y-m-d', strtotime((string) $r['birth_date'])) : null,
+                'since' => gmdate('d.m.Y', tomskTs($r['created_at'])),
+                'seenAgo' => $ago,
+                'online' => $ago !== null && $ago < ONLINE_SEC,
+            ];
+        }, $rows)]);
+    }
+
     // --- Список личных диалогов ---
     if ($method === 'GET' && $action === 'dialogs') {
         $user = requireUser();

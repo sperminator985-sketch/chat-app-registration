@@ -13,6 +13,7 @@ import { usePrivate } from '@/hooks/use-private';
 import EmojiPicker from '@/components/EmojiPicker';
 import { useTicker } from '@/hooks/use-ticker';
 import UserCardDialog, { CardPerson } from '@/components/UserCardDialog';
+import ResidentsDialog from '@/components/ResidentsDialog';
 
 type ChatWindowProps = {
   activeRoom: string;
@@ -42,6 +43,7 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
   const [sending, setSending] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const [whoOpen, setWhoOpen] = useState(false);
+  const [residentsOpen, setResidentsOpen] = useState(false);
   const [cardPerson, setCardPerson] = useState<CardPerson | null>(null);
 
   const [clearedAt, setClearedAt] = useState(0);
@@ -271,6 +273,14 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
                 >
                   <Icon name="Users" size={14} />
                   {onlineList.length}
+                </button>
+                <button
+                  onClick={() => setResidentsOpen(true)}
+                  title="Кто зарегистрирован"
+                  className="flex items-center gap-1.5 border-2 border-foreground/35 px-2.5 py-1 text-[0.72rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground transition-colors hover:border-secondary hover:text-secondary"
+                >
+                  <Icon name="BookUser" size={14} />
+                  <span className="hidden sm:inline">Жильцы</span>
                 </button>
                 <button
                   onClick={() => setOnlyPrivate((v) => !v)}
@@ -551,6 +561,14 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
           </aside>
         </div>
       </div>
+
+      <ResidentsDialog
+        open={residentsOpen}
+        onOpenChange={setResidentsOpen}
+        onCard={setCardPerson}
+        onWrite={(nick) => setPrivateTo(nick)}
+        myNick={user?.nick}
+      />
 
       <UserCardDialog person={cardPerson} onOpenChange={(v) => !v && setCardPerson(null)} />
     </section>

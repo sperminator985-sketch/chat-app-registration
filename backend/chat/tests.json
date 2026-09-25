@@ -13,6 +13,16 @@
       "expectedStatus": 401
     },
     {
+      "name": "Список жильцов без авторизации",
+      "method": "GET",
+      "path": "/?action=residents",
+      "expectedStatus": 401,
+      "expectedBody": {
+        "error": "string"
+      },
+      "bodyMatcher": "partial"
+    },
+    {
       "name": "Этаж Флирт",
       "method": "GET",
       "path": "/?action=feed&room=flirt",
