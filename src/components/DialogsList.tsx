@@ -35,10 +35,12 @@ const DialogsList = () => {
           <button
             type="button"
             onClick={closeList}
-            aria-label="Закрыть"
-            className="flex h-8 w-8 shrink-0 items-center justify-center btn-close-brut border-2"
+            title="Закрыть личные сообщения"
+            aria-label="Закрыть личные сообщения"
+            className="flex h-8 shrink-0 items-center gap-1.5 border-2 border-foreground/35 px-2 text-[0.72rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground transition-colors hover:border-primary hover:text-primary sm:px-2.5"
           >
-            <Icon name="X" size={16} />
+            <Icon name="LogOut" size={14} />
+            <span className="hidden sm:inline">Выйти</span>
           </button>
         </div>
 
