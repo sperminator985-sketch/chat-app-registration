@@ -121,27 +121,22 @@ const ResidentsDialog = ({ open, onOpenChange, onCard, onWrite, myNick }: Props)
             )}
           </div>
 
-          <div className="scrollbar-brut mt-2 flex gap-1.5 overflow-x-auto pb-1">
-            <button
-              type="button"
-              onClick={() => setOnlyOnline((v) => !v)}
-              title="Показать только тех, кто сейчас в сети"
-              className={cn(
-                'flex shrink-0 items-center gap-1.5 border-2 px-2 py-1 font-mono text-[0.68rem] uppercase tracking-[0.06em] transition-colors',
-                onlyOnline
-                  ? 'border-secondary bg-secondary text-secondary-foreground'
-                  : 'border-foreground/25 text-muted-foreground hover:border-secondary',
-              )}
-            >
-              <span
-                className={cn('h-2 w-2 shrink-0', onlyOnline ? 'bg-secondary-foreground' : 'bg-secondary')}
-              />
-              В сети
-            </button>
-          </div>
-
           {unis.length > 0 && (
-            <div className="scrollbar-brut mt-1.5 flex gap-1.5 overflow-x-auto pb-1">
+            <div className="scrollbar-brut mt-2 flex gap-1.5 overflow-x-auto pb-1">
+              <button
+                type="button"
+                onClick={() => setOnlyOnline((v) => !v)}
+                title="Показать только тех, кто сейчас в сети"
+                aria-label="Только те, кто в сети"
+                className={cn(
+                  'flex h-[26px] w-[26px] shrink-0 items-center justify-center border-2 transition-colors',
+                  onlyOnline
+                    ? 'border-secondary bg-secondary text-secondary-foreground'
+                    : 'border-foreground/25 text-muted-foreground hover:border-secondary',
+                )}
+              >
+                <Icon name="Wifi" size={13} />
+              </button>
               {[
                 { id: 'all', label: `Все · ${list.length}` },
                 ...unis.map((u) => ({ id: u, label: u })),
