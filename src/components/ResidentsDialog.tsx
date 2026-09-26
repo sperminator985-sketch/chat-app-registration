@@ -131,8 +131,8 @@ const ResidentsDialog = ({ open, onOpenChange, onCard, onWrite, myNick }: Props)
                 className={cn(
                   'flex h-[26px] w-[26px] shrink-0 items-center justify-center border-2 transition-colors',
                   onlyOnline
-                    ? 'border-secondary bg-secondary text-secondary-foreground'
-                    : 'border-foreground/25 text-muted-foreground hover:border-secondary',
+                    ? 'border-emerald-400 bg-emerald-400 text-background'
+                    : 'border-foreground/25 text-muted-foreground hover:border-emerald-400 hover:text-emerald-400',
                 )}
               >
                 <Icon name="Wifi" size={13} />
