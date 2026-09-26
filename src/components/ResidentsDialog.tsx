@@ -249,7 +249,7 @@ const ResidentsDialog = ({ open, onOpenChange, onCard, onWrite, myNick }: Props)
                         <span
                           className={cn(
                             'h-2 w-2 shrink-0',
-                            r.online ? 'bg-secondary' : 'bg-muted-foreground/40',
+                            r.online ? 'bg-emerald-400' : 'bg-muted-foreground/40',
                           )}
                         />
                         <span
@@ -266,7 +266,11 @@ const ResidentsDialog = ({ open, onOpenChange, onCard, onWrite, myNick }: Props)
                       </span>
                       <span className="mt-0.5 block truncate font-mono text-[0.66rem] uppercase tracking-[0.06em] text-muted-foreground">
                         {r.uni ? `${r.uni} · ` : ''}
-                        {r.online ? 'в сети' : lastSeenText(r.seenAgo)}
+                        {r.online ? (
+                          <span className="text-emerald-400">в сети</span>
+                        ) : (
+                          lastSeenText(r.seenAgo)
+                        )}
                       </span>
                     </span>
                   </div>
