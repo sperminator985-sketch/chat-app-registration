@@ -7,6 +7,7 @@ import { api, API_VERSION, type AdminMessage, type AdminTickerPost, type AdminUs
 import { nickColorClass, rooms, staffNickClass } from '@/data/chat';
 import { useToast } from '@/hooks/use-toast';
 import VaultPanel from '@/components/VaultPanel';
+import { downloadApiZip, downloadFullZip } from '@/lib/server-files';
 
 const DAY_OPTIONS = [1, 3, 7, 14, 30, 0];
 
@@ -113,19 +114,10 @@ const AdminPanel = () => {
   const [srvVersion, setSrvVersion] = useState<string | null>(null);
 
   const grabFile = useCallback(
-    async (path: string, name: string) => {
+    (kind: 'api' | 'full') => {
       try {
-        const res = await fetch(`${path}?t=${Date.now()}`, { cache: 'no-store' });
-        if (!res.ok) throw new Error(String(res.status));
-        const blob = await res.blob();
-        const href = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = href;
-        a.download = name;
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        setTimeout(() => URL.revokeObjectURL(href), 2000);
+        if (kind === 'api') downloadApiZip();
+        else downloadFullZip();
       } catch {
         toast({
           title: 'Файл не скачался',
@@ -1098,7 +1090,7 @@ const AdminPanel = () => {
           )}
           <span className="ml-auto flex items-center gap-1.5">
             <button
-              onClick={() => grabFile('/api-update.zip', 'api-update.zip')}
+              onClick={() => grabFile('api')}
               title="Архив с одним api.php — для обновления уже работающего чата"
               className={cn(
                 'flex items-center gap-1.5 border-2 px-2 py-1 font-bold transition-colors',
@@ -1111,7 +1103,7 @@ const AdminPanel = () => {
               api.php
             </button>
             <button
-              onClick={() => grabFile('/chat-server.zip', 'chat-server.zip')}
+              onClick={() => grabFile('full')}
               title="Весь комплект для установки на новый хостинг"
               className="flex items-center gap-1.5 border-2 border-foreground/35 px-2 py-1 font-bold text-muted-foreground transition-colors hover:border-secondary hover:text-secondary"
             >
