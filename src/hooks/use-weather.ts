@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 
-const OWN_URL = 'https://chat-tom.ru/chat/api.php?action=weather';
 const WEATHER_URL = 'https://functions.poehali.dev/2c6a74d1-2f8a-481c-ac3e-49927c9727a9';
 
 export type Sky = 'clear' | 'partly' | 'cloudy' | 'fog' | 'drizzle' | 'rain' | 'snow' | 'storm';
@@ -72,27 +71,17 @@ export const useWeather = () => {
     };
 
     const load = async () => {
-      const [own, cloud] = await Promise.allSettled([grab(OWN_URL), grab(WEATHER_URL)]);
-      if (!alive) return;
-
-      const main =
-        cloud.status === 'fulfilled'
-          ? cloud.value
-          : own.status === 'fulfilled'
-            ? own.value
-            : null;
-      if (!main) return;
+      let main: Awaited<ReturnType<typeof grab>> | null = null;
+      try {
+        main = await grab(WEATHER_URL);
+      } catch {
+        return;
+      }
+      if (!alive || !main) return;
 
       if (typeof main.sky === 'string') lastSky = main.sky as Sky;
       if (typeof main.isDay === 'boolean') lastIsDay = main.isDay;
-
-      const text =
-        typeof main.dayText === 'string' && main.dayText
-          ? main.dayText
-          : cloud.status === 'fulfilled' && typeof cloud.value.dayText === 'string'
-            ? cloud.value.dayText
-            : null;
-      if (text) lastDayText = text;
+      if (typeof main.dayText === 'string' && main.dayText) lastDayText = main.dayText;
 
       lastTemp = Math.round(main.t);
       setTemp(lastTemp);
