@@ -55,7 +55,7 @@ export const useWeather = () => {
     let alive = true;
 
     const grab = async (url: string) => {
-      const stamp = Math.floor(Date.now() / 60000);
+      const stamp = Math.floor(Date.now() / 900000);
       const sep = url.includes('?') ? '&' : '?';
       const ctrl = new AbortController();
       const kill = window.setTimeout(() => ctrl.abort(), 6000);
