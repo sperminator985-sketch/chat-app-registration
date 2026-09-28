@@ -76,10 +76,10 @@ export const useWeather = () => {
       if (!alive) return;
 
       const main =
-        own.status === 'fulfilled'
-          ? own.value
-          : cloud.status === 'fulfilled'
-            ? cloud.value
+        cloud.status === 'fulfilled'
+          ? cloud.value
+          : own.status === 'fulfilled'
+            ? own.value
             : null;
       if (!main) return;
 
