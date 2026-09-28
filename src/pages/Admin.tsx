@@ -1071,19 +1071,31 @@ const AdminPanel = () => {
               <span className="font-bold">— залей новый api.php</span>
             </>
           )}
-          <a
-            href="/api-latest.txt"
-            download="api.php"
-            className={cn(
-              'ml-auto flex items-center gap-1.5 border-2 px-2 py-1 font-bold transition-colors',
-              srvVersion === API_VERSION
-                ? 'border-emerald-400/50 hover:bg-emerald-400 hover:text-background'
-                : 'border-primary/60 hover:bg-primary hover:text-primary-foreground',
-            )}
-          >
-            <Icon name="Download" size={13} />
-            Скачать api.php
-          </a>
+          <span className="ml-auto flex items-center gap-1.5">
+            <a
+              href="/api-latest.txt"
+              download="api.php"
+              title="Только api.php — для обновления уже работающего чата"
+              className={cn(
+                'flex items-center gap-1.5 border-2 px-2 py-1 font-bold transition-colors',
+                srvVersion === API_VERSION
+                  ? 'border-emerald-400/50 hover:bg-emerald-400 hover:text-background'
+                  : 'border-primary/60 hover:bg-primary hover:text-primary-foreground',
+              )}
+            >
+              <Icon name="Download" size={13} />
+              api.php
+            </a>
+            <a
+              href="/chat-server.zip"
+              download="chat-server.zip"
+              title="Весь комплект для установки на новый хостинг"
+              className="flex items-center gap-1.5 border-2 border-foreground/35 px-2 py-1 font-bold text-muted-foreground transition-colors hover:border-secondary hover:text-secondary"
+            >
+              <Icon name="FileArchive" size={13} />
+              Весь комплект
+            </a>
+          </span>
         </div>
       </main>
     </div>
