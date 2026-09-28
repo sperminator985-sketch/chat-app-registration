@@ -1072,7 +1072,7 @@ const AdminPanel = () => {
             </>
           )}
           <a
-            href="/api.php"
+            href="/api-latest.txt"
             download="api.php"
             className={cn(
               'ml-auto flex items-center gap-1.5 border-2 px-2 py-1 font-bold transition-colors',
