@@ -1124,10 +1124,10 @@ const AdminPanel = () => {
             onClick={() => checkVersion(true)}
             disabled={verBusy}
             title="Заново спросить у сервера его версию"
-            className="flex items-center gap-1.5 border-2 border-foreground/35 px-2 py-1 font-bold text-muted-foreground transition-colors hover:border-secondary hover:text-secondary disabled:opacity-60"
+            aria-label="Проверить сервер"
+            className="flex items-center justify-center border-2 border-foreground/35 px-1.5 py-1 font-bold text-muted-foreground transition-colors hover:border-secondary hover:text-secondary disabled:opacity-60"
           >
             <Icon name="RefreshCw" size={13} className={cn(verBusy && 'animate-spin')} />
-            Проверить сервер
           </button>
           <span className="ml-auto hidden items-center gap-1.5 md:flex">
             <button
