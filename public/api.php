@@ -90,21 +90,15 @@ const ROOM_UNI = [
     'noch' => 'ТГПУ',
 ];
 
-const TOMICH_ROOM = 'znakomstva';
-
 function canEnterRoom(string $room, array $user): bool
 {
     if (!empty($user['isAdmin'])) {
         return true;
     }
-    $uni = $user['uni'] ?? null;
-    if (!in_array((string) $uni, UNI_LIST, true)) {
-        return $room === TOMICH_ROOM;
-    }
     if (!isset(ROOM_UNI[$room])) {
         return true;
     }
-    return $uni === ROOM_UNI[$room];
+    return ($user['uni'] ?? null) === ROOM_UNI[$room];
 }
 
 function isOwnerNick(string $lower): bool
@@ -1076,12 +1070,6 @@ try {
         $uni = trim((string) param('uni', ''));
         if (!in_array($uni, UNI_LIST, true)) {
             $uni = null;
-        }
-
-        if ($uni === null && !isOwnerNick($lower)) {
-            $room = TOMICH_ROOM;
-        } elseif ($uni !== null && !canEnterRoom($room, ['uni' => $uni])) {
-            $room = 'kurilka';
         }
 
         $email = mb_strtolower(trim((string) param('email', '')));
@@ -2560,103 +2548,6 @@ try {
         }
     }
 
-    // --- Погода в Томске (через свой домен, кэш 10 минут) ---
-    if ($method === 'GET' && $action === 'weather') {
-        $cacheFile = sys_get_temp_dir() . '/obshaga_weather.json';
-
-        if (is_readable($cacheFile)) {
-            $cached = json_decode((string) file_get_contents($cacheFile), true);
-            $age = time() - (int) ($cached['ts'] ?? 0);
-            if (is_array($cached) && isset($cached['temp']) && $age >= 0 && $age < 600) {
-                out(200, [
-                    'temp' => (int) $cached['temp'],
-                    'city' => 'Томск',
-                    'sky' => (string) ($cached['sky'] ?? 'cloudy'),
-                    'isDay' => (bool) ($cached['isDay'] ?? true),
-                ]);
-            }
-        }
-
-        $url = 'https://api.open-meteo.com/v1/forecast?latitude=56.4977&longitude=84.9744'
-            . '&current=temperature_2m,weather_code,is_day&timezone=Asia%2FTomsk';
-
-        $raw = null;
-        if (function_exists('curl_init')) {
-            $ch = curl_init($url);
-            curl_setopt_array($ch, [
-                CURLOPT_RETURNTRANSFER => true,
-                CURLOPT_FOLLOWLOCATION => true,
-                CURLOPT_TIMEOUT => 6,
-                CURLOPT_CONNECTTIMEOUT => 4,
-                CURLOPT_SSL_VERIFYPEER => false,
-                CURLOPT_USERAGENT => 'ObshagaChat/1.0',
-            ]);
-            $res = curl_exec($ch);
-            $code = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
-            curl_close($ch);
-            if (is_string($res) && $res !== '' && $code < 400) {
-                $raw = $res;
-            }
-        }
-        if ($raw === null) {
-            $ctx = stream_context_create([
-                'http' => ['timeout' => 6, 'header' => "User-Agent: ObshagaChat/1.0\r\n"],
-                'ssl' => ['verify_peer' => false, 'verify_peer_name' => false],
-            ]);
-            $res = @file_get_contents($url, false, $ctx);
-            $raw = is_string($res) && $res !== '' ? $res : null;
-        }
-
-        $data = $raw !== null ? json_decode($raw, true) : null;
-        $cur = is_array($data) ? ($data['current'] ?? null) : null;
-
-        if (!is_array($cur) || !isset($cur['temperature_2m'])) {
-            if (isset($cached) && is_array($cached) && isset($cached['temp'])) {
-                out(200, [
-                    'temp' => (int) $cached['temp'],
-                    'city' => 'Томск',
-                    'sky' => (string) ($cached['sky'] ?? 'cloudy'),
-                    'isDay' => (bool) ($cached['isDay'] ?? true),
-                    'stale' => true,
-                ]);
-            }
-            out(503, ['error' => 'Погода недоступна']);
-        }
-
-        $code = (int) ($cur['weather_code'] ?? 3);
-        if ($code === 0) {
-            $sky = 'clear';
-        } elseif (in_array($code, [1, 2], true)) {
-            $sky = 'partly';
-        } elseif ($code === 3) {
-            $sky = 'cloudy';
-        } elseif (in_array($code, [45, 48], true)) {
-            $sky = 'fog';
-        } elseif (in_array($code, [95, 96, 99], true)) {
-            $sky = 'storm';
-        } elseif (in_array($code, [71, 73, 75, 77, 85, 86], true)) {
-            $sky = 'snow';
-        } elseif (in_array($code, [51, 53, 55, 56, 57], true)) {
-            $sky = 'drizzle';
-        } elseif (in_array($code, [61, 63, 65, 66, 67, 80, 81, 82], true)) {
-            $sky = 'rain';
-        } else {
-            $sky = 'cloudy';
-        }
-
-        $temp = (int) round((float) $cur['temperature_2m']);
-        $isDay = (bool) ($cur['is_day'] ?? 1);
-
-        @file_put_contents($cacheFile, json_encode([
-            'ts' => time(),
-            'temp' => $temp,
-            'sky' => $sky,
-            'isDay' => $isDay,
-        ]));
-
-        out(200, ['temp' => $temp, 'city' => 'Томск', 'sky' => $sky, 'isDay' => $isDay]);
-    }
-
     // --- Новости Томска (обновляются каждые 15 минут) ---
     if ($method === 'GET' && $action === 'news') {
         $cacheFile = sys_get_temp_dir() . '/obshaga_news.json';
@@ -2697,11 +2588,36 @@ try {
             return is_string($res) && $res !== '' ? $res : null;
         };
 
+        $tidy = static function (string $title): string {
+            $title = preg_replace('/\s+/u', ' ', $title) ?? $title;
+            $title = trim($title);
+            if ($title === '') {
+                return '';
+            }
+            if (mb_strlen($title) > 140) {
+                $cut = mb_substr($title, 0, 140);
+                $space = mb_strrpos($cut, ' ');
+                if ($space !== false && $space > 60) {
+                    $cut = mb_substr($cut, 0, $space);
+                }
+                $title = rtrim($cut, " \t.,;:!?—-…");
+            }
+            $last = mb_substr($title, -1);
+            if (!in_array($last, ['.', '!', '?', '»', ')'], true)) {
+                $title .= '.';
+            }
+            return $title;
+        };
+
         $items = [];
         $feeds = [
             'https://news.vtomske.ru/rss',
             'https://tomsk.gov.ru/rss',
             'https://www.tvtomsk.ru/rss.xml',
+            'https://lenta.ru/rss/news',
+            'https://ria.ru/export/rss2/archive/index.xml',
+            'https://tass.ru/rss/v2.xml',
+            'https://www.interfax.ru/rss.asp',
         ];
         foreach ($feeds as $feed) {
             $xml = $fetch($feed);
@@ -2712,21 +2628,29 @@ try {
             if (!$doc || !isset($doc->channel->item)) {
                 continue;
             }
+            $taken = 0;
             foreach ($doc->channel->item as $item) {
+                if ($taken >= 8) {
+                    break;
+                }
                 $title = trim(html_entity_decode((string) $item->title, ENT_QUOTES, 'UTF-8'));
                 if ($title === '') {
                     continue;
                 }
-                $title = mb_substr($title, 0, 120);
+                $title = $tidy($title);
+                if ($title === '' || mb_strlen($title) < 12) {
+                    continue;
+                }
                 if (!in_array($title, $items, true)) {
                     $items[] = $title;
+                    $taken++;
                 }
             }
         }
         if (count($items) > 1) {
             shuffle($items);
         }
-        $items = array_slice($items, 0, 12);
+        $items = array_slice($items, 0, 40);
 
         if ($items) {
             @file_put_contents(
