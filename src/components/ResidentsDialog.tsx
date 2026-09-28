@@ -224,6 +224,19 @@ const ResidentsDialog = ({ open, onOpenChange, onCard, onWrite, myNick }: Props)
                           type="button"
                           onClick={() => {
                             onOpenChange(false);
+                            startCall(r.nick, 'audio');
+                          }}
+                          disabled={!r.online}
+                          title={r.online ? `Аудиозвонок: ${r.nick}` : `${r.nick} не в сети`}
+                          aria-label={`Аудиозвонок: ${r.nick}`}
+                          className="flex h-7 w-7 items-center justify-center border-2 border-foreground/30 text-muted-foreground transition-colors hover:border-secondary hover:text-secondary disabled:cursor-not-allowed disabled:border-foreground/15 disabled:text-muted-foreground/30 disabled:hover:border-foreground/15 disabled:hover:text-muted-foreground/30"
+                        >
+                          <Icon name="Phone" size={13} />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            onOpenChange(false);
                             startCall(r.nick);
                           }}
                           disabled={!r.online}

@@ -507,6 +507,16 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
                         </button>
                         <button
                           type="button"
+                          onClick={() => startCall(u.nick, 'audio')}
+                          disabled={busy}
+                          title={busy ? `${u.nick} сейчас в привате` : `Аудиозвонок: ${u.nick}`}
+                          aria-label={`Аудиозвонок: ${u.nick}`}
+                          className="flex h-7 w-7 items-center justify-center border-2 border-foreground/30 text-muted-foreground transition-colors hover:border-secondary hover:text-secondary disabled:cursor-not-allowed disabled:border-foreground/15 disabled:text-muted-foreground/40 disabled:hover:border-foreground/15 disabled:hover:text-muted-foreground/40"
+                        >
+                          <Icon name="Phone" size={13} />
+                        </button>
+                        <button
+                          type="button"
                           onClick={() => startCall(u.nick)}
                           disabled={busy}
                           title={busy ? `${u.nick} сейчас в привате` : `Видеозвонок: ${u.nick}`}

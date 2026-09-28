@@ -54,10 +54,10 @@ export const useWeather = () => {
     let alive = true;
 
     const grab = async (url: string) => {
-      const stamp = Math.floor(Date.now() / 900000);
+      const stamp = `${Date.now()}${Math.random().toString(36).slice(2, 8)}`;
       const sep = url.includes('?') ? '&' : '?';
       const ctrl = new AbortController();
-      const kill = window.setTimeout(() => ctrl.abort(), 6000);
+      const kill = window.setTimeout(() => ctrl.abort(), 15000);
       try {
         const r = await fetch(`${url}${sep}t=${stamp}`, { signal: ctrl.signal, cache: 'no-store' });
         if (!r.ok) throw new Error('bad status');
@@ -72,10 +72,14 @@ export const useWeather = () => {
 
     const load = async () => {
       let main: Awaited<ReturnType<typeof grab>> | null = null;
-      try {
-        main = await grab(WEATHER_URL);
-      } catch {
-        return;
+      for (let attempt = 0; attempt < 3; attempt += 1) {
+        try {
+          main = await grab(WEATHER_URL);
+          break;
+        } catch {
+          if (!alive) return;
+          await new Promise((res) => window.setTimeout(res, 1500 * (attempt + 1)));
+        }
       }
       if (!alive || !main) return;
 

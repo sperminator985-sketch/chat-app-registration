@@ -6,6 +6,7 @@ import { startRinging } from '@/lib/notify-sound';
 import { isPageVisible } from '@/hooks/use-polling';
 
 export type CallStatus = 'idle' | 'calling' | 'incoming' | 'active';
+export type CallMode = 'video' | 'audio';
 
 type CallState = {
   status: CallStatus;
@@ -14,7 +15,8 @@ type CallState = {
   remoteStream: MediaStream | null;
   micOn: boolean;
   camOn: boolean;
-  startCall: (nick: string) => void;
+  mode: CallMode;
+  startCall: (nick: string, mode?: CallMode) => void;
   acceptCall: () => void;
   declineCall: () => void;
   hangUp: () => void;
@@ -39,6 +41,8 @@ export const CallProvider = ({ children }: { children: ReactNode }) => {
   const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
   const [micOn, setMicOn] = useState(true);
   const [camOn, setCamOn] = useState(true);
+  const [mode, setMode] = useState<CallMode>('video');
+  const modeRef = useRef<CallMode>('video');
 
   const pcRef = useRef<RTCPeerConnection | null>(null);
   const callIdRef = useRef<string>('');
@@ -82,15 +86,16 @@ export const CallProvider = ({ children }: { children: ReactNode }) => {
   const cleanup = useCallback(() => {
     const nick = peerRef.current;
     const started = startedAtRef.current;
+    const label = modeRef.current === 'audio' ? 'Аудиозвонок' : 'Видеозвонок';
     if (nick && isCallerRef.current) {
       if (started) {
         const sec = Math.max(1, Math.round((Date.now() - started) / 1000));
         const mm = Math.floor(sec / 60);
         const ss = sec % 60;
         const dur = mm > 0 ? `${mm} мин ${ss} с` : `${ss} с`;
-        logCall(nick, `Видеозвонок — ${dur}`);
+        logCall(nick, `${label} — ${dur}`);
       } else {
-        logCall(nick, 'Видеозвонок без ответа');
+        logCall(nick, `${label} без ответа`);
       }
     }
     startedAtRef.current = null;
@@ -105,6 +110,8 @@ export const CallProvider = ({ children }: { children: ReactNode }) => {
     setStatus('idle');
     setMicOn(true);
     setCamOn(true);
+    modeRef.current = 'video';
+    setMode('video');
     callIdRef.current = '';
     pendingOfferRef.current = null;
     pendingIceRef.current = [];
@@ -116,8 +123,10 @@ export const CallProvider = ({ children }: { children: ReactNode }) => {
     [],
   );
 
-  const getMedia = useCallback(async () => {
-    const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+  const getMedia = useCallback(async (kind: CallMode) => {
+    const stream = await navigator.mediaDevices.getUserMedia(
+      kind === 'audio' ? { video: false, audio: true } : { video: true, audio: true },
+    );
     localRef.current = stream;
     setLocalStream(stream);
     return stream;
@@ -153,7 +162,7 @@ export const CallProvider = ({ children }: { children: ReactNode }) => {
   );
 
   const startCall = useCallback(
-    async (nick: string) => {
+    async (nick: string, kind: CallMode = 'video') => {
       if (!user) {
         openAuth('register');
         return;
@@ -163,18 +172,24 @@ export const CallProvider = ({ children }: { children: ReactNode }) => {
       isCallerRef.current = true;
       startedAtRef.current = null;
       callIdRef.current = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+      modeRef.current = kind;
+      setMode(kind);
+      setCamOn(kind === 'video');
       setPeerNick(nick);
       setStatus('calling');
       try {
-        const stream = await getMedia();
+        const stream = await getMedia(kind);
         const pc = buildPc(stream, nick);
         const offer = await pc.createOffer();
         await pc.setLocalDescription(offer);
-        await send(nick, 'offer', offer);
+        await send(nick, 'offer', { ...offer, callMode: kind });
       } catch {
         toast({
-          title: 'Камера не открылась',
-          description: 'Разреши доступ к камере и микрофону в браузере',
+          title: kind === 'audio' ? 'Микрофон не открылся' : 'Камера не открылась',
+          description:
+            kind === 'audio'
+              ? 'Разреши доступ к микрофону в браузере'
+              : 'Разреши доступ к камере и микрофону в браузере',
           variant: 'destructive',
         });
         cleanup();
@@ -188,7 +203,7 @@ export const CallProvider = ({ children }: { children: ReactNode }) => {
     const offer = pendingOfferRef.current;
     if (!nick || !offer) return;
     try {
-      const stream = await getMedia();
+      const stream = await getMedia(modeRef.current);
       const pc = buildPc(stream, nick);
       await pc.setRemoteDescription(new RTCSessionDescription(offer));
       for (const c of pendingIceRef.current) await pc.addIceCandidate(new RTCIceCandidate(c));
@@ -200,8 +215,11 @@ export const CallProvider = ({ children }: { children: ReactNode }) => {
       setStatus('active');
     } catch {
       toast({
-        title: 'Камера не открылась',
-        description: 'Разреши доступ к камере и микрофону в браузере',
+        title: modeRef.current === 'audio' ? 'Микрофон не открылся' : 'Камера не открылась',
+        description:
+          modeRef.current === 'audio'
+            ? 'Разреши доступ к микрофону в браузере'
+            : 'Разреши доступ к камере и микрофону в браузере',
         variant: 'destructive',
       });
       cleanup();
@@ -247,7 +265,11 @@ export const CallProvider = ({ children }: { children: ReactNode }) => {
         loggedRef.current = false;
         isCallerRef.current = false;
         startedAtRef.current = null;
-        pendingOfferRef.current = s.payload as RTCSessionDescriptionInit;
+        const payload = s.payload as RTCSessionDescriptionInit & { callMode?: CallMode };
+        pendingOfferRef.current = payload;
+        modeRef.current = payload?.callMode === 'audio' ? 'audio' : 'video';
+        setMode(modeRef.current);
+        setCamOn(modeRef.current === 'video');
         setPeerNick(s.from.nick);
         setStatus('incoming');
         return;
@@ -269,7 +291,8 @@ export const CallProvider = ({ children }: { children: ReactNode }) => {
       }
       if (s.kind === 'decline') {
         toast({ title: 'Не берут трубку', description: `${s.from.nick} сейчас не может говорить` });
-        if (isCallerRef.current) logCall(s.from.nick, 'Видеозвонок отклонён');
+        if (isCallerRef.current)
+          logCall(s.from.nick, `${modeRef.current === 'audio' ? 'Аудиозвонок' : 'Видеозвонок'} отклонён`);
         cleanup();
         return;
       }
@@ -312,10 +335,10 @@ export const CallProvider = ({ children }: { children: ReactNode }) => {
 
   const value = useMemo(
     () => ({
-      status, peerNick, localStream, remoteStream, micOn, camOn,
+      status, peerNick, localStream, remoteStream, micOn, camOn, mode,
       startCall, acceptCall, declineCall, hangUp, toggleMic, toggleCam,
     }),
-    [status, peerNick, localStream, remoteStream, micOn, camOn, startCall, acceptCall, declineCall, hangUp, toggleMic, toggleCam],
+    [status, peerNick, localStream, remoteStream, micOn, camOn, mode, startCall, acceptCall, declineCall, hangUp, toggleMic, toggleCam],
   );
 
   return <CallContext.Provider value={value}>{children}</CallContext.Provider>;

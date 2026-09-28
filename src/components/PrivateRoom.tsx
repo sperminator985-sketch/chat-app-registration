@@ -105,6 +105,15 @@ const PrivateRoom = () => {
             <div className="ml-auto flex items-center gap-2">
               <button
                 type="button"
+                onClick={() => startCall(peer.nick, 'audio')}
+                title="Аудиозвонок"
+                aria-label="Аудиозвонок"
+                className="flex h-8 w-8 items-center justify-center border-2 border-foreground/35 text-muted-foreground transition-colors hover:border-secondary hover:text-secondary"
+              >
+                <Icon name="Phone" size={14} />
+              </button>
+              <button
+                type="button"
                 onClick={() => startCall(peer.nick)}
                 title="Видеозвонок"
                 aria-label="Видеозвонок"

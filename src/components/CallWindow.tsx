@@ -13,31 +13,65 @@ const Video = ({ stream, muted, className }: { stream: MediaStream | null; muted
   return <video ref={ref} autoPlay playsInline muted={muted} className={className} />;
 };
 
+const Audio = ({ stream }: { stream: MediaStream | null }) => {
+  const ref = useRef<HTMLAudioElement>(null);
+
+  useEffect(() => {
+    if (ref.current) ref.current.srcObject = stream;
+  }, [stream]);
+
+  return <audio ref={ref} autoPlay className="hidden" />;
+};
+
 const CallWindow = () => {
-  const { status, peerNick, localStream, remoteStream, micOn, camOn, acceptCall, declineCall, hangUp, toggleMic, toggleCam } = useCall();
+  const { status, peerNick, localStream, remoteStream, micOn, camOn, mode, acceptCall, declineCall, hangUp, toggleMic, toggleCam } = useCall();
 
   if (status === 'idle') return null;
 
   const ringing = status === 'calling' || status === 'incoming';
+  const voice = mode === 'audio';
 
   return (
     <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/85 p-4">
       <div className="flex w-full max-w-[900px] flex-col border-2 border-foreground/40 bg-background">
         <div className="flex items-center gap-3 border-b-2 border-foreground/35 px-5 py-4">
-          <Icon name="Video" size={18} className="text-secondary" />
+          <Icon name={voice ? 'Phone' : 'Video'} size={18} className="text-secondary" />
           <p className="font-display text-base font-extrabold uppercase leading-none tracking-[-0.02em] sm:text-lg">
-            {status === 'incoming' ? 'Стучатся по видео' : status === 'calling' ? 'Дозваниваемся' : 'Видеосвязь'}
+            {status === 'incoming'
+              ? voice ? 'Звонок по голосу' : 'Стучатся по видео'
+              : status === 'calling'
+                ? 'Дозваниваемся'
+                : voice ? 'Голосовая связь' : 'Видеосвязь'}
             {peerNick ? ` · ${peerNick}` : ''}
           </p>
         </div>
 
         <div className="relative bg-muted/40">
-          <Video
-            stream={remoteStream}
-            className={cn('aspect-video w-full bg-black object-cover', ringing && 'opacity-40')}
-          />
+          {voice ? (
+            <div className="flex aspect-video w-full flex-col items-center justify-center gap-4 bg-black/90">
+              <Audio stream={remoteStream} />
+              <div className="flex h-24 w-24 items-center justify-center rounded-full border-2 border-secondary/70 bg-background/10">
+                <Icon name="Phone" size={40} className="text-secondary" />
+              </div>
+              <span className="font-display text-xl font-extrabold uppercase tracking-[-0.02em] text-foreground">
+                {peerNick}
+              </span>
+              <span className="text-[0.9rem] text-muted-foreground">
+                {status === 'incoming'
+                  ? 'Голосовой звонок — возьмёшь трубку?'
+                  : status === 'calling'
+                    ? 'Гудки идут по коридору…'
+                    : 'Разговор идёт'}
+              </span>
+            </div>
+          ) : (
+            <Video
+              stream={remoteStream}
+              className={cn('aspect-video w-full bg-black object-cover', ringing && 'opacity-40')}
+            />
+          )}
 
-          {ringing && (
+          {!voice && ringing && (
             <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-center">
               <span className="animate-pulse font-display text-xl font-extrabold uppercase tracking-[-0.02em] text-foreground">
                 {status === 'incoming' ? `${peerNick} звонит` : `Ждём ${peerNick}`}
@@ -48,7 +82,7 @@ const CallWindow = () => {
             </div>
           )}
 
-          {localStream && (
+          {!voice && localStream && (
             <Video
               stream={localStream}
               muted
@@ -83,10 +117,12 @@ const CallWindow = () => {
               </button>
               <button
                 onClick={toggleCam}
-                title={camOn ? 'Выключить камеру' : 'Включить камеру'}
+                disabled={voice}
+                title={voice ? 'Голосовой звонок без камеры' : camOn ? 'Выключить камеру' : 'Включить камеру'}
                 className={cn(
                   'flex h-11 w-11 items-center justify-center border-2 transition-colors',
                   camOn ? 'border-foreground/40 text-foreground hover:border-secondary' : 'border-primary bg-primary text-primary-foreground',
+                  voice && 'cursor-not-allowed opacity-40',
                 )}
               >
                 <Icon name={camOn ? 'Video' : 'VideoOff'} size={18} />
