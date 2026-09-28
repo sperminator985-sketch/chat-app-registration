@@ -1088,7 +1088,7 @@ const AdminPanel = () => {
               <span className="font-bold">— залей новый api.php</span>
             </>
           )}
-          <span className="ml-auto flex items-center gap-1.5">
+          <span className="ml-auto hidden items-center gap-1.5 md:flex">
             <button
               onClick={() => grabFile('api')}
               title="Архив с одним api.php — для обновления уже работающего чата"
