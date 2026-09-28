@@ -1073,9 +1073,9 @@ const AdminPanel = () => {
           )}
           <span className="ml-auto flex items-center gap-1.5">
             <a
-              href="/api-latest.txt"
-              download="api.php"
-              title="Только api.php — для обновления уже работающего чата"
+              href="/api-update.zip"
+              download="api-update.zip"
+              title="Архив с одним api.php — для обновления уже работающего чата"
               className={cn(
                 'flex items-center gap-1.5 border-2 px-2 py-1 font-bold transition-colors',
                 srvVersion === API_VERSION
