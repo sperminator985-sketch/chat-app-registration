@@ -112,6 +112,7 @@ const AdminPanel = () => {
   const [denied, setDenied] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [srvVersion, setSrvVersion] = useState<string | null>(null);
+  const [verBusy, setVerBusy] = useState(false);
 
   const grabFile = useCallback(
     (kind: 'api' | 'full') => {
@@ -129,12 +130,42 @@ const AdminPanel = () => {
     [toast],
   );
 
+  const checkVersion = useCallback(
+    async (loud = false) => {
+      if (loud) setVerBusy(true);
+      try {
+        const r = await api.version();
+        const v = r.version || null;
+        setSrvVersion(v);
+        if (loud) {
+          toast(
+            v === API_VERSION
+              ? { title: 'Сервер актуален', description: `Версия ${v} — всё совпадает.` }
+              : {
+                  title: 'Нужно обновить сервер',
+                  description: `На хостинге ${v ?? '—'}, нужна ${API_VERSION}. Залей новый api.php.`,
+                  variant: 'destructive',
+                },
+          );
+        }
+      } catch {
+        setSrvVersion('старая');
+        if (loud)
+          toast({
+            title: 'Сервер не ответил',
+            description: 'Проверь, что api.php лежит на хостинге и доступен.',
+            variant: 'destructive',
+          });
+      } finally {
+        if (loud) setVerBusy(false);
+      }
+    },
+    [toast],
+  );
+
   useEffect(() => {
-    api
-      .version()
-      .then((r) => setSrvVersion(r.version || null))
-      .catch(() => setSrvVersion('старая'));
-  }, []);
+    checkVersion();
+  }, [checkVersion]);
 
   const loadUsers = useCallback(async () => {
     try {
@@ -1089,6 +1120,15 @@ const AdminPanel = () => {
               <span className="font-bold">— залей новый api.php</span>
             </>
           )}
+          <button
+            onClick={() => checkVersion(true)}
+            disabled={verBusy}
+            title="Заново спросить у сервера его версию"
+            className="flex items-center gap-1.5 border-2 border-foreground/35 px-2 py-1 font-bold text-muted-foreground transition-colors hover:border-secondary hover:text-secondary disabled:opacity-60"
+          >
+            <Icon name="RefreshCw" size={13} className={cn(verBusy && 'animate-spin')} />
+            Проверить сервер
+          </button>
           <span className="ml-auto hidden items-center gap-1.5 md:flex">
             <button
               onClick={() => grabFile('api')}
