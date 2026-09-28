@@ -2072,6 +2072,64 @@ try {
         out(200, ['ok' => true]);
     }
 
+    // --- Погода в Томске (прокси к облачной функции, кэш 10 минут) ---
+    if ($method === 'GET' && $action === 'weather') {
+        $cacheFile = sys_get_temp_dir() . '/obshaga_weather.json';
+        $ttl = 600;
+
+        if (is_readable($cacheFile)) {
+            $cached = json_decode((string) file_get_contents($cacheFile), true);
+            $age = time() - (int) ($cached['ts'] ?? 0);
+            if (is_array($cached) && isset($cached['data']['temp']) && $age >= 0 && $age < $ttl) {
+                out(200, $cached['data']);
+            }
+        }
+
+        $url = 'https://functions.poehali.dev/2c6a74d1-2f8a-481c-ac3e-49927c9727a9';
+        $raw = null;
+        if (function_exists('curl_init')) {
+            $ch = curl_init($url);
+            curl_setopt_array($ch, [
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_FOLLOWLOCATION => true,
+                CURLOPT_TIMEOUT => 8,
+                CURLOPT_CONNECTTIMEOUT => 5,
+                CURLOPT_SSL_VERIFYPEER => false,
+                CURLOPT_USERAGENT => 'ObshagaChat/1.0',
+            ]);
+            $res = curl_exec($ch);
+            $code = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            curl_close($ch);
+            if (is_string($res) && $res !== '' && $code < 400) {
+                $raw = $res;
+            }
+        }
+        if ($raw === null) {
+            $ctx = stream_context_create(['http' => [
+                'timeout' => 8,
+                'header' => "User-Agent: ObshagaChat/1.0\r\n",
+            ], 'ssl' => ['verify_peer' => false, 'verify_peer_name' => false]]);
+            $res = @file_get_contents($url, false, $ctx);
+            if (is_string($res) && $res !== '') {
+                $raw = $res;
+            }
+        }
+
+        $data = $raw !== null ? json_decode($raw, true) : null;
+        if (is_array($data) && isset($data['temp'])) {
+            @file_put_contents($cacheFile, json_encode(['ts' => time(), 'data' => $data]));
+            out(200, $data);
+        }
+
+        if (is_readable($cacheFile)) {
+            $cached = json_decode((string) file_get_contents($cacheFile), true);
+            if (is_array($cached) && isset($cached['data']['temp'])) {
+                out(200, $cached['data']);
+            }
+        }
+        fail(503, 'Погода временно недоступна');
+    }
+
     // --- Бегущая строка: одобренные объявления ---
     if ($method === 'GET' && $action === 'ticker') {
         $mode = setting('ticker_mode', 'mix');

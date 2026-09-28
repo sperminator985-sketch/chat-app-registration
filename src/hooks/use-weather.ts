@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 
-const WEATHER_URL = 'https://functions.poehali.dev/2c6a74d1-2f8a-481c-ac3e-49927c9727a9';
+const OWN_URL = 'https://chat-tom.ru/chat/api.php?action=weather';
+const CLOUD_URL = 'https://functions.poehali.dev/2c6a74d1-2f8a-481c-ac3e-49927c9727a9';
 
 export type Sky = 'clear' | 'partly' | 'cloudy' | 'fog' | 'drizzle' | 'rain' | 'snow' | 'storm';
 
@@ -72,14 +73,16 @@ export const useWeather = () => {
 
     const load = async () => {
       let main: Awaited<ReturnType<typeof grab>> | null = null;
-      for (let attempt = 0; attempt < 3; attempt += 1) {
-        try {
-          main = await grab(WEATHER_URL);
-          break;
-        } catch {
-          if (!alive) return;
-          await new Promise((res) => window.setTimeout(res, 1500 * (attempt + 1)));
+      for (let attempt = 0; attempt < 3 && !main; attempt += 1) {
+        for (const url of [OWN_URL, CLOUD_URL]) {
+          try {
+            main = await grab(url);
+            break;
+          } catch {
+            if (!alive) return;
+          }
         }
+        if (!main) await new Promise((res) => window.setTimeout(res, 1500 * (attempt + 1)));
       }
       if (!alive || !main) return;
 
