@@ -24,12 +24,14 @@ const ResidentsDialog = ({ open, onOpenChange, onCard, onWrite, myNick }: Props)
   const [query, setQuery] = useState('');
   const [uni, setUni] = useState('all');
   const [onlyOnline, setOnlyOnline] = useState(false);
+  const [openNick, setOpenNick] = useState<string | null>(null);
   const { startCall } = useCall();
   const { invitePeer, pendingNick } = usePrivate();
 
   useEffect(() => {
     if (!open) return;
     let alive = true;
+    setOpenNick(null);
     setLoading(true);
     setError('');
     api
@@ -179,8 +181,61 @@ const ResidentsDialog = ({ open, onOpenChange, onCard, onWrite, myNick }: Props)
             {filtered.map((r) => {
               const isMe = Boolean(myNick && r.nick === myNick);
               return (
-                <li key={r.nick} className={cn('relative', isMe && 'bg-muted/60')}>
-                  <div className="absolute right-2.5 top-1/2 z-10 flex -translate-y-1/2 items-center gap-1.5">
+                <li key={r.nick} className={cn('px-3 py-2 sm:px-5', isMe && 'bg-muted/60')}>
+                  <button
+                    type="button"
+                    onClick={() => setOpenNick((v) => (v === r.nick ? null : r.nick))}
+                    className="block w-full py-1 text-left transition-colors hover:bg-muted/50"
+                  >
+                    <div className="flex items-start gap-2">
+                      <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full border border-foreground/25 bg-muted">
+                        {r.avatarUrl ? (
+                          <img src={r.avatarUrl} alt="" className="h-full w-full object-cover" />
+                        ) : (
+                          <Icon name="User" size={15} className="text-muted-foreground" />
+                        )}
+                      </span>
+                      <span className="min-w-0 flex-1">
+                        <span className="flex items-start gap-1.5">
+                          <span
+                            className={cn(
+                              'mt-1.5 h-2 w-2 shrink-0',
+                              r.online ? 'bg-emerald-400' : 'bg-muted-foreground/40',
+                            )}
+                          />
+                          <span
+                            className={cn(
+                              'min-w-0 flex-1 break-all text-[0.95rem] font-semibold leading-tight',
+                              staffNickClass(r.nick, nickColorClass[r.color]),
+                            )}
+                          >
+                            {r.nick}
+                          </span>
+                          {isMe && (
+                            <span className="shrink-0 font-mono text-[0.66rem] uppercase text-secondary">это ты</span>
+                          )}
+                        </span>
+                        <span className="mt-0.5 block truncate font-mono text-[0.66rem] uppercase tracking-[0.06em] text-muted-foreground">
+                          {r.uni ? `${r.uni} · ` : ''}
+                          {r.online ? (
+                            <span className="text-emerald-400">в сети</span>
+                          ) : (
+                            lastSeenText(r.seenAgo)
+                          )}
+                        </span>
+                      </span>
+                      <Icon
+                        name="ChevronDown"
+                        size={14}
+                        className={cn(
+                          'mt-1.5 shrink-0 text-muted-foreground/60 transition-transform',
+                          openNick === r.nick && 'rotate-180',
+                        )}
+                      />
+                    </div>
+                  </button>
+                  {openNick === r.nick && (
+                  <div className="mt-2 flex flex-wrap items-center gap-1.5 pl-10">
                     <button
                       type="button"
                       onClick={() => onCard(r as CardPerson)}
@@ -249,44 +304,7 @@ const ResidentsDialog = ({ open, onOpenChange, onCard, onWrite, myNick }: Props)
                       </>
                     )}
                   </div>
-                  <div className={cn('flex items-center gap-2 py-3 pl-3 sm:pl-5', isMe ? 'pr-12' : 'pr-[11.25rem]')}>
-                    <span className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full border border-foreground/25 bg-muted">
-                      {r.avatarUrl ? (
-                        <img src={r.avatarUrl} alt="" className="h-full w-full object-cover" />
-                      ) : (
-                        <Icon name="User" size={15} className="text-muted-foreground" />
-                      )}
-                    </span>
-                    <span className="min-w-0 flex-1">
-                      <span className="flex items-center gap-1.5">
-                        <span
-                          className={cn(
-                            'h-2 w-2 shrink-0',
-                            r.online ? 'bg-emerald-400' : 'bg-muted-foreground/40',
-                          )}
-                        />
-                        <span
-                          className={cn(
-                            'min-w-0 truncate text-[0.95rem] font-semibold',
-                            staffNickClass(r.nick, nickColorClass[r.color]),
-                          )}
-                        >
-                          {r.nick}
-                        </span>
-                        {isMe && (
-                          <span className="shrink-0 font-mono text-[0.66rem] uppercase text-secondary">это ты</span>
-                        )}
-                      </span>
-                      <span className="mt-0.5 block truncate font-mono text-[0.66rem] uppercase tracking-[0.06em] text-muted-foreground">
-                        {r.uni ? `${r.uni} · ` : ''}
-                        {r.online ? (
-                          <span className="text-emerald-400">в сети</span>
-                        ) : (
-                          lastSeenText(r.seenAgo)
-                        )}
-                      </span>
-                    </span>
-                  </div>
+                  )}
                 </li>
               );
             })}
