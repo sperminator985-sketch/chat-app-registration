@@ -1,4 +1,9 @@
 <?php
+// Версия серверной части. Обновляется при каждом изменении api.php.
+// Проверить, что залито на хостинг: https://ваш-домен.ru/chat/api.php?action=version
+const API_VERSION = '2026.09.28';
+const API_VERSION_NOTE = 'Список жильцов, зелёные отметки в сети, новости с федеральных источников, прогноз на день';
+
 ini_set('display_errors', '0');
 error_reporting(E_ALL & ~E_WARNING & ~E_NOTICE & ~E_DEPRECATED);
 ob_start();
@@ -38,6 +43,7 @@ header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type, X-Auth-Token');
 header('Access-Control-Max-Age: 86400');
 header('X-Content-Type-Options: nosniff');
+header('X-Api-Version: ' . API_VERSION);
 header('X-Frame-Options: DENY');
 header('Referrer-Policy: no-referrer');
 header('Strict-Transport-Security: max-age=31536000; includeSubDomains');
@@ -909,6 +915,14 @@ $method = $_SERVER['REQUEST_METHOD'];
 $action = (string) param('action', '');
 
 try {
+    if ($action === 'version') {
+        out(200, [
+            'version' => API_VERSION,
+            'note' => API_VERSION_NOTE,
+            'php' => PHP_VERSION,
+        ]);
+    }
+
     if (in_array($action, ['register', 'check_nick', 'check_email', 'login', 'me', 'feed'], true)) {
         purgeUnverified();
     }

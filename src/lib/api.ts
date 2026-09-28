@@ -4,6 +4,10 @@ import type { NickColor } from '@/data/chat';
 // Чтобы переехать на свой хостинг, впишите сюда ссылку на api.php,
 // например: 'https://ваш-домен.ru/chat/api.php'
 const API_URL = 'https://chat-tom.ru/chat/api.php';
+
+// Версия api.php, которую ожидает этот сайт. Должна совпадать с той,
+// что залита на хостинг — иначе в комендантской загорится красная метка.
+export const API_VERSION = '2026.09.28';
 const TOKEN_KEY = 'obshaga_token';
 
 export type ApiUser = {
@@ -269,6 +273,7 @@ export const api = {
     request<FeedResponse>('feed', { query: `&room=${room}${here ? '&here=1' : ''}` }),
   away: () => request<{ ok: boolean }>('away', { method: 'POST' }),
   news: () => request<{ news: string[] }>('news'),
+  version: () => request<{ version: string; note: string; php: string }>('version'),
   me: () => request<{ user: ApiUser }>('me'),
   recoverMailCode: (nick: string) =>
     request<{ ok: boolean; email: string }>('recover_mail_code', { method: 'POST', body: { nick } }),

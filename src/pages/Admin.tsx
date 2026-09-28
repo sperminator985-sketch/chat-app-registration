@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Icon from '@/components/ui/icon';
 import { cn } from '@/lib/utils';
 import { AuthProvider, useAuth } from '@/hooks/use-auth';
-import { api, type AdminMessage, type AdminTickerPost, type AdminUser, type SecurityEvent, type TickerMode } from '@/lib/api';
+import { api, API_VERSION, type AdminMessage, type AdminTickerPost, type AdminUser, type SecurityEvent, type TickerMode } from '@/lib/api';
 import { nickColorClass, rooms, staffNickClass } from '@/data/chat';
 import { useToast } from '@/hooks/use-toast';
 import VaultPanel from '@/components/VaultPanel';
@@ -110,6 +110,14 @@ const AdminPanel = () => {
   const [filter, setFilter] = useState<'all' | 'banned' | 'online'>('all');
   const [denied, setDenied] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [srvVersion, setSrvVersion] = useState<string | null>(null);
+
+  useEffect(() => {
+    api
+      .version()
+      .then((r) => setSrvVersion(r.version || null))
+      .catch(() => setSrvVersion('старая'));
+  }, []);
 
   const loadUsers = useCallback(async () => {
     try {
@@ -1041,6 +1049,17 @@ const AdminPanel = () => {
             </div>
           </>
         )}
+
+        <p className="mt-6 flex items-center gap-1.5 font-mono text-[0.62rem] uppercase tracking-[0.08em] text-muted-foreground/70">
+          <span
+            className={cn(
+              'h-1.5 w-1.5 shrink-0',
+              srvVersion === API_VERSION ? 'bg-emerald-400' : 'bg-primary',
+            )}
+          />
+          Сервер: {srvVersion ?? '…'} · нужна: {API_VERSION}
+          {srvVersion && srvVersion !== API_VERSION && ' — залей новый api.php'}
+        </p>
       </main>
     </div>
   );
