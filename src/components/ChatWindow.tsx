@@ -1,24 +1,37 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import Icon from '@/components/ui/icon';
+import { cn } from '@/lib/utils';
 import { usePolling } from '@/hooks/use-polling';
 import { useAuth } from '@/hooks/use-auth';
 import { getToken, api, ApiMessage } from '@/lib/api';
 import { toast } from '@/hooks/use-toast';
-import { rooms } from '@/data/chat';
+import { nickColorClass, rooms, canEnterRoom, isStaffNick, staffNickClass } from '@/data/chat';
 import { useDm } from '@/hooks/use-dm';
 import { useCrypto } from '@/hooks/use-crypto';
 import { useCall } from '@/hooks/use-call';
 import { usePrivate } from '@/hooks/use-private';
+import EmojiPicker from '@/components/EmojiPicker';
 import { useTicker } from '@/hooks/use-ticker';
 import UserCardDialog, { CardPerson } from '@/components/UserCardDialog';
 import ResidentsDialog from '@/components/ResidentsDialog';
-import ChatHeader from '@/components/chat/ChatHeader';
-import ChatFeed from '@/components/chat/ChatFeed';
-import ChatComposer from '@/components/chat/ChatComposer';
-import ChatOnlineList, { type OnlineItem } from '@/components/chat/ChatOnlineList';
 
 type ChatWindowProps = {
   activeRoom: string;
   onPick: (id: string) => void;
+};
+
+type OnlineItem = {
+  nick: string;
+  color: number;
+  status: string;
+  avatar?: number;
+  avatarUrl?: string | null;
+  seenAgo?: number | null;
+  inPrivate?: boolean;
+  firstName?: string | null;
+  lastName?: string | null;
+  birthDate?: string | null;
+  since?: string | null;
 };
 
 const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
@@ -156,15 +169,6 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
     }
   };
 
-  const onDraftChange = (value: string) => {
-    setDraft(value);
-    const now = Date.now();
-    if (user && value && now - typingSentAt.current > 4000) {
-      typingSentAt.current = now;
-      api.typing(room.id).catch(() => undefined);
-    }
-  };
-
   const visibleMessages = useMemo(() => {
     const openList = messages
       .filter((m) => m.id > clearedAt)
@@ -219,57 +223,342 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
       <div className="flex w-full min-h-0 flex-1 flex-col px-0 pb-0 pt-0 md:px-0 md:py-0">
         <div className="relative grid min-h-0 w-full flex-1 gap-[2px] overflow-hidden border-b-2 border-foreground/35 bg-foreground/35 md:border-2 lg:grid-cols-[1fr_280px]">
           <div className="flex min-h-0 min-w-0 flex-col bg-background">
-            <ChatHeader
-              room={room}
-              user={user}
-              onPick={onPick}
-              whoOpen={whoOpen}
-              onToggleWho={() => setWhoOpen((v) => !v)}
-              onlineCount={onlineList.length}
-              onOpenResidents={() => setResidentsOpen(true)}
-              onlyPrivate={onlyPrivate}
-              onTogglePrivate={() => setOnlyPrivate((v) => !v)}
-              onClearFeed={clearFeed}
-              onSignOut={signOut}
-            />
+            <div className="relative flex flex-wrap items-center gap-x-3 gap-y-2 border-b-2 border-foreground/35 px-4 py-3 md:px-5 md:py-4 lg:h-[68px]">
+              <div className="flex min-w-0 shrink items-center gap-1.5 md:max-w-[34%] md:gap-3">
+                <Icon name={room.icon} size={16} className="shrink-0 text-secondary md:h-5 md:w-5" />
+                <span className="truncate font-display text-[0.58rem] font-extrabold uppercase tracking-[-0.03em] sm:text-base md:text-lg">
+                  Этаж {room.floor} · {room.title}
+                </span>
+              </div>
+              <div className="order-last flex w-full items-center justify-center gap-1.5 md:pointer-events-none md:absolute md:inset-x-0 md:order-none md:w-full md:gap-2">
+                {rooms.map((r) => {
+                  const locked = Boolean(user) && !canEnterRoom(r.id, user?.uni, user?.isAdmin);
+                  return (
+                    <button
+                      key={r.id}
+                      onClick={() => onPick(r.id)}
+                      disabled={locked}
+                      aria-disabled={locked}
+                      title={
+                        locked
+                          ? user?.uni
+                            ? `${r.title} — этаж другого вуза`
+                            : `${r.title} — только для студентов`
+                          : r.title
+                      }
+                      className={cn(
+                        'pointer-events-auto h-7 w-7 shrink-0 border-2 font-mono text-[0.7rem] font-semibold transition-colors',
+                        r.id === room.id
+                          ? 'border-secondary bg-secondary text-secondary-foreground'
+                          : locked
+                            ? 'cursor-not-allowed border-foreground/15 text-muted-foreground/35 opacity-50'
+                            : 'border-foreground/35 text-muted-foreground hover:border-secondary hover:text-foreground',
+                      )}
+                    >
+                      {r.floor}
+                    </button>
+                  );
+                })}
+              </div>
+              <div className="ml-auto flex shrink-0 items-center gap-1.5 md:gap-2">
+                <button
+                  onClick={() => setWhoOpen((v) => !v)}
+                  title="Кто в чате"
+                  className={cn(
+                    'flex items-center gap-1.5 border-2 px-2.5 py-1 text-[0.72rem] font-semibold uppercase tracking-[0.1em] transition-colors lg:hidden',
+                    whoOpen
+                      ? 'border-secondary bg-secondary text-secondary-foreground'
+                      : 'border-foreground/35 text-muted-foreground hover:border-secondary',
+                  )}
+                >
+                  <Icon name="Users" size={14} />
+                  {onlineList.length}
+                </button>
+                <button
+                  onClick={() => setResidentsOpen(true)}
+                  title="Кто зарегистрирован"
+                  className="flex items-center gap-1.5 border-2 border-foreground/35 px-2.5 py-1 text-[0.72rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground transition-colors hover:border-secondary hover:text-secondary"
+                >
+                  <Icon name="BookUser" size={14} />
+                  <span className="hidden sm:inline">Жильцы</span>
+                </button>
+                <button
+                  onClick={() => setOnlyPrivate((v) => !v)}
+                  title="Показывать только личные сообщения"
+                  className={cn(
+                    'flex items-center gap-1.5 border-2 px-2.5 py-1 text-[0.72rem] font-semibold uppercase tracking-[0.1em] transition-colors',
+                    onlyPrivate
+                      ? 'border-sky-400 bg-sky-400 text-background'
+                      : 'border-foreground/35 text-muted-foreground hover:border-sky-400 hover:text-sky-300',
+                  )}
+                >
+                  <Icon name="Lock" size={14} />
+                  <span className="hidden sm:inline">Личные</span>
+                </button>
+                <button
+                  onClick={clearFeed}
+                  title="Очистить поле сообщений"
+                  className="flex items-center gap-1.5 border-2 border-foreground/35 px-2.5 py-1 text-[0.72rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground transition-colors hover:border-secondary hover:text-secondary"
+                >
+                  <Icon name="Eraser" size={14} />
+                  <span className="hidden sm:inline">Очистить</span>
+                </button>
+                <button
+                  onClick={signOut}
+                  title="Выйти из общаги"
+                  className="hidden items-center gap-1.5 border-2 border-foreground/35 px-2.5 py-1 text-[0.72rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground transition-colors hover:border-primary hover:text-primary md:flex"
+                >
+                  <Icon name="LogOut" size={14} />
+                  <span className="hidden sm:inline">Выйти</span>
+                </button>
+              </div>
+            </div>
 
-            <ChatFeed
-              feedRef={feedRef}
-              loaded={loaded}
-              isEmpty={isEmpty}
-              onlyPrivate={onlyPrivate}
-              visibleMessages={visibleMessages}
-              user={user}
-              busyNicks={busyNicks}
-              onPrivateTo={setPrivateTo}
-            />
+            <div
+              ref={feedRef}
+              className="scrollbar-brut min-h-0 flex-1 space-y-1 overflow-y-auto overscroll-contain px-2 py-3 sm:px-5"
+            >
+              {!loaded && (
+                <p className="font-mono text-[0.85rem] text-muted-foreground">соединяемся с этажом…</p>
+              )}
 
-            <ChatComposer
-              privateTo={privateTo}
-              onCancelPrivate={() => setPrivateTo(null)}
-              othersTyping={othersTyping}
-              onSubmit={send}
-              inputRef={inputRef}
-              draft={draft}
-              onDraftChange={onDraftChange}
-              onEmoji={(e) => setDraft((prev) => (prev + e).slice(0, 480))}
-              user={user}
-              sending={sending}
-            />
+              {isEmpty && onlyPrivate && (
+                <p className="whitespace-nowrap border-l-2 border-secondary bg-muted/60 px-3 py-1.5 font-mono text-[0.66rem] uppercase tracking-[0.04em] text-muted-foreground sm:text-[0.82rem] sm:tracking-[0.08em]">
+                  личных сообщений пока нет
+                </p>
+              )}
+
+              {visibleMessages.map((m) => (
+                <div
+                  key={m.key}
+                  className={cn(
+                    'animate-fade-in leading-[1.3]',
+                    m.private &&
+                      'border-l-4 border-sky-400 bg-sky-400/25 px-2 py-1 [.day_&]:border-sky-600 [.day_&]:bg-sky-500/20',
+                  )}
+                >
+                  <p className="chat-font flex flex-wrap items-baseline gap-x-1.5">
+                    {m.private && (
+                      <button
+                        type="button"
+                        onClick={() => setPrivateTo(m.peer)}
+                        className="font-mono text-[0.62rem] font-bold uppercase tracking-[0.1em] text-sky-200 hover:underline sm:text-[0.7rem] [.day_&]:text-sky-800"
+                      >
+                        {m.outgoing ? `лично → ${m.peer}` : `лично от ${m.peer}`}
+                      </button>
+                    )}
+                    <span className="font-mono text-[0.66rem] text-muted-foreground sm:text-[0.78rem]">[{m.time}]</span>
+                    <button
+                      type="button"
+                      onClick={() => user && m.nick !== user.nick && !busyNicks.has(m.nick) && setPrivateTo(m.nick)}
+                      disabled={busyNicks.has(m.nick)}
+                      title={busyNicks.has(m.nick) ? `${m.nick} сейчас в привате` : `Написать лично: ${m.nick}`}
+                      className={cn(
+                        'text-[0.82rem] font-normal hover:underline sm:text-[0.92rem]',
+                        isStaffNick(m.nick) ? 'font-bold text-red-500 [.day_&]:text-red-600' : nickColorClass[m.color],
+                        busyNicks.has(m.nick) && 'opacity-40 hover:no-underline',
+                      )}
+                    >
+                      &lt;{m.nick}&gt;
+                    </button>
+                    <span
+                      className={cn(
+                        'text-[0.95rem] leading-[1.35] sm:text-[0.94rem]',
+                        m.private
+                          ? 'font-medium text-foreground'
+                          : user && m.nick === user.nick
+                            ? 'text-foreground'
+                            : 'text-foreground/90',
+                      )}
+                    >
+                      {m.text}
+                    </span>
+                  </p>
+                </div>
+              ))}
+            </div>
+
+            {privateTo && (
+              <div className="flex items-center gap-2 border-t-2 border-sky-400 bg-sky-400/15 px-3 py-1.5 text-[0.7rem] font-semibold uppercase tracking-[0.08em] text-sky-200 sm:px-5 sm:text-[0.78rem]">
+                <Icon name="Lock" size={13} className="shrink-0" />
+                <span className="min-w-0 flex-1 truncate">
+                  <span className="hidden sm:inline">Личное сообщение для </span>
+                  <span className="sm:hidden">Лично: </span>
+                  {privateTo}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setPrivateTo(null)}
+                  className="btn-cancel-brut ml-auto shrink-0 px-2 py-0.5 text-[0.66rem]"
+                >
+                  Отмена
+                </button>
+              </div>
+            )}
+
+            {othersTyping.length > 0 && (
+              <div className="border-t-2 border-foreground/20 px-4 py-1.5 font-mono text-[0.66rem] uppercase tracking-[0.06em] text-secondary sm:px-5 sm:text-[0.72rem]">
+                <span className="animate-pulse">
+                  {othersTyping.map((t) => t.nick).join(', ')}{' '}
+                  {othersTyping.length > 1 ? 'печатают…' : 'печатает…'}
+                </span>
+              </div>
+            )}
+
+            <form onSubmit={send} className="flex flex-row items-center gap-2 border-t-2 border-foreground/35 px-3 py-2 sm:gap-2.5 sm:px-5 sm:py-2.5">
+              <div className="flex flex-1 items-center gap-2 border-2 border-foreground/35 bg-input px-3 py-1.5 focus-within:border-secondary">
+                <input
+                  ref={inputRef}
+                  value={draft}
+                  onChange={(e) => {
+                    setDraft(e.target.value);
+                    const now = Date.now();
+                    if (user && e.target.value && now - typingSentAt.current > 4000) {
+                      typingSentAt.current = now;
+                      api.typing(room.id).catch(() => undefined);
+                    }
+                  }}
+                  maxLength={480}
+                  placeholder={
+                    !user
+                      ? 'Займи ник, чтобы писать'
+                      : privateTo
+                        ? `Лично для ${privateTo}…`
+                        : 'Напиши что-нибудь…'
+                  }
+                  className="chat-font w-full min-w-0 bg-transparent text-[0.95rem] text-foreground outline-none placeholder:text-muted-foreground/70 sm:text-[0.94rem]"
+                />
+              </div>
+              <div className="flex shrink-0 items-center gap-2 sm:gap-2.5">
+                <EmojiPicker onPick={(e) => setDraft((prev) => (prev + e).slice(0, 480))} />
+                <button
+                  type="submit"
+                  disabled={sending}
+                  aria-label="Отправить"
+                  className="btn-brut !gap-1.5 !px-2.5 !py-2 !text-xs disabled:opacity-60 sm:!px-3"
+                >
+                  <Icon name="Send" size={14} />
+                  <span className="hidden sm:inline">{sending ? 'Шлём…' : 'Отправить'}</span>
+                </button>
+              </div>
+            </form>
           </div>
 
-          <ChatOnlineList
-            whoOpen={whoOpen}
-            onClose={() => setWhoOpen(false)}
-            onlineList={onlineList}
-            user={user}
-            pendingNick={pendingNick}
-            unread={unread}
-            onCard={setCardPerson}
-            onInvite={invitePeer}
-            onCall={startCall}
-            onPrivateTo={setPrivateTo}
-          />
+          <aside
+            className={cn(
+              'min-h-0 flex-col overflow-hidden bg-background lg:static lg:z-auto lg:flex',
+              whoOpen ? 'absolute inset-0 z-30 flex' : 'hidden',
+            )}
+          >
+            <div className="relative flex shrink-0 flex-col items-center justify-center border-b-2 border-foreground/35 px-2 py-4 text-center sm:px-4 lg:h-[68px] lg:py-3">
+              <h3 className="text-[0.8rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                Кто в чате · {onlineList.length}
+              </h3>
+              <p className="mt-1 text-[0.8rem] leading-tight text-muted-foreground/80">Кликни по нику — откроется личка</p>
+              <button
+                type="button"
+                onClick={() => setWhoOpen(false)}
+                title="Закрыть"
+                aria-label="Закрыть"
+                className="absolute right-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center border-2 border-destructive text-destructive outline-none transition-colors duration-150 lg:hidden"
+              >
+                <Icon name="X" size={18} />
+              </button>
+            </div>
+            <ul className="scrollbar-brut min-h-0 flex-1 divide-y divide-foreground/15 overflow-y-auto overscroll-contain">
+              {onlineList.length === 0 && (
+                <li className="px-4 py-4 text-center text-[0.8rem] text-muted-foreground/80">
+                  Пока никого — ты первый
+                </li>
+              )}
+              {onlineList.map((u) => {
+                const isMe = Boolean(user && u.nick === user.nick);
+                const busy = Boolean(u.inPrivate);
+                const waiting = pendingNick === u.nick;
+                return (
+                  <li key={u.nick} className={cn('relative', isMe && 'bg-muted/60', busy && !isMe && 'opacity-45')}>
+                    <div className="absolute right-2.5 top-1/2 z-10 flex -translate-y-1/2 items-center gap-1.5">
+                      <button
+                        type="button"
+                        onClick={() => setCardPerson(u as CardPerson)}
+                        title={isMe ? 'Моя анкета' : `Анкета: ${u.nick}`}
+                        aria-label={isMe ? 'Моя анкета' : `Анкета: ${u.nick}`}
+                        className="flex h-7 w-7 items-center justify-center border-2 border-foreground/30 text-muted-foreground transition-colors hover:border-secondary hover:text-secondary"
+                      >
+                        <Icon name="Info" size={13} />
+                      </button>
+                      {!isMe && (
+                        <>
+                        <button
+                          type="button"
+                          onClick={() => invitePeer(u.nick)}
+                          disabled={busy || waiting}
+                          title={
+                            busy
+                              ? `${u.nick} сейчас в привате`
+                              : waiting
+                                ? 'Ждём ответа'
+                                : `Позвать в приват: ${u.nick}`
+                          }
+                          aria-label={`Позвать в приват: ${u.nick}`}
+                          className="flex h-7 w-7 items-center justify-center border-2 border-foreground/30 text-muted-foreground transition-colors hover:border-sky-400 hover:text-sky-300 disabled:cursor-not-allowed disabled:border-foreground/15 disabled:text-muted-foreground/40 disabled:hover:border-foreground/15 disabled:hover:text-muted-foreground/40"
+                        >
+                          <Icon name={waiting ? 'Hourglass' : 'Lock'} size={13} />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => startCall(u.nick)}
+                          disabled={busy}
+                          title={busy ? `${u.nick} сейчас в привате` : `Видеозвонок: ${u.nick}`}
+                          aria-label={`Видеозвонок: ${u.nick}`}
+                          className="flex h-7 w-7 items-center justify-center border-2 border-foreground/30 text-muted-foreground transition-colors hover:border-secondary hover:text-secondary disabled:cursor-not-allowed disabled:border-foreground/15 disabled:text-muted-foreground/40 disabled:hover:border-foreground/15 disabled:hover:text-muted-foreground/40"
+                        >
+                          <Icon name="Video" size={13} />
+                        </button>
+                        </>
+                      )}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setWhoOpen(false);
+                        setPrivateTo(u.nick);
+                      }}
+                      disabled={isMe || busy}
+                      className={cn(
+                        'w-full py-3 pl-2 text-left transition-colors hover:bg-muted/50 disabled:cursor-default disabled:hover:bg-transparent sm:pl-4',
+                        isMe ? 'pr-12' : 'pr-[7.5rem]',
+                      )}
+                    >
+                      <div className="flex min-w-0 items-center gap-2">
+                        <span className="flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded-full border border-foreground/25 bg-muted">
+                          {u.avatarUrl ? (
+                            <img src={u.avatarUrl} alt="" className="h-full w-full object-cover" />
+                          ) : (
+                            <Icon name="User" size={14} className="text-muted-foreground" />
+                          )}
+                        </span>
+                        <span className={cn('min-w-0 truncate font-normal', staffNickClass(u.nick, nickColorClass[u.color as 1]))}>{u.nick}</span>
+                        {isMe ? (
+                          <span className="ml-auto shrink-0 whitespace-nowrap font-mono text-[0.7rem] uppercase text-secondary">это ты</span>
+                        ) : busy ? (
+                          <span className="ml-auto flex shrink-0 items-center gap-1 whitespace-nowrap font-mono text-[0.66rem] uppercase text-sky-300/70">
+                            <Icon name="Lock" size={11} />
+                            приват
+                          </span>
+                        ) : unread[u.nick] ? (
+                          <span className="ml-auto border-2 border-secondary bg-secondary px-1.5 font-mono text-[0.7rem] font-bold text-secondary-foreground">
+                            {unread[u.nick]}
+                          </span>
+                        ) : null}
+                      </div>
+                    </button>
+                  </li>
+                );
+              })}
+
+            </ul>
+          </aside>
         </div>
       </div>
 
