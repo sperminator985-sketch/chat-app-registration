@@ -112,6 +112,31 @@ const AdminPanel = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [srvVersion, setSrvVersion] = useState<string | null>(null);
 
+  const grabFile = useCallback(
+    async (path: string, name: string) => {
+      try {
+        const res = await fetch(`${path}?t=${Date.now()}`, { cache: 'no-store' });
+        if (!res.ok) throw new Error(String(res.status));
+        const blob = await res.blob();
+        const href = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = href;
+        a.download = name;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(() => URL.revokeObjectURL(href), 2000);
+      } catch {
+        toast({
+          title: 'Файл не скачался',
+          description: 'Обнови страницу с зажатым Ctrl и попробуй ещё раз.',
+          variant: 'destructive',
+        });
+      }
+    },
+    [toast],
+  );
+
   useEffect(() => {
     api
       .version()
@@ -1072,9 +1097,8 @@ const AdminPanel = () => {
             </>
           )}
           <span className="ml-auto flex items-center gap-1.5">
-            <a
-              href="/api-update.zip"
-              download="api-update.zip"
+            <button
+              onClick={() => grabFile('/api-update.zip', 'api-update.zip')}
               title="Архив с одним api.php — для обновления уже работающего чата"
               className={cn(
                 'flex items-center gap-1.5 border-2 px-2 py-1 font-bold transition-colors',
@@ -1085,16 +1109,15 @@ const AdminPanel = () => {
             >
               <Icon name="Download" size={13} />
               api.php
-            </a>
-            <a
-              href="/chat-server.zip"
-              download="chat-server.zip"
+            </button>
+            <button
+              onClick={() => grabFile('/chat-server.zip', 'chat-server.zip')}
               title="Весь комплект для установки на новый хостинг"
               className="flex items-center gap-1.5 border-2 border-foreground/35 px-2 py-1 font-bold text-muted-foreground transition-colors hover:border-secondary hover:text-secondary"
             >
               <Icon name="FileArchive" size={13} />
               Весь комплект
-            </a>
+            </button>
           </span>
         </div>
       </main>
