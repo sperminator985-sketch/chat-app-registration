@@ -7,6 +7,7 @@ export type Sky = 'clear' | 'partly' | 'cloudy' | 'fog' | 'drizzle' | 'rain' | '
 
 let lastSky: Sky = 'clear';
 let lastIsDay = true;
+let lastDayText: string | null = null;
 
 export const weatherIcon = (temp: number): string => {
   switch (lastSky) {
@@ -45,11 +46,11 @@ export const useWeather = () => {
       const d = await r.json();
       const t = typeof d?.temp === 'number' ? d.temp : d?.current?.temperature_2m;
       if (typeof t !== 'number') throw new Error('no temp');
-      return { t, sky: d?.sky, isDay: d?.isDay };
+      return { t, sky: d?.sky, isDay: d?.isDay, dayText: d?.dayText };
     };
 
     const load = async () => {
-      let data: { t: number; sky?: unknown; isDay?: unknown } | null = null;
+      let data: { t: number; sky?: unknown; isDay?: unknown; dayText?: unknown } | null = null;
       try {
         data = await grab(OWN_URL);
       } catch {
@@ -62,6 +63,16 @@ export const useWeather = () => {
       if (!alive || !data) return;
       if (typeof data.sky === 'string') lastSky = data.sky as Sky;
       if (typeof data.isDay === 'boolean') lastIsDay = data.isDay;
+      if (typeof data.dayText === 'string' && data.dayText) {
+        lastDayText = data.dayText;
+      } else {
+        try {
+          const extra = await grab(WEATHER_URL);
+          if (typeof extra.dayText === 'string' && extra.dayText) lastDayText = extra.dayText;
+        } catch {
+          /* прогноз не критичен */
+        }
+      }
       setTemp(Math.round(data.t));
     };
 
@@ -86,6 +97,8 @@ export const useWeather = () => {
 
   return temp;
 };
+
+export const dayForecastText = () => lastDayText;
 
 export const formatTemp = (t: number) => (t > 0 ? `+${t}` : `${t}`);
 

@@ -2614,6 +2614,10 @@ try {
             'https://news.vtomske.ru/rss',
             'https://tomsk.gov.ru/rss',
             'https://www.tvtomsk.ru/rss.xml',
+            'https://lenta.ru/rss/news',
+            'https://ria.ru/export/rss2/archive/index.xml',
+            'https://tass.ru/rss/v2.xml',
+            'https://www.interfax.ru/rss.asp',
         ];
         foreach ($feeds as $feed) {
             $xml = $fetch($feed);
@@ -2624,7 +2628,11 @@ try {
             if (!$doc || !isset($doc->channel->item)) {
                 continue;
             }
+            $taken = 0;
             foreach ($doc->channel->item as $item) {
+                if ($taken >= 8) {
+                    break;
+                }
                 $title = trim(html_entity_decode((string) $item->title, ENT_QUOTES, 'UTF-8'));
                 if ($title === '') {
                     continue;
@@ -2635,6 +2643,7 @@ try {
                 }
                 if (!in_array($title, $items, true)) {
                     $items[] = $title;
+                    $taken++;
                 }
             }
         }

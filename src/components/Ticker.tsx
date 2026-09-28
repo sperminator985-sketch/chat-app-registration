@@ -1,5 +1,5 @@
 import type { CSSProperties } from 'react';
-import { useWeather, formatTemp } from '@/hooks/use-weather';
+import { useWeather, formatTemp, dayForecastText } from '@/hooks/use-weather';
 import { useLiveStats } from '@/hooks/use-live-stats';
 import { useNews } from '@/hooks/use-news';
 import { useTickerPosts } from '@/hooks/use-ticker-posts';
@@ -77,9 +77,19 @@ const Ticker = () => {
     base[5],
   ].map(plain);
 
+  const forecast = dayForecastText();
+  const forecastLine = forecast ? [plain(forecast.toUpperCase())] : [];
+
   const core: TickerLine[] = newsLines.length
-    ? [plain(liveLine), newsLines[0], plain(weatherLine), ...newsLines.slice(1), plain(base[2])]
-    : fallback;
+    ? [
+        plain(liveLine),
+        newsLines[0],
+        plain(weatherLine),
+        ...forecastLine,
+        ...newsLines.slice(1),
+        plain(base[2]),
+      ]
+    : [...fallback, ...forecastLine];
 
   const mixed = postLines.length
     ? core.flatMap((t, i) => (postLines[i] ? [t, postLines[i]] : [t])).concat(postLines.slice(core.length))
