@@ -500,10 +500,11 @@ const AdminPanel = () => {
           <div className="relative flex items-center">
             <button
               onClick={() => navigate('/')}
-              className="relative z-10 flex items-center gap-1.5 text-[0.72rem] font-bold uppercase tracking-[0.1em] text-muted-foreground transition-colors hover:text-secondary md:text-[0.78rem]"
+              title="Выход"
+              aria-label="Выход"
+              className="relative z-10 flex items-center gap-1.5 border-2 border-foreground/35 px-2.5 py-1 text-[0.72rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground transition-colors hover:border-primary hover:text-primary"
             >
-              <Icon name="ChevronLeft" size={18} />
-              Выход
+              <Icon name="LogOut" size={14} />
             </button>
             <span className="pointer-events-none absolute left-1/2 -translate-x-1/2 whitespace-nowrap font-display text-[0.95rem] font-extrabold uppercase tracking-[0.04em] md:hidden">
               Комендантская
