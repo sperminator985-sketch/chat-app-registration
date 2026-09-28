@@ -43,9 +43,22 @@ const Ticker = () => {
       ? `СЕЙЧАС В ЧАТЕ ${live.online} ${plural(live.online, 'ЖИЛЕЦ', 'ЖИЛЬЦА', 'ЖИЛЬЦОВ')}`
       : 'ЭТАЖИ ПУСТЫЕ — ЗАХОДИ ПЕРВЫМ';
 
+  const tidyNews = (raw: string) => {
+    let t = raw.replace(/\s+/g, ' ').trim();
+    if (t.length > 140) {
+      let cut = t.slice(0, 140);
+      const space = cut.lastIndexOf(' ');
+      if (space > 60) cut = cut.slice(0, space);
+      t = cut.replace(/[\s.,;:!?—–-]+$/, '');
+    }
+    if (!/[.!?»)]$/.test(t)) t += '.';
+    return t;
+  };
+
   const newsLines: TickerLine[] = news
-    .slice(0, 8)
-    .map((t) => ({ nick: '', color: 0, text: t.toUpperCase() }));
+    .filter((t) => t.trim().length >= 12)
+    .slice(0, 24)
+    .map((t) => ({ nick: '', color: 0, text: tidyNews(t).toUpperCase() }));
   const postLines: TickerLine[] = posts.slice(0, 10).map((p) => ({
     nick: p.nick.toUpperCase(),
     color: p.color,

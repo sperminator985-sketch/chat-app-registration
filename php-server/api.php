@@ -2588,6 +2588,27 @@ try {
             return is_string($res) && $res !== '' ? $res : null;
         };
 
+        $tidy = static function (string $title): string {
+            $title = preg_replace('/\s+/u', ' ', $title) ?? $title;
+            $title = trim($title);
+            if ($title === '') {
+                return '';
+            }
+            if (mb_strlen($title) > 140) {
+                $cut = mb_substr($title, 0, 140);
+                $space = mb_strrpos($cut, ' ');
+                if ($space !== false && $space > 60) {
+                    $cut = mb_substr($cut, 0, $space);
+                }
+                $title = rtrim($cut, " \t.,;:!?—-…");
+            }
+            $last = mb_substr($title, -1);
+            if (!in_array($last, ['.', '!', '?', '»', ')'], true)) {
+                $title .= '.';
+            }
+            return $title;
+        };
+
         $items = [];
         $feeds = [
             'https://news.vtomske.ru/rss',
@@ -2608,7 +2629,10 @@ try {
                 if ($title === '') {
                     continue;
                 }
-                $title = mb_substr($title, 0, 120);
+                $title = $tidy($title);
+                if ($title === '' || mb_strlen($title) < 12) {
+                    continue;
+                }
                 if (!in_array($title, $items, true)) {
                     $items[] = $title;
                 }
@@ -2617,7 +2641,7 @@ try {
         if (count($items) > 1) {
             shuffle($items);
         }
-        $items = array_slice($items, 0, 12);
+        $items = array_slice($items, 0, 40);
 
         if ($items) {
             @file_put_contents(
