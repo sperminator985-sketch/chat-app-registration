@@ -199,7 +199,7 @@ def handler(event: dict, context) -> dict:
 
     return {
         'statusCode': 200,
-        'headers': {**CORS, 'Cache-Control': 'public, max-age=600'},
+        'headers': {**CORS, 'Cache-Control': 'public, max-age=120'},
         'body': json.dumps(payload, ensure_ascii=False),
         'isBase64Encoded': False,
     }

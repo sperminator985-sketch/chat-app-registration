@@ -55,12 +55,12 @@ export const useWeather = () => {
     let alive = true;
 
     const grab = async (url: string) => {
-      const stamp = Math.floor(Date.now() / 600000);
+      const stamp = Math.floor(Date.now() / 60000);
       const sep = url.includes('?') ? '&' : '?';
       const ctrl = new AbortController();
       const kill = window.setTimeout(() => ctrl.abort(), 6000);
       try {
-        const r = await fetch(`${url}${sep}t=${stamp}`, { signal: ctrl.signal });
+        const r = await fetch(`${url}${sep}t=${stamp}`, { signal: ctrl.signal, cache: 'no-store' });
         if (!r.ok) throw new Error('bad status');
         const d = await r.json();
         const t = typeof d?.temp === 'number' ? d.temp : d?.current?.temperature_2m;
