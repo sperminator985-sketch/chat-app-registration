@@ -476,8 +476,42 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
                 const busy = Boolean(u.inPrivate);
                 const waiting = pendingNick === u.nick;
                 return (
-                  <li key={u.nick} className={cn('relative', isMe && 'bg-muted/60', busy && !isMe && 'opacity-45')}>
-                    <div className="absolute right-2.5 top-1/2 z-10 flex -translate-y-1/2 items-center gap-1.5">
+                  <li key={u.nick} className={cn('px-2 py-2 sm:px-4', isMe && 'bg-muted/60', busy && !isMe && 'opacity-45')}>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setWhoOpen(false);
+                        setPrivateTo(u.nick);
+                      }}
+                      disabled={isMe || busy}
+                      className="block w-full py-1 text-left transition-colors hover:bg-muted/50 disabled:cursor-default disabled:hover:bg-transparent"
+                    >
+                      <div className="flex items-start gap-2">
+                        <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded-full border border-foreground/25 bg-muted">
+                          {u.avatarUrl ? (
+                            <img src={u.avatarUrl} alt="" className="h-full w-full object-cover" />
+                          ) : (
+                            <Icon name="User" size={14} className="text-muted-foreground" />
+                          )}
+                        </span>
+                        <span className={cn('min-w-0 flex-1 break-all font-normal leading-tight', staffNickClass(u.nick, nickColorClass[u.color as 1]))}>
+                          {u.nick}
+                        </span>
+                        {isMe ? (
+                          <span className="mt-1 shrink-0 whitespace-nowrap font-mono text-[0.7rem] uppercase text-secondary">это ты</span>
+                        ) : busy ? (
+                          <span className="mt-1 flex shrink-0 items-center gap-1 whitespace-nowrap font-mono text-[0.66rem] uppercase text-sky-300/70">
+                            <Icon name="Lock" size={11} />
+                            приват
+                          </span>
+                        ) : unread[u.nick] ? (
+                          <span className="mt-0.5 shrink-0 border-2 border-secondary bg-secondary px-1.5 font-mono text-[0.7rem] font-bold text-secondary-foreground">
+                            {unread[u.nick]}
+                          </span>
+                        ) : null}
+                      </div>
+                    </button>
+                    <div className="mt-2 flex items-center gap-1.5 pl-9">
                       <button
                         type="button"
                         onClick={() => setCardPerson(u as CardPerson)}
@@ -528,41 +562,6 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
                         </>
                       )}
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setWhoOpen(false);
-                        setPrivateTo(u.nick);
-                      }}
-                      disabled={isMe || busy}
-                      className={cn(
-                        'w-full py-3 pl-2 text-left transition-colors hover:bg-muted/50 disabled:cursor-default disabled:hover:bg-transparent sm:pl-4',
-                        isMe ? 'pr-12' : 'pr-[9.75rem]',
-                      )}
-                    >
-                      <div className="flex min-w-0 items-center gap-2">
-                        <span className="flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded-full border border-foreground/25 bg-muted">
-                          {u.avatarUrl ? (
-                            <img src={u.avatarUrl} alt="" className="h-full w-full object-cover" />
-                          ) : (
-                            <Icon name="User" size={14} className="text-muted-foreground" />
-                          )}
-                        </span>
-                        <span className={cn('min-w-0 truncate font-normal', staffNickClass(u.nick, nickColorClass[u.color as 1]))}>{u.nick}</span>
-                        {isMe ? (
-                          <span className="ml-auto shrink-0 whitespace-nowrap font-mono text-[0.7rem] uppercase text-secondary">это ты</span>
-                        ) : busy ? (
-                          <span className="ml-auto flex shrink-0 items-center gap-1 whitespace-nowrap font-mono text-[0.66rem] uppercase text-sky-300/70">
-                            <Icon name="Lock" size={11} />
-                            приват
-                          </span>
-                        ) : unread[u.nick] ? (
-                          <span className="ml-auto border-2 border-secondary bg-secondary px-1.5 font-mono text-[0.7rem] font-bold text-secondary-foreground">
-                            {unread[u.nick]}
-                          </span>
-                        ) : null}
-                      </div>
-                    </button>
                   </li>
                 );
               })}
