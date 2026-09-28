@@ -249,7 +249,7 @@ const ResidentsDialog = ({ open, onOpenChange, onCard, onWrite, myNick }: Props)
                       </>
                     )}
                   </div>
-                  <div className={cn('flex items-center gap-2 py-3 pl-3 sm:pl-5', isMe ? 'pr-12' : 'pr-[9.5rem]')}>
+                  <div className={cn('flex items-center gap-2 py-3 pl-3 sm:pl-5', isMe ? 'pr-12' : 'pr-[11.25rem]')}>
                     <span className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full border border-foreground/25 bg-muted">
                       {r.avatarUrl ? (
                         <img src={r.avatarUrl} alt="" className="h-full w-full object-cover" />

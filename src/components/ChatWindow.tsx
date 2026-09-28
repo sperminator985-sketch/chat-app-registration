@@ -537,7 +537,7 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
                       disabled={isMe || busy}
                       className={cn(
                         'w-full py-3 pl-2 text-left transition-colors hover:bg-muted/50 disabled:cursor-default disabled:hover:bg-transparent sm:pl-4',
-                        isMe ? 'pr-12' : 'pr-[7.5rem]',
+                        isMe ? 'pr-12' : 'pr-[9.75rem]',
                       )}
                     >
                       <div className="flex min-w-0 items-center gap-2">

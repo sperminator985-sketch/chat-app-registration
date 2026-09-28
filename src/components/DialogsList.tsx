@@ -55,7 +55,7 @@ const DialogsList = () => {
                 <button
                   type="button"
                   onClick={() => openDm(d.nick)}
-                  className="flex w-full items-center gap-3 py-2 pl-2 pr-16 text-left transition-colors hover:bg-muted/50 sm:py-3.5 sm:pl-5"
+                  className="flex w-full items-center gap-3 py-2 pl-2 pr-[6.5rem] text-left transition-colors hover:bg-muted/50 sm:py-3.5 sm:pl-5"
                 >
                   <span
                     className={cn(
