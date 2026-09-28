@@ -50,6 +50,7 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
   const [clearedDm, setClearedDm] = useState(0);
   const [typingUsers, setTypingUsers] = useState<{ nick: string; color: number }[]>([]);
   const [privateTo, setPrivateTo] = useState<string | null>(null);
+  const [openNick, setOpenNick] = useState<string | null>(null);
   const [onlyPrivate, setOnlyPrivate] = useState(false);
   const [privateMsgs, setPrivateMsgs] = useState<(ApiMessage & { peer: string; outgoing: boolean })[]>([]);
   const [dmPlain, setDmPlain] = useState<Record<number, string>>({});
@@ -454,7 +455,7 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
               <h3 className="text-[0.8rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
                 Кто в чате · {onlineList.length}
               </h3>
-              <p className="mt-1 text-[0.8rem] leading-tight text-muted-foreground/80">Кликни по нику — откроется личка</p>
+              <p className="mt-1 text-[0.8rem] leading-tight text-muted-foreground/80">Кликни по нику — появятся действия</p>
               <button
                 type="button"
                 onClick={() => setWhoOpen(false)}
@@ -479,12 +480,8 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
                   <li key={u.nick} className={cn('px-2 py-2 sm:px-4', isMe && 'bg-muted/60', busy && !isMe && 'opacity-45')}>
                     <button
                       type="button"
-                      onClick={() => {
-                        setWhoOpen(false);
-                        setPrivateTo(u.nick);
-                      }}
-                      disabled={isMe || busy}
-                      className="block w-full py-1 text-left transition-colors hover:bg-muted/50 disabled:cursor-default disabled:hover:bg-transparent"
+                      onClick={() => setOpenNick((v) => (v === u.nick ? null : u.nick))}
+                      className="block w-full py-1 text-left transition-colors hover:bg-muted/50"
                     >
                       <div className="flex items-start gap-2">
                         <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded-full border border-foreground/25 bg-muted">
@@ -509,9 +506,34 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
                             {unread[u.nick]}
                           </span>
                         ) : null}
+                        <Icon
+                          name="ChevronDown"
+                          size={14}
+                          className={cn(
+                            'mt-1 shrink-0 text-muted-foreground/60 transition-transform',
+                            openNick === u.nick && 'rotate-180',
+                          )}
+                        />
                       </div>
                     </button>
-                    <div className="mt-2 flex items-center gap-1.5 pl-9">
+                    {openNick === u.nick && (
+                    <div className="mt-2 flex flex-wrap items-center gap-1.5 pl-9">
+                      {!isMe && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setWhoOpen(false);
+                            setOpenNick(null);
+                            setPrivateTo(u.nick);
+                          }}
+                          disabled={busy}
+                          title={busy ? `${u.nick} сейчас в привате` : `Написать: ${u.nick}`}
+                          aria-label={`Написать: ${u.nick}`}
+                          className="flex h-7 w-7 items-center justify-center border-2 border-foreground/30 text-muted-foreground transition-colors hover:border-secondary hover:text-secondary disabled:cursor-not-allowed disabled:border-foreground/15 disabled:text-muted-foreground/40 disabled:hover:border-foreground/15 disabled:hover:text-muted-foreground/40"
+                        >
+                          <Icon name="Mail" size={13} />
+                        </button>
+                      )}
                       <button
                         type="button"
                         onClick={() => setCardPerson(u as CardPerson)}
@@ -562,6 +584,7 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
                         </>
                       )}
                     </div>
+                    )}
                   </li>
                 );
               })}
