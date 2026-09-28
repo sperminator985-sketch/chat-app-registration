@@ -1071,6 +1071,19 @@ const AdminPanel = () => {
               <span className="font-bold">— залей новый api.php</span>
             </>
           )}
+          <a
+            href="/api.php"
+            download="api.php"
+            className={cn(
+              'ml-auto flex items-center gap-1.5 border-2 px-2 py-1 font-bold transition-colors',
+              srvVersion === API_VERSION
+                ? 'border-emerald-400/50 hover:bg-emerald-400 hover:text-background'
+                : 'border-primary/60 hover:bg-primary hover:text-primary-foreground',
+            )}
+          >
+            <Icon name="Download" size={13} />
+            Скачать api.php
+          </a>
         </div>
       </main>
     </div>
