@@ -5,9 +5,25 @@ const WEATHER_URL = 'https://functions.poehali.dev/2c6a74d1-2f8a-481c-ac3e-49927
 
 export type Sky = 'clear' | 'partly' | 'cloudy' | 'fog' | 'drizzle' | 'rain' | 'snow' | 'storm';
 
+const CACHE_KEY = 'weather-cache-v1';
+
 let lastSky: Sky = 'clear';
 let lastIsDay = true;
 let lastDayText: string | null = null;
+let lastTemp: number | null = null;
+
+try {
+  const raw = localStorage.getItem(CACHE_KEY);
+  if (raw) {
+    const c = JSON.parse(raw);
+    if (typeof c?.temp === 'number') lastTemp = c.temp;
+    if (typeof c?.sky === 'string') lastSky = c.sky as Sky;
+    if (typeof c?.isDay === 'boolean') lastIsDay = c.isDay;
+    if (typeof c?.dayText === 'string') lastDayText = c.dayText;
+  }
+} catch {
+  /* кэш не критичен */
+}
 
 export const weatherIcon = (temp: number): string => {
   switch (lastSky) {
@@ -33,7 +49,7 @@ export const weatherIcon = (temp: number): string => {
 };
 
 export const useWeather = () => {
-  const [temp, setTemp] = useState<number | null>(null);
+  const [temp, setTemp] = useState<number | null>(lastTemp);
 
   useEffect(() => {
     let alive = true;
@@ -41,39 +57,53 @@ export const useWeather = () => {
     const grab = async (url: string) => {
       const stamp = Math.floor(Date.now() / 600000);
       const sep = url.includes('?') ? '&' : '?';
-      const r = await fetch(`${url}${sep}t=${stamp}`, { cache: 'no-store' });
-      if (!r.ok) throw new Error('bad status');
-      const d = await r.json();
-      const t = typeof d?.temp === 'number' ? d.temp : d?.current?.temperature_2m;
-      if (typeof t !== 'number') throw new Error('no temp');
-      return { t, sky: d?.sky, isDay: d?.isDay, dayText: d?.dayText };
+      const ctrl = new AbortController();
+      const kill = window.setTimeout(() => ctrl.abort(), 6000);
+      try {
+        const r = await fetch(`${url}${sep}t=${stamp}`, { signal: ctrl.signal });
+        if (!r.ok) throw new Error('bad status');
+        const d = await r.json();
+        const t = typeof d?.temp === 'number' ? d.temp : d?.current?.temperature_2m;
+        if (typeof t !== 'number') throw new Error('no temp');
+        return { t, sky: d?.sky, isDay: d?.isDay, dayText: d?.dayText };
+      } finally {
+        window.clearTimeout(kill);
+      }
     };
 
     const load = async () => {
-      let data: { t: number; sky?: unknown; isDay?: unknown; dayText?: unknown } | null = null;
+      const [own, cloud] = await Promise.allSettled([grab(OWN_URL), grab(WEATHER_URL)]);
+      if (!alive) return;
+
+      const main =
+        own.status === 'fulfilled'
+          ? own.value
+          : cloud.status === 'fulfilled'
+            ? cloud.value
+            : null;
+      if (!main) return;
+
+      if (typeof main.sky === 'string') lastSky = main.sky as Sky;
+      if (typeof main.isDay === 'boolean') lastIsDay = main.isDay;
+
+      const text =
+        typeof main.dayText === 'string' && main.dayText
+          ? main.dayText
+          : cloud.status === 'fulfilled' && typeof cloud.value.dayText === 'string'
+            ? cloud.value.dayText
+            : null;
+      if (text) lastDayText = text;
+
+      lastTemp = Math.round(main.t);
+      setTemp(lastTemp);
       try {
-        data = await grab(OWN_URL);
+        localStorage.setItem(
+          CACHE_KEY,
+          JSON.stringify({ temp: lastTemp, sky: lastSky, isDay: lastIsDay, dayText: lastDayText }),
+        );
       } catch {
-        try {
-          data = await grab(WEATHER_URL);
-        } catch {
-          return;
-        }
+        /* кэш не критичен */
       }
-      if (!alive || !data) return;
-      if (typeof data.sky === 'string') lastSky = data.sky as Sky;
-      if (typeof data.isDay === 'boolean') lastIsDay = data.isDay;
-      if (typeof data.dayText === 'string' && data.dayText) {
-        lastDayText = data.dayText;
-      } else {
-        try {
-          const extra = await grab(WEATHER_URL);
-          if (typeof extra.dayText === 'string' && extra.dayText) lastDayText = extra.dayText;
-        } catch {
-          /* прогноз не критичен */
-        }
-      }
-      setTemp(Math.round(data.t));
     };
 
     load();
