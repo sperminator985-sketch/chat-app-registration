@@ -63,17 +63,17 @@ const ProfileDialog = ({ open, onOpenChange }: ProfileDialogProps) => {
           </div>
         </div>
 
-        <div className="space-y-5 px-6 pb-6 pt-5">
+        <div className="space-y-5 px-4 pb-6 pt-5 sm:px-6">
           <div className="grid grid-cols-2 gap-px bg-foreground/25">
-            <div className="bg-background px-4 py-3">
-              <p className="text-[0.75rem] uppercase tracking-[0.14em] text-muted-foreground">Этаж</p>
-              <p className="mt-1 font-display text-lg font-extrabold">
+            <div className="min-w-0 bg-background px-3 py-3 sm:px-4">
+              <p className="text-[0.7rem] uppercase tracking-[0.1em] text-muted-foreground sm:text-[0.75rem] sm:tracking-[0.14em]">Этаж</p>
+              <p className="mt-1 truncate font-display text-[clamp(0.8rem,3.4vw,1.125rem)] font-extrabold leading-tight">
                 {room.floor} · {room.title}
               </p>
             </div>
-            <div className="bg-background px-4 py-3">
-              <p className="text-[0.75rem] uppercase tracking-[0.14em] text-muted-foreground">В общаге с</p>
-              <p className="mt-1 font-display text-lg font-extrabold">{user.since}</p>
+            <div className="min-w-0 bg-background px-3 py-3 sm:px-4">
+              <p className="text-[0.7rem] uppercase tracking-[0.1em] text-muted-foreground sm:text-[0.75rem] sm:tracking-[0.14em]">В общаге с</p>
+              <p className="mt-1 truncate font-display text-[clamp(0.8rem,3.4vw,1.125rem)] font-extrabold leading-tight">{user.since}</p>
             </div>
           </div>
 
