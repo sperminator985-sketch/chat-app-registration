@@ -1064,10 +1064,12 @@ const AdminPanel = () => {
               srvVersion === API_VERSION ? 'bg-emerald-400' : 'bg-primary',
             )}
           />
-          <span>Сервер: {srvVersion ?? '…'}</span>
-          <span className="text-muted-foreground/70">нужна: {API_VERSION}</span>
+          <span>Сервер: {srvVersion ? `v${srvVersion}` : '…'}</span>
           {srvVersion && srvVersion !== API_VERSION && (
-            <span className="font-bold">— залей новый api.php</span>
+            <>
+              <span className="text-muted-foreground/70">нужна: v{API_VERSION}</span>
+              <span className="font-bold">— залей новый api.php</span>
+            </>
           )}
         </div>
       </main>
