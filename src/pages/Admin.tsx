@@ -6,6 +6,7 @@ import { AuthProvider, useAuth } from '@/hooks/use-auth';
 import { api, API_VERSION, type AdminMessage, type AdminTickerPost, type AdminUser, type SecurityEvent, type TickerMode } from '@/lib/api';
 import { nickColorClass, rooms, staffNickClass } from '@/data/chat';
 import { useToast } from '@/hooks/use-toast';
+import { isPageVisible } from '@/hooks/use-polling';
 import VaultPanel from '@/components/VaultPanel';
 import { downloadApiZip, downloadFullZip } from '@/lib/server-files';
 
@@ -264,6 +265,7 @@ const AdminPanel = () => {
     check();
     checkTicker();
     const timer = window.setInterval(() => {
+      if (!isPageVisible()) return;
       check();
       checkTicker();
     }, 60000);

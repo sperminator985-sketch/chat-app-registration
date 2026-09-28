@@ -3,6 +3,7 @@ import { api, CallSignal } from '@/lib/api';
 import { useAuth } from '@/hooks/use-auth';
 import { toast } from '@/hooks/use-toast';
 import { startRinging } from '@/lib/notify-sound';
+import { isPageVisible } from '@/hooks/use-polling';
 
 export type CallStatus = 'idle' | 'calling' | 'incoming' | 'active';
 
@@ -293,10 +294,17 @@ export const CallProvider = ({ children }: { children: ReactNode }) => {
       }
     };
     poll();
-    const timer = window.setInterval(poll, 5000);
+    let timer = window.setInterval(poll, 5000);
+    const onVisibility = () => {
+      window.clearInterval(timer);
+      timer = window.setInterval(poll, isPageVisible() ? 5000 : 20000);
+      if (isPageVisible()) poll();
+    };
+    document.addEventListener('visibilitychange', onVisibility);
     return () => {
       stop = true;
       window.clearInterval(timer);
+      document.removeEventListener('visibilitychange', onVisibility);
     };
   }, [user, handleSignal]);
 

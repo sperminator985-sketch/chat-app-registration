@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import Icon from '@/components/ui/icon';
 import { api, isServerDown, onServerStatus } from '@/lib/api';
+import { isPageVisible } from '@/hooks/use-polling';
 import { cn } from '@/lib/utils';
 
 const ServerDownBanner = () => {
@@ -21,6 +22,7 @@ const ServerDownBanner = () => {
   useEffect(() => {
     if (!down) return;
     const timer = window.setInterval(() => {
+      if (!isPageVisible()) return;
       api
         .feed('kurilka')
         .then(() => window.location.reload())
