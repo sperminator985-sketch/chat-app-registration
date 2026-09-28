@@ -82,10 +82,10 @@ const Ticker = () => {
   const duration = Math.max(6, Math.round((baseDuration * 100) / (speed || 100)));
 
   return (
-    <div className="group my-0 overflow-hidden border-y-2 border-foreground/35 bg-card py-2.5 md:py-3">
+    <div className="group my-0 overflow-hidden border-y-2 border-foreground/35 bg-card py-2.5 [contain:content] [transform:translateZ(0)] md:py-3">
       <div
         className={cn(
-          'flex w-max [backface-visibility:hidden] [transform:translateZ(0)] [will-change:transform]',
+          'flex w-max [backface-visibility:hidden] [contain:layout_paint] [perspective:1000px] [transform:translate3d(0,0,0)] [will-change:transform]',
           solo ? 'animate-marquee-solo' : 'animate-marquee',
         )}
         style={
