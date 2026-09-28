@@ -1050,16 +1050,26 @@ const AdminPanel = () => {
           </>
         )}
 
-        <p className="mt-6 flex items-center gap-1.5 font-mono text-[0.62rem] uppercase tracking-[0.08em] text-muted-foreground/70">
+        <div
+          className={cn(
+            'mt-6 flex flex-wrap items-center gap-x-2 gap-y-1 border-2 px-3 py-2 font-mono text-[0.66rem] uppercase tracking-[0.08em]',
+            srvVersion === API_VERSION
+              ? 'border-emerald-400/50 text-emerald-400'
+              : 'border-primary/60 text-primary',
+          )}
+        >
           <span
             className={cn(
-              'h-1.5 w-1.5 shrink-0',
+              'h-2 w-2 shrink-0',
               srvVersion === API_VERSION ? 'bg-emerald-400' : 'bg-primary',
             )}
           />
-          Сервер: {srvVersion ?? '…'} · нужна: {API_VERSION}
-          {srvVersion && srvVersion !== API_VERSION && ' — залей новый api.php'}
-        </p>
+          <span>Сервер: {srvVersion ?? '…'}</span>
+          <span className="text-muted-foreground/70">нужна: {API_VERSION}</span>
+          {srvVersion && srvVersion !== API_VERSION && (
+            <span className="font-bold">— залей новый api.php</span>
+          )}
+        </div>
       </main>
     </div>
   );
