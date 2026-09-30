@@ -84,7 +84,7 @@ const Privacy = () => {
         </div>
 
         <p className="mt-8 text-[0.76rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-          © 2026 Siberia Art Ltd.
+          © {new Date().getFullYear()} Siberia Art Ltd.
         </p>
       </div>
     </div>

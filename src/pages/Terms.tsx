@@ -83,7 +83,7 @@ const Terms = () => {
         </div>
 
         <p className="mt-8 flex flex-wrap items-center gap-3 text-[0.76rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-          © 2026 Siberia Art Ltd.
+          © {new Date().getFullYear()} Siberia Art Ltd.
           <Link
             to="/privacy"
             className="underline underline-offset-4 transition-colors hover:text-secondary"
