@@ -1,0 +1,1 @@
+ALTER TABLE t_p16512527_chat_app_registratio.users ADD COLUMN IF NOT EXISTS gender VARCHAR(1);

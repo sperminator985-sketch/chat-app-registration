@@ -8,7 +8,7 @@ const API_URL = 'https://chat-tom.ru/chat/api.php';
 // Версия api.php, которую ожидает этот сайт. Должна совпадать с той,
 // что залита на хостинг — иначе в комендантской загорится красная метка.
 // Нумерация: 1.0.0 → 1.0.1 → 1.0.2 и так далее.
-export const API_VERSION = '1.0.2';
+export const API_VERSION = '1.0.3';
 const TOKEN_KEY = 'obshaga_token';
 
 export type ApiUser = {
@@ -27,6 +27,7 @@ export type ApiUser = {
   firstName?: string | null;
   lastName?: string | null;
   birthDate?: string | null;
+  gender?: 'm' | 'f' | null;
 };
 
 export type AdminUser = {
@@ -104,6 +105,7 @@ export type Resident = {
   firstName?: string | null;
   lastName?: string | null;
   birthDate?: string | null;
+  gender?: 'm' | 'f' | null;
   since?: string | null;
   seenAgo?: number | null;
   online?: boolean;
@@ -143,7 +145,7 @@ export type VaultMessage = {
 export type FeedResponse = {
   messages: ApiMessage[];
   typing?: { nick: string; color: NickColor }[];
-  online: { nick: string; color: NickColor; status: string; avatar?: number; avatarUrl?: string | null; isAdmin?: boolean; inPrivate?: boolean; firstName?: string | null; lastName?: string | null; birthDate?: string | null; since?: string | null; uni?: string | null }[];
+  online: { nick: string; color: NickColor; status: string; avatar?: number; avatarUrl?: string | null; isAdmin?: boolean; inPrivate?: boolean; firstName?: string | null; lastName?: string | null; birthDate?: string | null; since?: string | null; uni?: string | null; gender?: 'm' | 'f' | null }[];
   onlineTotal?: number;
   adminOnline?: boolean;
   tickerPending?: number;
@@ -366,7 +368,7 @@ export const api = {
   typing: (room: string) => request<{ ok: boolean }>('typing', { method: 'POST', body: { room } }),
   send: (body: { text: string; room: string }) =>
     request<{ message: ApiMessage }>('send', { method: 'POST', body }),
-  profile: (body: { status: string; color: number; avatar: number; image?: string; removeImage?: boolean; firstName?: string; lastName?: string; birthDate?: string }) =>
+  profile: (body: { status: string; color: number; avatar: number; image?: string; removeImage?: boolean; firstName?: string; lastName?: string; birthDate?: string; gender?: string }) =>
     request<{ user: ApiUser }>('profile', { method: 'POST', body }),
   logout: () => request<{ ok: boolean }>('logout', { method: 'POST' }),
   ticker: () =>

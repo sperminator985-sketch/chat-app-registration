@@ -14,6 +14,7 @@ export type CardPerson = {
   firstName?: string | null;
   lastName?: string | null;
   birthDate?: string | null;
+  gender?: 'm' | 'f' | null;
   since?: string | null;
 };
 
@@ -40,6 +41,8 @@ const ageFrom = (iso?: string | null) => {
   return age >= 0 && age < 120 ? age : null;
 };
 
+const genderLabel = (g?: string | null) => (g === 'm' ? 'Мужской' : g === 'f' ? 'Женский' : null);
+
 const yearsWord = (n: number) => {
   const t = n % 100;
   if (t >= 11 && t <= 14) return 'лет';
@@ -56,6 +59,7 @@ const UserCardDialog = ({ person, onOpenChange }: Props) => {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [birthDate, setBirthDate] = useState('');
+  const [gender, setGender] = useState<'' | 'm' | 'f'>('');
   const [preview, setPreview] = useState<string | null>(null);
   const [rawImage, setRawImage] = useState<string | null>(null);
   const [dropImage, setDropImage] = useState(false);
@@ -72,6 +76,7 @@ const UserCardDialog = ({ person, onOpenChange }: Props) => {
     setFirstName(src.firstName ?? '');
     setLastName(src.lastName ?? '');
     setBirthDate(src.birthDate ?? '');
+    setGender(src.gender ?? '');
     setPreview(src.avatarUrl ?? null);
     setRawImage(null);
     setDropImage(false);
@@ -157,6 +162,7 @@ const UserCardDialog = ({ person, onOpenChange }: Props) => {
         firstName: firstName.trim(),
         lastName: lastName.trim(),
         birthDate: birthDate || '',
+        gender,
         ...(imageData ? { image: imageData } : {}),
         ...(dropImage ? { removeImage: true } : {}),
       });
@@ -311,6 +317,26 @@ const UserCardDialog = ({ person, onOpenChange }: Props) => {
                 className="mt-1 w-full border-2 border-foreground/30 bg-background px-3 py-2 text-[0.95rem] outline-none focus:border-secondary"
               />
             </label>
+            <div className="block">
+              <span className="text-[0.72rem] uppercase tracking-[0.14em] text-muted-foreground">Пол</span>
+              <div className="mt-1 grid grid-cols-2 gap-3">
+                {([['m', 'Мужской'], ['f', 'Женский']] as const).map(([val, label]) => (
+                  <button
+                    key={val}
+                    type="button"
+                    onClick={() => setGender(gender === val ? '' : val)}
+                    className={cn(
+                      'border-2 px-3 py-2 text-[0.95rem] transition-colors',
+                      gender === val
+                        ? 'border-secondary bg-secondary text-secondary-foreground'
+                        : 'border-foreground/30 bg-background text-foreground hover:border-secondary',
+                    )}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
             <button
               type="button"
               onClick={save}
@@ -332,6 +358,10 @@ const UserCardDialog = ({ person, onOpenChange }: Props) => {
                 {humanDate(shown.birthDate) ?? '—'}
                 {age !== null && <span className="ml-2 text-muted-foreground">· {age} {yearsWord(age)}</span>}
               </span>
+            </div>
+            <div className="flex items-baseline justify-between gap-3 border-b border-foreground/15 pb-2">
+              <span className="text-[0.75rem] uppercase tracking-[0.14em] text-muted-foreground">Пол</span>
+              <span className="text-right text-[0.95rem]">{genderLabel(shown.gender) ?? '—'}</span>
             </div>
             {shown.status && (
               <div className="flex items-baseline justify-between gap-3 border-b border-foreground/15 pb-2">

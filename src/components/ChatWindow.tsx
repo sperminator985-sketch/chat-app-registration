@@ -31,6 +31,7 @@ type OnlineItem = {
   firstName?: string | null;
   lastName?: string | null;
   birthDate?: string | null;
+  gender?: 'm' | 'f' | null;
   since?: string | null;
 };
 
