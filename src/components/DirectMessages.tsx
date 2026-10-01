@@ -1,6 +1,16 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import Icon from '@/components/ui/icon';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { cn } from '@/lib/utils';
 import { toast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/use-auth';
@@ -27,6 +37,8 @@ const DirectMessages = () => {
   const [draft, setDraft] = useState('');
   const [sending, setSending] = useState(false);
   const [loaded, setLoaded] = useState(false);
+  const [confirmClear, setConfirmClear] = useState(false);
+  const [clearing, setClearing] = useState(false);
   const feedRef = useRef<HTMLDivElement>(null);
   const lastIncomingId = useRef<number | null>(null);
 
@@ -79,6 +91,27 @@ const DirectMessages = () => {
     const el = feedRef.current;
     if (el) el.scrollTop = el.scrollHeight;
   }, [messages]);
+
+  const clearChat = async () => {
+    if (!nick || clearing) return;
+    setClearing(true);
+    try {
+      await api.dmClear(nick);
+      setMessages([]);
+      setPlain({});
+      setConfirmClear(false);
+      refresh();
+      toast({ title: 'Переписка очищена', description: 'У собеседника она осталась' });
+    } catch (err) {
+      toast({
+        title: 'Не получилось очистить',
+        description: err instanceof Error ? err.message : 'Попробуй ещё раз',
+        variant: 'destructive',
+      });
+    } finally {
+      setClearing(false);
+    }
+  };
 
   const send = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -178,6 +211,16 @@ const DirectMessages = () => {
               </button>
               <button
                 type="button"
+                onClick={() => setConfirmClear(true)}
+                disabled={messages.length === 0}
+                title="Очистить переписку у себя"
+                aria-label="Очистить переписку"
+                className="flex h-9 w-9 items-center justify-center border-2 border-foreground/35 text-foreground transition-colors hover:border-primary hover:text-primary disabled:cursor-not-allowed disabled:border-foreground/20 disabled:text-muted-foreground/40 disabled:hover:border-foreground/20 disabled:hover:text-muted-foreground/40"
+              >
+                <Icon name="Trash2" size={18} />
+              </button>
+              <button
+                type="button"
                 onClick={onClose}
                 title="Закрыть личку"
                 aria-label="Закрыть личку"
@@ -264,6 +307,29 @@ const DirectMessages = () => {
           </button>
         </form>
       </DialogContent>
+      <AlertDialog open={confirmClear} onOpenChange={(open) => !clearing && setConfirmClear(open)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Очистить переписку?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Все сообщения с {nick} исчезнут только у тебя. У собеседника переписка останется. Вернуть её не получится.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={clearing}>Отмена</AlertDialogCancel>
+            <AlertDialogAction
+              disabled={clearing}
+              onClick={(e) => {
+                e.preventDefault();
+                clearChat();
+              }}
+              className="bg-primary text-primary-foreground hover:bg-primary/90"
+            >
+              {clearing ? 'Очищаем…' : 'Очистить'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Dialog>
   );
 };

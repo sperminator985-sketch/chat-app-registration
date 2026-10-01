@@ -2,7 +2,7 @@
 // Версия серверной части. При каждом изменении api.php поднимайте
 // последнюю цифру: 1.0.0 → 1.0.1 → 1.0.2 и так далее.
 // Проверить, что залито на хостинг: https://ваш-домен.ru/chat/api.php?action=version
-const API_VERSION = '1.0.1';
+const API_VERSION = '1.0.2';
 const API_VERSION_NOTE = 'Список жильцов, зелёные отметки в сети, новости с федеральных источников, прогноз на день';
 
 ini_set('display_errors', '0');
@@ -181,6 +181,26 @@ function clientIp(): string
 {
     $ip = (string) ($_SERVER['REMOTE_ADDR'] ?? '0.0.0.0');
     return mb_substr($ip, 0, 45);
+}
+
+function hasDmClearTable(): bool
+{
+    static $ok = null;
+    if ($ok !== null) {
+        return $ok;
+    }
+    try {
+        db()->exec("CREATE TABLE IF NOT EXISTS dm_cleared (
+            user_id INT NOT NULL,
+            peer_id INT NOT NULL,
+            cleared_id INT NOT NULL DEFAULT 0,
+            PRIMARY KEY (user_id, peer_id)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+        $ok = true;
+    } catch (Throwable $e) {
+        $ok = false;
+    }
+    return $ok;
 }
 
 function hasAttemptTable(): bool
@@ -1554,6 +1574,9 @@ try {
     if ($method === 'GET' && $action === 'dialogs') {
         $user = requireUser();
         $me = $user['id'];
+        $clrOn = hasDmClearTable();
+        $clrJoin = $clrOn ? 'LEFT JOIN dm_cleared c ON c.user_id = ? AND c.peer_id = u.id' : '';
+        $clrWhere = $clrOn ? 'AND d.id > COALESCE(c.cleared_id, 0)' : '';
         $rows = q(
             'SELECT u.nick, u.color, u.avatar, u.avatar_url,
                     MAX(d.id) AS last_id,
@@ -1561,10 +1584,11 @@ try {
                     TIMESTAMPDIFF(SECOND, MAX(u.last_seen), UTC_TIMESTAMP()) AS ago
              FROM direct_messages d
              JOIN users u ON u.id = CASE WHEN d.sender_id = ? THEN d.recipient_id ELSE d.sender_id END
-             WHERE d.sender_id = ? OR d.recipient_id = ?
+             ' . $clrJoin . '
+             WHERE (d.sender_id = ? OR d.recipient_id = ?) ' . $clrWhere . '
              GROUP BY u.id, u.nick, u.color, u.avatar, u.avatar_url
              ORDER BY last_id DESC LIMIT 30',
-            [$me, $me, $me, $me]
+            $clrOn ? [$me, $me, $me, $me, $me] : [$me, $me, $me, $me]
         )->fetchAll();
 
         $dialogs = array_map(static function (array $r): array {
@@ -1601,11 +1625,16 @@ try {
             fail(404, 'Такого жильца нет');
         }
 
+        $clearedId = 0;
+        if (hasDmClearTable()) {
+            $c = one('SELECT cleared_id FROM dm_cleared WHERE user_id = ? AND peer_id = ?', [$me, (int) $other['id']]);
+            $clearedId = $c ? (int) $c['cleared_id'] : 0;
+        }
         $rows = q(
             'SELECT * FROM direct_messages
-             WHERE (sender_id = ? AND recipient_id = ?) OR (sender_id = ? AND recipient_id = ?)
+             WHERE ((sender_id = ? AND recipient_id = ?) OR (sender_id = ? AND recipient_id = ?)) AND id > ?
              ORDER BY id DESC LIMIT 80',
-            [$me, $other['id'], $other['id'], $me]
+            [$me, $other['id'], $other['id'], $me, $clearedId]
         )->fetchAll();
 
         q(
@@ -1634,13 +1663,17 @@ try {
     if ($method === 'GET' && $action === 'dm_all') {
         $user = requireUser();
         $me = $user['id'];
+        $clrOn = hasDmClearTable();
+        $clrJoin = $clrOn ? 'LEFT JOIN dm_cleared c ON c.user_id = ? AND c.peer_id = u.id' : '';
+        $clrWhere = $clrOn ? 'AND d.id > COALESCE(c.cleared_id, 0)' : '';
         $rows = q(
             'SELECT d.*, u.nick AS peer_nick
              FROM direct_messages d
              JOIN users u ON u.id = CASE WHEN d.sender_id = ? THEN d.recipient_id ELSE d.sender_id END
-             WHERE d.sender_id = ? OR d.recipient_id = ?
+             ' . $clrJoin . '
+             WHERE (d.sender_id = ? OR d.recipient_id = ?) ' . $clrWhere . '
              ORDER BY d.id DESC LIMIT 80',
-            [$me, $me, $me]
+            $clrOn ? [$me, $me, $me, $me] : [$me, $me, $me]
         )->fetchAll();
         $items = array_map(static function (array $r) use ($me): array {
             $m = shapeMessage($r);
@@ -1650,6 +1683,38 @@ try {
         }, array_reverse($rows));
         touch_user($me);
         out(200, ['messages' => $items]);
+    }
+
+    // --- Очистка переписки только у себя ---
+    if ($method === 'POST' && $action === 'dm_clear') {
+        $user = requireUser();
+        $me = $user['id'];
+        $withNick = trim((string) param('nick', ''));
+        $other = one('SELECT id FROM users WHERE nick_lower = ?', [mb_strtolower($withNick)]);
+        if (!$other) {
+            fail(404, 'Такого жильца нет');
+        }
+        if (!hasDmClearTable()) {
+            fail(500, 'Не получилось очистить переписку');
+        }
+        $peer = (int) $other['id'];
+        $last = one(
+            'SELECT MAX(id) AS m FROM direct_messages
+             WHERE (sender_id = ? AND recipient_id = ?) OR (sender_id = ? AND recipient_id = ?)',
+            [$me, $peer, $peer, $me]
+        );
+        $lastId = (int) ($last['m'] ?? 0);
+        q(
+            'INSERT INTO dm_cleared (user_id, peer_id, cleared_id) VALUES (?, ?, ?)
+             ON DUPLICATE KEY UPDATE cleared_id = GREATEST(cleared_id, VALUES(cleared_id))',
+            [$me, $peer, $lastId]
+        );
+        q(
+            'UPDATE direct_messages SET read_at = UTC_TIMESTAMP()
+             WHERE recipient_id = ? AND sender_id = ? AND read_at IS NULL AND id <= ?',
+            [$me, $peer, $lastId]
+        );
+        out(200, ['ok' => true]);
     }
 
     // --- Отправка личного сообщения ---

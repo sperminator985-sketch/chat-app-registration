@@ -8,7 +8,7 @@ const API_URL = 'https://chat-tom.ru/chat/api.php';
 // Версия api.php, которую ожидает этот сайт. Должна совпадать с той,
 // что залита на хостинг — иначе в комендантской загорится красная метка.
 // Нумерация: 1.0.0 → 1.0.1 → 1.0.2 и так далее.
-export const API_VERSION = '1.0.1';
+export const API_VERSION = '1.0.2';
 const TOKEN_KEY = 'obshaga_token';
 
 export type ApiUser = {
@@ -354,6 +354,8 @@ export const api = {
     request<{ messages: (ApiMessage & { peer: string; outgoing: boolean })[] }>('dm_all'),
   dmSend: (body: { nick: string; text?: string; cipher?: string }) =>
     request<{ message: ApiMessage }>('dm_send', { method: 'POST', body }),
+  dmClear: (nick: string) =>
+    request<{ ok: boolean }>('dm_clear', { method: 'POST', body: { nick } }),
   keysMe: () =>
     request<{ enabled: boolean; vault: string | null; bundle: KeyBundleDto | null }>('keys_me'),
   keysSave: (body: KeyBundleDto) =>
