@@ -40,6 +40,7 @@ const DirectMessages = () => {
   const [confirmClear, setConfirmClear] = useState(false);
   const [clearing, setClearing] = useState(false);
   const feedRef = useRef<HTMLDivElement>(null);
+  const stickBottom = useRef(true);
   const lastIncomingId = useRef<number | null>(null);
 
   const load = useCallback(async () => {
@@ -89,8 +90,18 @@ const DirectMessages = () => {
 
   useEffect(() => {
     const el = feedRef.current;
-    if (el) el.scrollTop = el.scrollHeight;
-  }, [messages]);
+    if (el && stickBottom.current) el.scrollTop = el.scrollHeight;
+  }, [messages, plain]);
+
+  useEffect(() => {
+    stickBottom.current = true;
+  }, [nick]);
+
+  const onFeedScroll = () => {
+    const el = feedRef.current;
+    if (!el) return;
+    stickBottom.current = el.scrollHeight - el.scrollTop - el.clientHeight < 80;
+  };
 
   const clearChat = async () => {
     if (!nick || clearing) return;
@@ -123,6 +134,7 @@ const DirectMessages = () => {
       const res = await api.dmSend(cipher ? { nick, cipher } : { nick, text });
       const shown = cipher ? { ...res.message, cipher, text: '' } : res.message;
       if (cipher) setPlain((prev) => ({ ...prev, [shown.id]: text }));
+      stickBottom.current = true;
       setMessages((prev) => [...prev, shown]);
       setDraft('');
       refresh();
@@ -233,7 +245,7 @@ const DirectMessages = () => {
           )}
         </div>
 
-        <div ref={feedRef} className="scrollbar-brut min-h-0 flex-1 space-y-2 overflow-y-auto px-3 py-4 sm:px-5">
+        <div ref={feedRef} onScroll={onFeedScroll} className="scrollbar-brut min-h-0 flex-1 space-y-2 overflow-y-auto px-3 py-4 sm:px-5">
           {!loaded && <p className="font-mono text-[0.85rem] text-muted-foreground">открываем переписку…</p>}
           {loaded && messages.length === 0 && (
             <p className="border-l-2 border-secondary bg-muted/60 px-3 py-2 font-mono text-[0.82rem] uppercase tracking-[0.08em] text-muted-foreground">
