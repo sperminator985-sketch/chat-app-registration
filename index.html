@@ -64,7 +64,7 @@
       @media (prefers-reduced-motion:reduce){#app-splash .w{animation:none;opacity:1}}
     </style>
     <script>
-      (function(){try{var a=window.matchMedia&&(matchMedia('(display-mode: standalone)').matches||matchMedia('(display-mode: minimal-ui)').matches);if(a||navigator.standalone||/[?&]source=app/.test(location.search)||document.referrer.indexOf('android-app://')===0){document.documentElement.classList.add('app-launch')}}catch(e){}})();
+      (function(){try{if(/android/i.test(navigator.userAgent))return;var a=window.matchMedia&&(matchMedia('(display-mode: standalone)').matches||matchMedia('(display-mode: minimal-ui)').matches);if(a||navigator.standalone||/[?&]source=app/.test(location.search)||document.referrer.indexOf('android-app://')===0){document.documentElement.classList.add('app-launch')}}catch(e){}})();
     </script>
     <link rel="preload" as="font" type="font/woff2" href="/fonts/Oswald-400-cyrillic.woff2" crossorigin>
     <link rel="preload" as="font" type="font/woff2" href="/fonts/Unbounded-800-cyrillic.woff2" crossorigin>

@@ -1,4 +1,4 @@
-const CACHE = 'obshaga-v8';
+const CACHE = 'obshaga-v9';
 const SHELL = ['/index.html', '/manifest.webmanifest', '/icons/icon-192.png', '/icons/icon-512.png'];
 
 const SKIP = ['/node_modules/', '/src/', '/@vite', '/@react-refresh', '/@id/', '/@fs/'];
