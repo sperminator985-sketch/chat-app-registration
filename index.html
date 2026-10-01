@@ -42,6 +42,30 @@
       "inLanguage": "ru-RU"
     }
     </script>
+    <style>
+      #app-splash{display:none}
+      html.app-launch #app-splash{display:flex;position:fixed;inset:0;z-index:2147483000;flex-direction:column;align-items:center;justify-content:center;gap:28px;background:#1E3ACC;color:#FFF3E0;transition:opacity .45s ease}
+      html.app-launch #app-splash.hide{opacity:0;pointer-events:none}
+      #app-splash svg{width:128px;height:128px;box-shadow:8px 8px 0 #101A84}
+      #app-splash .w{opacity:.22;animation:splash-win 1.6s ease-in-out infinite}
+      #app-splash .w:nth-child(1){animation-delay:0s}
+      #app-splash .w:nth-child(2){animation-delay:.15s}
+      #app-splash .w:nth-child(3){animation-delay:.3s}
+      #app-splash .w:nth-child(4){animation-delay:.45s}
+      #app-splash .w:nth-child(5){animation-delay:.6s}
+      #app-splash .w:nth-child(6){animation-delay:.75s}
+      #app-splash .w:nth-child(7){animation-delay:.9s}
+      #app-splash .w:nth-child(8){animation-delay:1.05s}
+      #app-splash .w:nth-child(9){animation-delay:1.2s}
+      @keyframes splash-win{0%,100%{opacity:.22}40%,70%{opacity:1}}
+      #app-splash .t{font-family:Unbounded,system-ui,sans-serif;font-weight:800;font-size:22px;letter-spacing:-.02em;text-transform:uppercase}
+      #app-splash .t span{background:#F2E44A;color:#101A84;padding:2px 8px;margin-left:6px}
+      #app-splash .s{font-family:Oswald,system-ui,sans-serif;font-size:13px;letter-spacing:.2em;text-transform:uppercase;color:#F2E44A;opacity:.85}
+      @media (prefers-reduced-motion:reduce){#app-splash .w{animation:none;opacity:1}}
+    </style>
+    <script>
+      (function(){try{var a=window.matchMedia&&(matchMedia('(display-mode: standalone)').matches||matchMedia('(display-mode: minimal-ui)').matches);if(a||navigator.standalone||/[?&]source=app/.test(location.search)||document.referrer.indexOf('android-app://')===0){document.documentElement.classList.add('app-launch')}}catch(e){}})();
+    </script>
     <link rel="preload" as="font" type="font/woff2" href="/fonts/Oswald-400-cyrillic.woff2" crossorigin>
     <link rel="preload" as="font" type="font/woff2" href="/fonts/Unbounded-800-cyrillic.woff2" crossorigin>
 
@@ -59,6 +83,25 @@
   </head>
 
 <body>
+<div id="app-splash" aria-hidden="true">
+  <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+    <rect width="64" height="64" fill="#101A84"/>
+    <rect x="4" y="4" width="56" height="56" fill="#101A84" stroke="#FFF3E0" stroke-width="4"/>
+    <g fill="#F2E44A">
+      <rect class="w" x="12" y="14" width="11" height="9"/>
+      <rect class="w" x="26.5" y="14" width="11" height="9"/>
+      <rect class="w" x="41" y="14" width="11" height="9"/>
+      <rect class="w" x="41" y="27.5" width="11" height="9"/>
+      <rect class="w" x="26.5" y="27.5" width="11" height="9"/>
+      <rect class="w" x="12" y="27.5" width="11" height="9"/>
+      <rect class="w" x="12" y="41" width="11" height="9"/>
+      <rect class="w" x="26.5" y="41" width="11" height="9"/>
+      <rect class="w" x="41" y="41" width="11" height="9"/>
+    </g>
+  </svg>
+  <div class="t">Чат<span>Общага</span></div>
+  <div class="s">Томск на связи</div>
+</div>
 <div id="root"></div>
 <script type="module" src="/src/main.tsx"></script>
 
