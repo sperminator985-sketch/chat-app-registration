@@ -1,10 +1,15 @@
-const CACHE = 'obshaga-v6';
-const SHELL = ['/manifest.webmanifest', '/icons/icon-192.png', '/icons/icon-512.png'];
+const CACHE = 'obshaga-v7';
+const SHELL = ['/index.html', '/manifest.webmanifest', '/icons/icon-192.png', '/icons/icon-512.png'];
 
 const SKIP = ['/node_modules/', '/src/', '/@vite', '/@react-refresh', '/@id/', '/@fs/'];
 
 self.addEventListener('install', (e) => {
-  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).then(() => self.skipWaiting()));
+  e.waitUntil(
+    caches
+      .open(CACHE)
+      .then((c) => Promise.all(SHELL.map((u) => c.add(u).catch(() => undefined))))
+      .then(() => self.skipWaiting()),
+  );
 });
 
 self.addEventListener('activate', (e) => {

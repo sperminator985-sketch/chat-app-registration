@@ -1,15 +1,25 @@
 {
+  "id": "/",
   "name": "ЧАТ-ОБЩАГА — томский чат",
   "short_name": "Общага",
   "description": "Томский чат с регистрацией: этажи-комнаты, лента сообщений, цветные ники и список тех, кто сейчас в чате.",
   "lang": "ru",
-  "start_url": "/",
+  "dir": "ltr",
+  "start_url": "/?source=app",
   "scope": "/",
   "display": "standalone",
+  "display_override": [
+    "standalone",
+    "minimal-ui"
+  ],
   "orientation": "portrait",
   "background_color": "#1E3ACC",
   "theme_color": "#1E3ACC",
-  "categories": ["social", "communication"],
+  "categories": [
+    "social",
+    "communication"
+  ],
+  "prefer_related_applications": false,
   "icons": [
     {
       "src": "/icons/icon-192.png",
@@ -28,6 +38,22 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshots/mobile.webp",
+      "sizes": "540x1170",
+      "type": "image/webp",
+      "form_factor": "narrow",
+      "label": "Главный экран общаги на телефоне"
+    },
+    {
+      "src": "/screenshots/desktop.webp",
+      "sizes": "1280x720",
+      "type": "image/webp",
+      "form_factor": "wide",
+      "label": "Общага на компьютере"
     }
   ]
 }
