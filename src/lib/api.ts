@@ -215,26 +215,97 @@ const setServerDown = (v: boolean) => {
   downListeners.forEach((fn) => fn(v));
 };
 
-const request = async <T>(action: string, options: { method?: string; body?: unknown; query?: string } = {}): Promise<T> => {
-  const method = options.method ?? 'GET';
-  const url = `${API_URL}?action=${action}${options.query ?? ''}&_=${Date.now()}`;
-  let res: Response;
-  try {
-    res = await fetch(url, {
-      method,
-      cache: 'no-store',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Auth-Token': getToken(),
-      },
-      body: method === 'POST' ? JSON.stringify(options.body ?? {}) : undefined,
-    });
-  } catch {
-    setServerDown(true);
-    throw new Error('Общага не отвечает — сервер временно недоступен');
+const BACKGROUND_TIMEOUT = 15000;
+const PRIORITY_TIMEOUT = 20000;
+let priorityActive = 0;
+const backgroundRuns = new Map<AbortController, { preempted: boolean }>();
+let idleWaiters: (() => void)[] = [];
+
+const waitPriorityIdle = () =>
+  priorityActive === 0 ? Promise.resolve() : new Promise<void>((resolve) => idleWaiters.push(resolve));
+
+const beginPriority = () => {
+  priorityActive += 1;
+  backgroundRuns.forEach((state, ctrl) => {
+    state.preempted = true;
+    ctrl.abort();
+  });
+};
+
+const endPriority = () => {
+  priorityActive = Math.max(0, priorityActive - 1);
+  if (priorityActive > 0) return;
+  const waiters = idleWaiters;
+  idleWaiters = [];
+  waiters.forEach((fn) => fn());
+};
+
+const BACKGROUND_POSTS = new Set(['typing', 'private_typing', 'away']);
+
+const NETWORK_FAIL = 'Общага не отвечает — сервер временно недоступен';
+
+const fetchRaw = async (
+  makeUrl: () => string,
+  init: RequestInit,
+  priority: boolean,
+): Promise<{ res: Response; raw: string }> => {
+  if (priority) {
+    const ctrl = new AbortController();
+    const timer = window.setTimeout(() => ctrl.abort(), PRIORITY_TIMEOUT);
+    try {
+      const res = await fetch(makeUrl(), { ...init, signal: ctrl.signal });
+      const raw = await res.text();
+      return { res, raw };
+    } finally {
+      window.clearTimeout(timer);
+    }
   }
 
-  const raw = await res.text();
+  for (;;) {
+    await waitPriorityIdle();
+    const ctrl = new AbortController();
+    const state = { preempted: false };
+    backgroundRuns.set(ctrl, state);
+    const timer = window.setTimeout(() => ctrl.abort(), BACKGROUND_TIMEOUT);
+    try {
+      const res = await fetch(makeUrl(), { ...init, signal: ctrl.signal });
+      const raw = await res.text();
+      return { res, raw };
+    } catch (err) {
+      if (!state.preempted) throw err;
+    } finally {
+      window.clearTimeout(timer);
+      backgroundRuns.delete(ctrl);
+    }
+  }
+};
+
+const request = async <T>(action: string, options: { method?: string; body?: unknown; query?: string } = {}): Promise<T> => {
+  const method = options.method ?? 'GET';
+  const priority = method !== 'GET' && !BACKGROUND_POSTS.has(action);
+  const makeUrl = () => `${API_URL}?action=${action}${options.query ?? ''}&_=${Date.now()}`;
+  const init: RequestInit = {
+    method,
+    cache: 'no-store',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Auth-Token': getToken(),
+    },
+    body: method === 'POST' ? JSON.stringify(options.body ?? {}) : undefined,
+  };
+
+  if (priority) beginPriority();
+  let res: Response;
+  let raw: string;
+  try {
+    ({ res, raw } = await fetchRaw(makeUrl, init, priority));
+  } catch {
+    setServerDown(true);
+    throw new Error(NETWORK_FAIL);
+  } finally {
+    if (priority) endPriority();
+  }
+
   let data: { error?: string } | null = null;
   try {
     data = JSON.parse(raw);
