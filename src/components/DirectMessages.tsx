@@ -39,6 +39,7 @@ const DirectMessages = () => {
   const [loaded, setLoaded] = useState(false);
   const [confirmClear, setConfirmClear] = useState(false);
   const [clearing, setClearing] = useState(false);
+  const [toolsOpen, setToolsOpen] = useState(false);
   const feedRef = useRef<HTMLDivElement>(null);
   const stickBottom = useRef(true);
   const lastIncomingId = useRef<number | null>(null);
@@ -95,6 +96,7 @@ const DirectMessages = () => {
 
   useEffect(() => {
     stickBottom.current = true;
+    setToolsOpen(false);
   }, [nick]);
 
   const onFeedScroll = () => {
@@ -155,7 +157,7 @@ const DirectMessages = () => {
         className="flex h-svh max-h-svh w-screen !max-w-none flex-col overflow-hidden border-0 border-foreground/40 bg-background p-0"
         closeClassName="hidden"
       >
-        <div className="flex shrink-0 items-center gap-2 border-b-2 border-foreground/35 px-3 py-3 sm:gap-3 sm:px-5 sm:py-4">
+        <div className="flex shrink-0 flex-wrap items-center gap-2 border-b-2 border-foreground/35 px-3 py-3 sm:gap-3 sm:px-5 sm:py-4">
           <Icon name="Mail" size={18} className="shrink-0 text-secondary" />
           <div className="min-w-0 flex-1">
             <p className="truncate font-display text-base font-extrabold uppercase leading-none tracking-[-0.02em] sm:text-lg">
@@ -187,7 +189,39 @@ const DirectMessages = () => {
             </span>
           )}
           {nick && (
-            <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
+            <div className="flex shrink-0 items-center gap-1.5 sm:order-last">
+              <button
+                type="button"
+                onClick={() => setToolsOpen((v) => !v)}
+                title={toolsOpen ? 'Спрятать кнопки' : 'Звонок, приват, очистка'}
+                aria-label={toolsOpen ? 'Спрятать кнопки' : 'Показать кнопки'}
+                aria-expanded={toolsOpen}
+                className={cn(
+                  'flex h-9 w-9 items-center justify-center border-2 border-foreground/35 text-foreground transition-colors hover:border-secondary hover:text-secondary sm:hidden',
+                  toolsOpen && 'border-secondary text-secondary',
+                )}
+              >
+                <Icon name="ChevronDown" size={18} className={cn('transition-transform', toolsOpen && 'rotate-180')} />
+              </button>
+              <button
+                type="button"
+                onClick={onClose}
+                title="Закрыть личку"
+                aria-label="Закрыть личку"
+                className="flex h-9 items-center gap-1.5 border-2 border-foreground/35 px-2 py-1 text-[0.72rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground transition-colors hover:border-primary hover:text-primary sm:px-2.5"
+              >
+                <Icon name="LogOut" size={14} />
+                <span className="hidden sm:inline">Выйти</span>
+              </button>
+            </div>
+          )}
+          {nick && (
+            <div
+              className={cn(
+                'w-full shrink-0 items-center justify-end gap-1.5 sm:flex sm:w-auto sm:gap-2',
+                toolsOpen ? 'flex' : 'hidden',
+              )}
+            >
               <button
                 type="button"
                 onClick={() => {
@@ -230,16 +264,6 @@ const DirectMessages = () => {
                 className="flex h-9 w-9 items-center justify-center border-2 border-foreground/35 text-foreground transition-colors hover:border-primary hover:text-primary disabled:cursor-not-allowed disabled:border-foreground/20 disabled:text-muted-foreground/40 disabled:hover:border-foreground/20 disabled:hover:text-muted-foreground/40"
               >
                 <Icon name="Trash2" size={18} />
-              </button>
-              <button
-                type="button"
-                onClick={onClose}
-                title="Закрыть личку"
-                aria-label="Закрыть личку"
-                className="flex h-9 items-center gap-1.5 border-2 border-foreground/35 px-2 py-1 text-[0.72rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground transition-colors hover:border-primary hover:text-primary sm:px-2.5"
-              >
-                <Icon name="LogOut" size={14} />
-                <span className="hidden sm:inline">Выйти</span>
               </button>
             </div>
           )}
