@@ -1,4 +1,5 @@
 import { zipSync, strToU8 } from 'fflate';
+import func2url from '../../backend/func2url.json';
 
 import apiPhp from '@/assets/server/api.php.txt?raw';
 import installPhp from '@/assets/server/install.php.txt?raw';
@@ -44,57 +45,24 @@ export const downloadFullZip = () => {
   );
 };
 
-const ASSET_RE = /(?:\/assets\/|["'`(]\.\/|["'`(]assets\/)([\w.-]+\.(?:js|css|woff2?|ttf|png|jpe?g|svg|webp|gif|mp3|wav|ogg))/g;
+export type FreshBuild = { url: string; size?: number; updatedAt?: string; apiVersion?: string | null };
 
-const grab = async (path: string) => {
-  const r = await fetch(`/${path.split('/').map(encodeURIComponent).join('/')}?bf=${Date.now()}`, { cache: 'no-store' });
-  if (!r.ok) throw new Error(`Не скачался файл ${path}`);
-  return new Uint8Array(await r.arrayBuffer());
+export const getFreshBuild = async (): Promise<FreshBuild> => {
+  const r = await fetch(`${(func2url as Record<string, string>)['build-store']}?t=${Date.now()}`, { cache: 'no-store' });
+  const data = await r.json().catch(() => ({}));
+  if (!r.ok || !data.url) throw new Error(data.error || 'Свежий билд пока не загружен — попроси разработчика выгрузить его');
+  return data as FreshBuild;
 };
 
-export const downloadSiteWithApiZip = async (onProgress?: (done: number, total: number) => void) => {
-  const html = await (await fetch(`/index.html?bf=${Date.now()}`, { cache: 'no-store' })).text();
-  if (html.includes('/src/main.tsx')) {
-    throw new Error('Это окно предпросмотра, тут нет готового билда. Открой комендантскую на опубликованном адресе.');
-  }
-  const listRes = await fetch(`/build-files.json?bf=${Date.now()}`, { cache: 'no-store' });
-  const staticFiles: string[] = listRes.ok ? ((await listRes.json()) as { files: string[] }).files || [] : [];
-
-  const data: Record<string, Uint8Array> = { 'index.html': strToU8(html), 'chat/api.php': strToU8(apiPhp) };
-  const seen = new Set<string>(['index.html']);
-  const queue: string[] = [];
-  const add = (p: string) => {
-    if (!seen.has(p)) {
-      seen.add(p);
-      queue.push(p);
-    }
-  };
-  const scan = (text: string) => {
-    for (const m of text.matchAll(ASSET_RE)) add(`assets/${m[1]}`);
-  };
-  scan(html);
-  staticFiles.forEach(add);
-
-  let done = 0;
-  const worker = async () => {
-    while (queue.length) {
-      const p = queue.shift() as string;
-      let bytes: Uint8Array;
-      try {
-        bytes = await grab(p);
-      } catch (e) {
-        if (p.startsWith('assets/')) throw e;
-        continue;
-      }
-      data[p] = bytes;
-      if (/\.(js|css)$/.test(p)) scan(new TextDecoder().decode(bytes));
-      done += 1;
-      onProgress?.(done, done + queue.length);
-    }
-  };
-  await Promise.all(Array.from({ length: 6 }, worker));
-
-  const stamp = new Date().toISOString().slice(0, 16).replace(/[-:T]/g, '');
-  saveBlob(new Blob([zipSync(data, { level: 6 })], { type: 'application/zip' }), `chat-site-${stamp}.zip`);
-  return Object.keys(data).length;
+export const downloadFreshBuild = async () => {
+  const info = await getFreshBuild();
+  const stamp = (info.updatedAt || '').slice(0, 16).replace(/\D/g, '');
+  const a = document.createElement('a');
+  a.href = `${info.url}?t=${Date.now()}`;
+  a.download = `chat-site-${stamp || 'latest'}.zip`;
+  a.rel = 'noopener';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  return info;
 };

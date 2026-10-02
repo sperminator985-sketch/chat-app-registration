@@ -1,0 +1,4 @@
+{"tests": [
+  {"name": "Загрузка без ключа запрещена", "method": "POST", "path": "/", "body": {}, "expectedStatus": 403},
+  {"name": "Неподдерживаемый метод", "method": "PUT", "path": "/", "expectedStatus": 405}
+]}

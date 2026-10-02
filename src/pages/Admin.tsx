@@ -8,7 +8,7 @@ import { nickColorClass, rooms, staffNickClass } from '@/data/chat';
 import { useToast } from '@/hooks/use-toast';
 import { isPageVisible } from '@/hooks/use-polling';
 import VaultPanel from '@/components/VaultPanel';
-import { downloadApiZip, downloadFullZip, downloadSiteWithApiZip } from '@/lib/server-files';
+import { downloadApiZip, downloadFullZip, downloadFreshBuild } from '@/lib/server-files';
 
 const DAY_OPTIONS = [1, 3, 7, 14, 30, 0];
 
@@ -119,8 +119,13 @@ const AdminPanel = () => {
   const grabSite = useCallback(async () => {
     setSitePack('…');
     try {
-      const n = await downloadSiteWithApiZip((done, total) => setSitePack(`${done}/${total}`));
-      toast({ title: 'Архив скачан', description: `${n} файлов: сайт и chat/api.php. Распакуй в корень хостинга.` });
+      const info = await downloadFreshBuild();
+      const when = info.updatedAt ? new Date(info.updatedAt).toLocaleString('ru-RU', { dateStyle: 'short', timeStyle: 'short' }) : '';
+      const mb = info.size ? ` · ${(info.size / 1048576).toFixed(1)} МБ` : '';
+      toast({
+        title: 'Скачиваю сайт + api.php',
+        description: `${when ? `Сборка от ${when}` : 'Свежая сборка'}${info.apiVersion ? `, api ${info.apiVersion}` : ''}${mb}. Распакуй в корень хостинга.`,
+      });
     } catch (err) {
       toast({
         title: 'Архив не собрался',
@@ -1169,7 +1174,7 @@ const AdminPanel = () => {
               className="flex items-center gap-1.5 border-2 border-secondary px-2 py-1 font-bold text-secondary transition-colors hover:bg-secondary hover:text-secondary-foreground disabled:opacity-70"
             >
               <Icon name={sitePack ? 'Loader2' : 'Package'} size={13} className={cn(sitePack && 'animate-spin')} />
-              {sitePack ? `Сборка ${sitePack}` : 'Сайт + api.php'}
+              {sitePack ? 'Готовлю…' : 'Сайт + api.php'}
             </button>
             <button
               onClick={() => grabFile('full')}
