@@ -2,8 +2,8 @@
 // Версия серверной части. При каждом изменении api.php поднимайте
 // последнюю цифру: 1.0.0 → 1.0.1 → 1.0.2 и так далее.
 // Проверить, что залито на хостинг: https://ваш-домен.ru/chat/api.php?action=version
-const API_VERSION = '1.0.3';
-const API_VERSION_NOTE = 'Пол жильца в анкете';
+const API_VERSION = '1.0.4';
+const API_VERSION_NOTE = 'Очистка лички у себя, пол жильца в анкете';
 
 ini_set('display_errors', '0');
 error_reporting(E_ALL & ~E_WARNING & ~E_NOTICE & ~E_DEPRECATED);
@@ -340,6 +340,50 @@ function hasCryptoTable(): bool
         $ok = false;
     }
     return $ok;
+}
+
+function hasDmClearColumns(): bool
+{
+    static $ok = null;
+    if ($ok !== null) {
+        return $ok;
+    }
+    try {
+        $found = (int) scalar(
+            "SELECT COUNT(*) FROM information_schema.COLUMNS
+             WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'direct_messages'
+               AND COLUMN_NAME IN ('sender_cleared', 'recipient_cleared')"
+        );
+        if ($found < 2) {
+            try {
+                db()->exec("ALTER TABLE direct_messages
+                    ADD COLUMN sender_cleared TINYINT(1) NOT NULL DEFAULT 0,
+                    ADD COLUMN recipient_cleared TINYINT(1) NOT NULL DEFAULT 0");
+                $found = 2;
+            } catch (Throwable $e) {
+                // нет прав на ALTER
+            }
+        }
+        $ok = $found >= 2;
+    } catch (Throwable $e) {
+        $ok = false;
+    }
+    return $ok;
+}
+
+function dmVisibleCond(string $alias = ''): string
+{
+    if (!hasDmClearColumns()) {
+        return '';
+    }
+    $a = $alias !== '' ? $alias . '.' : '';
+    return " AND NOT ((%1\$s = {$a}sender_id AND {$a}sender_cleared = 1) OR (%1\$s = {$a}recipient_id AND {$a}recipient_cleared = 1))";
+}
+
+function dmVisible(int $me, string $alias = ''): string
+{
+    $c = dmVisibleCond($alias);
+    return $c === '' ? '' : sprintf($c, (string) $me);
 }
 
 function hasDmCipherColumn(): bool
@@ -1594,7 +1638,7 @@ try {
                     TIMESTAMPDIFF(SECOND, MAX(u.last_seen), UTC_TIMESTAMP()) AS ago
              FROM direct_messages d
              JOIN users u ON u.id = CASE WHEN d.sender_id = ? THEN d.recipient_id ELSE d.sender_id END
-             WHERE d.sender_id = ? OR d.recipient_id = ?
+             WHERE (d.sender_id = ? OR d.recipient_id = ?)' . dmVisible($me, 'd') . '
              GROUP BY u.id, u.nick, u.color, u.avatar, u.avatar_url
              ORDER BY last_id DESC LIMIT 30',
             [$me, $me, $me, $me]
@@ -1636,7 +1680,7 @@ try {
 
         $rows = q(
             'SELECT * FROM direct_messages
-             WHERE (sender_id = ? AND recipient_id = ?) OR (sender_id = ? AND recipient_id = ?)
+             WHERE ((sender_id = ? AND recipient_id = ?) OR (sender_id = ? AND recipient_id = ?))' . dmVisible($me) . '
              ORDER BY id DESC LIMIT 80',
             [$me, $other['id'], $other['id'], $me]
         )->fetchAll();
@@ -1671,7 +1715,7 @@ try {
             'SELECT d.*, u.nick AS peer_nick
              FROM direct_messages d
              JOIN users u ON u.id = CASE WHEN d.sender_id = ? THEN d.recipient_id ELSE d.sender_id END
-             WHERE d.sender_id = ? OR d.recipient_id = ?
+             WHERE (d.sender_id = ? OR d.recipient_id = ?)' . dmVisible($me, 'd') . '
              ORDER BY d.id DESC LIMIT 80',
             [$me, $me, $me]
         )->fetchAll();
@@ -1683,6 +1727,29 @@ try {
         }, array_reverse($rows));
         touch_user($me);
         out(200, ['messages' => $items]);
+    }
+
+    // --- Очистить переписку у себя ---
+    if ($method === 'POST' && $action === 'dm_clear') {
+        $user = requireUser();
+        $me = $user['id'];
+        $withNick = trim((string) param('nick', ''));
+        $other = one('SELECT id FROM users WHERE nick_lower = ?', [mb_strtolower($withNick)]);
+        if (!$other) {
+            fail(404, 'Такого жильца нет');
+        }
+        if (!hasDmClearColumns()) {
+            fail(500, 'Не удалось подготовить базу для очистки. Проверь права пользователя MySQL на ALTER');
+        }
+        $oid = (int) $other['id'];
+        q('UPDATE direct_messages SET sender_cleared = 1 WHERE sender_id = ? AND recipient_id = ?', [$me, $oid]);
+        q(
+            'UPDATE direct_messages SET recipient_cleared = 1, read_at = COALESCE(read_at, UTC_TIMESTAMP())
+             WHERE recipient_id = ? AND sender_id = ?',
+            [$me, $oid]
+        );
+        touch_user($me);
+        out(200, ['ok' => true]);
     }
 
     // --- Отправка личного сообщения ---
