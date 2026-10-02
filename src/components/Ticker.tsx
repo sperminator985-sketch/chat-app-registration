@@ -1,5 +1,5 @@
 import type { CSSProperties } from 'react';
-import { useWeather, formatTemp, dayForecastText, tomorrowForecastText } from '@/hooks/use-weather';
+import { useWeather, tomorrowForecastText } from '@/hooks/use-weather';
 import { useLiveStats } from '@/hooks/use-live-stats';
 import { useNews } from '@/hooks/use-news';
 import { useTickerPosts } from '@/hooks/use-ticker-posts';
@@ -18,7 +18,7 @@ const base = [
 ];
 
 const Ticker = () => {
-  const temp = useWeather();
+  useWeather();
   const live = useLiveStats();
   const news = useNews();
   const { items: posts, mode, speed } = useTickerPosts();
@@ -30,13 +30,6 @@ const Ticker = () => {
     if (m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14)) return few;
     return many;
   };
-
-  const weatherLine =
-    temp === null
-      ? 'ОДЕВАЙТЕСЬ ПО ПОГОДЕ'
-      : temp <= 0
-        ? `ЗА ОКНОМ ${formatTemp(temp)}, ОДЕНЬТЕСЬ КАК ЛЮДИ`
-        : `ЗА ОКНОМ ${formatTemp(temp)} ГРАДУСОВ`;
 
   const liveLine =
     live && live.online > 0
@@ -70,22 +63,19 @@ const Ticker = () => {
     liveLine,
     base[0],
     base[1],
-    weatherLine,
     base[2],
     base[3],
     base[4],
     base[5],
   ].map(plain);
 
-  const forecast = dayForecastText();
   const tomorrow = tomorrowForecastText();
-  const forecastLine = [forecast, tomorrow].filter((t): t is string => Boolean(t)).map((t) => plain(t.toUpperCase()));
+  const forecastLine = tomorrow ? [plain(tomorrow.toUpperCase())] : [];
 
   const core: TickerLine[] = newsLines.length
     ? [
         plain(liveLine),
         newsLines[0],
-        plain(weatherLine),
         ...forecastLine,
         ...newsLines.slice(1),
         plain(base[2]),
