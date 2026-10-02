@@ -10,6 +10,7 @@ const CACHE_KEY = 'weather-cache-v1';
 let lastSky: Sky = 'clear';
 let lastIsDay = true;
 let lastDayText: string | null = null;
+let lastTomorrowText: string | null = null;
 let lastTemp: number | null = null;
 
 try {
@@ -20,6 +21,7 @@ try {
     if (typeof c?.sky === 'string') lastSky = c.sky as Sky;
     if (typeof c?.isDay === 'boolean') lastIsDay = c.isDay;
     if (typeof c?.dayText === 'string') lastDayText = c.dayText;
+    if (typeof c?.tomorrowText === 'string') lastTomorrowText = c.tomorrowText;
   }
 } catch {
   /* кэш не критичен */
@@ -65,7 +67,7 @@ export const useWeather = () => {
         const d = await r.json();
         const t = typeof d?.temp === 'number' ? d.temp : d?.current?.temperature_2m;
         if (typeof t !== 'number') throw new Error('no temp');
-        return { t, sky: d?.sky, isDay: d?.isDay, dayText: d?.dayText };
+        return { t, sky: d?.sky, isDay: d?.isDay, dayText: d?.dayText, tomorrowText: d?.tomorrowText };
       } finally {
         window.clearTimeout(kill);
       }
@@ -89,13 +91,20 @@ export const useWeather = () => {
       if (typeof main.sky === 'string') lastSky = main.sky as Sky;
       if (typeof main.isDay === 'boolean') lastIsDay = main.isDay;
       if (typeof main.dayText === 'string' && main.dayText) lastDayText = main.dayText;
+      if (typeof main.tomorrowText === 'string' && main.tomorrowText) lastTomorrowText = main.tomorrowText;
 
       lastTemp = Math.round(main.t);
       setTemp(lastTemp);
       try {
         localStorage.setItem(
           CACHE_KEY,
-          JSON.stringify({ temp: lastTemp, sky: lastSky, isDay: lastIsDay, dayText: lastDayText }),
+          JSON.stringify({
+            temp: lastTemp,
+            sky: lastSky,
+            isDay: lastIsDay,
+            dayText: lastDayText,
+            tomorrowText: lastTomorrowText,
+          }),
         );
       } catch {
         /* кэш не критичен */
@@ -125,6 +134,8 @@ export const useWeather = () => {
 };
 
 export const dayForecastText = () => lastDayText;
+
+export const tomorrowForecastText = () => lastTomorrowText;
 
 export const formatTemp = (t: number) => (t > 0 ? `+${t}` : `${t}`);
 

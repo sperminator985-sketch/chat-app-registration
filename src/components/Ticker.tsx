@@ -1,5 +1,5 @@
 import type { CSSProperties } from 'react';
-import { useWeather, formatTemp, dayForecastText } from '@/hooks/use-weather';
+import { useWeather, formatTemp, dayForecastText, tomorrowForecastText } from '@/hooks/use-weather';
 import { useLiveStats } from '@/hooks/use-live-stats';
 import { useNews } from '@/hooks/use-news';
 import { useTickerPosts } from '@/hooks/use-ticker-posts';
@@ -78,7 +78,8 @@ const Ticker = () => {
   ].map(plain);
 
   const forecast = dayForecastText();
-  const forecastLine = forecast ? [plain(forecast.toUpperCase())] : [];
+  const tomorrow = tomorrowForecastText();
+  const forecastLine = [forecast, tomorrow].filter((t): t is string => Boolean(t)).map((t) => plain(t.toUpperCase()));
 
   const core: TickerLine[] = newsLines.length
     ? [
