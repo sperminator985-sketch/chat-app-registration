@@ -201,7 +201,7 @@ export const CallProvider = ({ children }: { children: ReactNode }) => {
         if (st === 'failed') {
           toast({
             title: 'Не удалось соединиться',
-            description: 'Сети не пропускают видео напрямую — попробуйте с Wi‑Fi или позже',
+            description: 'Прямое соединение не получилось — для таких сетей нужен промежуточный сервер для звонков',
             variant: 'destructive',
           });
           cleanup();
