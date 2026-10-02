@@ -1,4 +1,4 @@
-const CACHE = 'obshaga-v10';
+const CACHE = 'obshaga-v9';
 const SHELL = ['/index.html', '/manifest.webmanifest', '/icons/icon-192.png', '/icons/icon-512.png'];
 
 const SKIP = ['/node_modules/', '/src/', '/@vite', '/@react-refresh', '/@id/', '/@fs/'];
@@ -29,7 +29,6 @@ self.addEventListener('fetch', (e) => {
   if (url.origin !== self.location.origin) return;
   if (url.pathname.startsWith('/api')) return;
   if (/\.(zip|php)$/.test(url.pathname)) return;
-  if (url.searchParams.has('bf')) return;
   if (SKIP.some((p) => url.pathname.startsWith(p))) return;
 
   if (req.mode === 'navigate') {
