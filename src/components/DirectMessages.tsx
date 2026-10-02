@@ -31,6 +31,8 @@ const DirectMessages = () => {
   const { enabled: cryptoOn, seal, reveal } = useCrypto();
   const [messages, setMessages] = useState<ApiMessage[]>([]);
   const [plain, setPlain] = useState<Record<number, string>>({});
+  const plainRef = useRef<Record<number, string>>({});
+  plainRef.current = plain;
   const [peer, setPeer] = useState<{ nick: string; color: NickColor; status: string; avatar?: number; avatarUrl?: string | null; online?: boolean; seenAgo?: number | null } | null>(null);
   const [draft, setDraft] = useState('');
   const [sending, setSending] = useState(false);
@@ -46,8 +48,25 @@ const DirectMessages = () => {
     if (!nick) return;
     try {
       const data = await api.dm(nick);
-      setPeer(data.peer);
-      setMessages(data.messages);
+      setPeer((prev) =>
+        prev &&
+        prev.nick === data.peer.nick &&
+        prev.online === data.peer.online &&
+        prev.status === data.peer.status &&
+        prev.seenAgo === data.peer.seenAgo &&
+        prev.color === data.peer.color
+          ? prev
+          : data.peer,
+      );
+      setMessages((prev) => {
+        const next = data.messages;
+        if (
+          prev.length === next.length &&
+          prev.every((m, i) => m.id === next[i].id && m.text === next[i].text && m.cipher === next[i].cipher)
+        )
+          return prev;
+        return next;
+      });
       const incoming = data.messages.filter((m) => m.nick !== user?.nick);
       const lastId = incoming.length ? incoming[incoming.length - 1].id : 0;
       if (lastIncomingId.current !== null && lastId > lastIncomingId.current && soundOn) {
@@ -74,12 +93,11 @@ const DirectMessages = () => {
     let alive = true;
     const run = async () => {
       const next: Record<number, string> = {};
-      for (const m of messages) {
-        if (m.cipher) next[m.id] = await reveal(m.cipher);
-      }
+      for (const m of todo) next[m.id] = await reveal(m.cipher as string);
       if (alive) setPlain((prev) => ({ ...prev, ...next }));
     };
-    if (messages.some((m) => m.cipher)) run();
+    const todo = messages.filter((m) => m.cipher && plainRef.current[m.id] === undefined);
+    if (todo.length) run();
     return () => {
       alive = false;
     };
