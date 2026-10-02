@@ -28,11 +28,28 @@ type CallState = {
 
 const CallContext = createContext<CallState | null>(null);
 
-const ICE_SERVERS: RTCConfiguration = {
-  iceServers: [
-    { urls: 'stun:stun.l.google.com:19302' },
-    { urls: 'stun:stun1.l.google.com:19302' },
-  ],
+const FALLBACK_ICE: RTCIceServer[] = [
+  { urls: 'stun:stun.l.google.com:19302' },
+  { urls: 'stun:stun1.l.google.com:19302' },
+];
+
+let iceCache: { at: number; servers: RTCIceServer[] } | null = null;
+
+const loadIce = async (): Promise<RTCIceServer[]> => {
+  if (iceCache && Date.now() - iceCache.at < 30 * 60 * 1000) return iceCache.servers;
+  try {
+    const res = await Promise.race([
+      api.callIce(),
+      new Promise<never>((_, rej) => setTimeout(() => rej(new Error('timeout')), 4000)),
+    ]);
+    if (res.iceServers?.length) {
+      iceCache = { at: Date.now(), servers: res.iceServers };
+      return res.iceServers;
+    }
+  } catch {
+    /* старый сервер без TURN — звоним напрямую */
+  }
+  return FALLBACK_ICE;
 };
 
 export const CallProvider = ({ children }: { children: ReactNode }) => {
@@ -143,8 +160,8 @@ export const CallProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const buildPc = useCallback(
-    (stream: MediaStream, nick: string) => {
-      const pc = new RTCPeerConnection(ICE_SERVERS);
+    (stream: MediaStream, nick: string, iceServers: RTCIceServer[]) => {
+      const pc = new RTCPeerConnection({ iceServers });
       stream.getTracks().forEach((track) => pc.addTrack(track, stream));
       const remote = new MediaStream();
       setRemoteStream(remote);
@@ -213,8 +230,8 @@ export const CallProvider = ({ children }: { children: ReactNode }) => {
       setPeerNick(nick);
       setStatus('calling');
       try {
-        const stream = await getMedia(kind);
-        const pc = buildPc(stream, nick);
+        const [stream, ice] = await Promise.all([getMedia(kind), loadIce()]);
+        const pc = buildPc(stream, nick, ice);
         const offer = await pc.createOffer();
         await pc.setLocalDescription(offer);
         await send(nick, 'offer', { ...offer, callMode: kind });
@@ -238,8 +255,8 @@ export const CallProvider = ({ children }: { children: ReactNode }) => {
     const offer = pendingOfferRef.current;
     if (!nick || !offer) return;
     try {
-      const stream = await getMedia(modeRef.current);
-      const pc = buildPc(stream, nick);
+      const [stream, ice] = await Promise.all([getMedia(modeRef.current), loadIce()]);
+      const pc = buildPc(stream, nick, ice);
       await pc.setRemoteDescription(new RTCSessionDescription(offer));
       for (const c of pendingIceRef.current) await pc.addIceCandidate(new RTCIceCandidate(c));
       pendingIceRef.current = [];

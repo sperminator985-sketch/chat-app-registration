@@ -2,8 +2,8 @@
 // Версия серверной части. При каждом изменении api.php поднимайте
 // последнюю цифру: 1.0.0 → 1.0.1 → 1.0.2 и так далее.
 // Проверить, что залито на хостинг: https://ваш-домен.ru/chat/api.php?action=version
-const API_VERSION = '1.0.4';
-const API_VERSION_NOTE = 'Очистка лички у себя, пол жильца в анкете, погода через сервер';
+const API_VERSION = '1.0.5';
+const API_VERSION_NOTE = 'Промежуточный сервер (TURN) для звонков';
 
 ini_set('display_errors', '0');
 error_reporting(E_ALL & ~E_WARNING & ~E_NOTICE & ~E_DEPRECATED);
@@ -1833,6 +1833,31 @@ try {
     }
 
     // --- Звонки: проверка входящих сигналов ---
+    if ($method === 'GET' && $action === 'call_ice') {
+        $user = requireUser();
+        $c = cfg();
+        $servers = [
+            ['urls' => ['stun:stun.l.google.com:19302', 'stun:stun1.l.google.com:19302']],
+        ];
+        $urls = $c['turn_urls'] ?? [];
+        if (is_string($urls)) {
+            $urls = [$urls];
+        }
+        $urls = array_values(array_filter(array_map('trim', (array) $urls)));
+        if ($urls) {
+            $secret = (string) ($c['turn_secret'] ?? '');
+            if ($secret !== '') {
+                $username = (time() + 6 * 3600) . ':' . $user['id'];
+                $credential = base64_encode(hash_hmac('sha1', $username, $secret, true));
+            } else {
+                $username = (string) ($c['turn_user'] ?? '');
+                $credential = (string) ($c['turn_pass'] ?? '');
+            }
+            $servers[] = ['urls' => $urls, 'username' => $username, 'credential' => $credential];
+        }
+        out(200, ['iceServers' => $servers, 'turn' => (bool) $urls]);
+    }
+
     if ($method === 'GET' && $action === 'call_poll') {
         $user = requireUser();
         $me = $user['id'];
