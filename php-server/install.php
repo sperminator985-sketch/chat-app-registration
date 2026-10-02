@@ -26,6 +26,7 @@ $sql[] = "CREATE TABLE IF NOT EXISTS users (
     first_name VARCHAR(40) NULL,
     last_name VARCHAR(40) NULL,
     birth_date DATE NULL,
+    gender CHAR(1) NULL,
     email VARCHAR(120) NULL,
     email_verified_at DATETIME NULL,
     email_code VARCHAR(8) NULL,

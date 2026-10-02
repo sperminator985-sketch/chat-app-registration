@@ -2,8 +2,8 @@
 // Версия серверной части. При каждом изменении api.php поднимайте
 // последнюю цифру: 1.0.0 → 1.0.1 → 1.0.2 и так далее.
 // Проверить, что залито на хостинг: https://ваш-домен.ru/chat/api.php?action=version
-const API_VERSION = '1.0.2';
-const API_VERSION_NOTE = 'Список жильцов, зелёные отметки в сети, новости с федеральных источников, прогноз на день';
+const API_VERSION = '1.0.4';
+const API_VERSION_NOTE = 'Очистка лички у себя, пол жильца в анкете, погода через сервер';
 
 ini_set('display_errors', '0');
 error_reporting(E_ALL & ~E_WARNING & ~E_NOTICE & ~E_DEPRECATED);
@@ -174,6 +174,7 @@ function shapeUser(array $r): array
         'firstName' => $r['first_name'] ?? null,
         'lastName' => $r['last_name'] ?? null,
         'birthDate' => $r['birth_date'] ?? null,
+        'gender' => $r['gender'] ?? null,
     ];
 }
 
@@ -682,6 +683,32 @@ function ensureProfileColumns(): bool
     return $ok;
 }
 
+function ensureGenderColumn(): bool
+{
+    static $ok = null;
+    if ($ok !== null) {
+        return $ok;
+    }
+    try {
+        $found = (int) scalar(
+            "SELECT COUNT(*) FROM information_schema.COLUMNS
+             WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users' AND COLUMN_NAME = 'gender'"
+        );
+        if ($found < 1) {
+            try {
+                db()->exec("ALTER TABLE users ADD COLUMN gender CHAR(1) NULL");
+                $found = 1;
+            } catch (Throwable $e) {
+                // нет прав на ALTER
+            }
+        }
+        $ok = $found >= 1;
+    } catch (Throwable $e) {
+        $ok = false;
+    }
+    return $ok;
+}
+
 function hasUniColumn(): bool
 {
     static $ok = null;
@@ -982,6 +1009,7 @@ try {
                 'birthDate' => $r['birth_date'] ?? null,
                 'since' => !empty($r['created_at']) ? gmdate('d.m.Y', tomskTs($r['created_at'])) : null,
                 'uni' => $r['uni'] ?? null,
+                'gender' => $r['gender'] ?? null,
             ];
         }, q(
             'SELECT ' . (ensureProfileColumns() ? '*' : 'id, nick, color, status, avatar, avatar_url, is_admin, created_at') . ' FROM users
@@ -1473,6 +1501,10 @@ try {
                 [$status, $color, $avatar, $avatarUrl, $user['id']]
             );
         }
+        if (param('gender', null) !== null && ensureGenderColumn()) {
+            $gender = (string) param('gender', '');
+            q('UPDATE users SET gender = ? WHERE id = ?', [in_array($gender, ['m', 'f'], true) ? $gender : null, $user['id']]);
+        }
         out(200, ['user' => shapeUser(one('SELECT * FROM users WHERE id = ?', [$user['id']]))]);
     }
 
@@ -1545,7 +1577,7 @@ try {
             : " AND (u.is_admin IS NULL OR u.is_admin = 0) AND u.nick_lower NOT IN ('админ', 'комендант', 'admin')";
         $rows = q(
             'SELECT u.nick, u.color, u.status, u.avatar, u.avatar_url, u.is_admin, u.uni,
-                    u.first_name, u.last_name, u.birth_date, u.created_at,
+                    u.first_name, u.last_name, u.birth_date, u.created_at,' . (ensureGenderColumn() ? ' u.gender,' : '') . '
                     TIMESTAMPDIFF(SECOND, u.last_seen, UTC_TIMESTAMP()) AS ago
              FROM users u WHERE u.banned_at IS NULL' . $staffFilter . '
              ORDER BY u.nick ASC LIMIT 1000'
@@ -1563,6 +1595,7 @@ try {
                 'firstName' => $r['first_name'] ?? null,
                 'lastName' => $r['last_name'] ?? null,
                 'birthDate' => !empty($r['birth_date']) ? gmdate('Y-m-d', strtotime((string) $r['birth_date'])) : null,
+                'gender' => $r['gender'] ?? null,
                 'since' => gmdate('d.m.Y', tomskTs($r['created_at'])),
                 'seenAgo' => $ago,
                 'online' => $ago !== null && $ago < ONLINE_SEC,

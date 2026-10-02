@@ -188,8 +188,6 @@ $addColumn = static function (string $table, string $column, string $definition)
 };
 
 $addColumn('direct_messages', 'cipher', 'MEDIUMTEXT NULL');
-$addColumn('direct_messages', 'sender_cleared', 'TINYINT(1) NOT NULL DEFAULT 0');
-$addColumn('direct_messages', 'recipient_cleared', 'TINYINT(1) NOT NULL DEFAULT 0');
 $addColumn('users', 'last_ip', 'VARCHAR(45) NULL');
 $addColumn('users', 'last_city', 'VARCHAR(80) NULL');
 
