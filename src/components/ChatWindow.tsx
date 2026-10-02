@@ -476,11 +476,11 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
                 const busy = Boolean(u.inPrivate);
                 const waiting = pendingNick === u.nick;
                 return (
-                  <li key={u.nick} className={cn('px-2 py-2 sm:px-4', isMe && 'bg-muted/60', busy && !isMe && 'opacity-45')}>
+                  <li key={u.nick} className={cn(isMe && 'bg-muted/60', busy && !isMe && 'opacity-45')}>
                     <button
                       type="button"
                       onClick={() => setOpenNick((v) => (v === u.nick ? null : u.nick))}
-                      className="block w-full py-1 text-left transition-colors hover:bg-muted/50"
+                      className="block w-full px-2 py-3 text-left transition-colors hover:bg-muted/50 sm:px-4"
                     >
                       <div className="flex items-start gap-2">
                         <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded-full border border-foreground/25 bg-muted">
@@ -516,7 +516,7 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
                       </div>
                     </button>
                     {openNick === u.nick && (
-                    <div className="mt-2 flex flex-wrap items-center gap-1.5 pl-9">
+                    <div className="flex flex-wrap items-center gap-1.5 pb-3 pl-11 pr-2 sm:pl-[3.25rem] sm:pr-4">
                       {!isMe && (
                         <button
                           type="button"
