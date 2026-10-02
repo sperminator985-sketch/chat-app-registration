@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import type { CSSProperties } from 'react';
 import { useWeather, tomorrowForecastText } from '@/hooks/use-weather';
 import { useLiveStats } from '@/hooks/use-live-stats';
@@ -17,7 +18,17 @@ const base = [
   'СВЕТ НА ВСЕХ ЭТАЖАХ',
 ];
 
+const tomskHour = () => (new Date().getUTCHours() + 7) % 24;
+const isEvening = () => tomskHour() >= 18;
+
 const Ticker = () => {
+  const [evening, setEvening] = useState(isEvening);
+
+  useEffect(() => {
+    const timer = window.setInterval(() => setEvening(isEvening()), 60000);
+    return () => window.clearInterval(timer);
+  }, []);
+
   useWeather();
   const live = useLiveStats();
   const news = useNews();
@@ -70,7 +81,7 @@ const Ticker = () => {
   ].map(plain);
 
   const tomorrow = tomorrowForecastText();
-  const forecastLine = tomorrow ? [plain(tomorrow.toUpperCase())] : [];
+  const forecastLine = tomorrow && evening ? [plain(tomorrow.toUpperCase())] : [];
 
   const core: TickerLine[] = newsLines.length
     ? [
