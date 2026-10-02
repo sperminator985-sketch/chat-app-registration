@@ -1,8 +1,10 @@
 import * as React from 'react';
 import { createRoot } from 'react-dom/client'
+import { startPointerGuard } from '@/lib/unstick-pointer'
 import App from './App'
 import './index.css'
 
+startPointerGuard();
 createRoot(document.getElementById("root")!).render(<App />);
 
 const splash = document.getElementById('app-splash');
