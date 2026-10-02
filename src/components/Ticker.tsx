@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { CSSProperties } from 'react';
-import { useWeather, tomorrowForecastText } from '@/hooks/use-weather';
+import { useWeather, formatTemp, dayForecastText, tomorrowForecastText } from '@/hooks/use-weather';
 import { useLiveStats } from '@/hooks/use-live-stats';
 import { useNews } from '@/hooks/use-news';
 import { useTickerPosts } from '@/hooks/use-ticker-posts';
@@ -29,7 +29,7 @@ const Ticker = () => {
     return () => window.clearInterval(timer);
   }, []);
 
-  useWeather();
+  const temp = useWeather();
   const live = useLiveStats();
   const news = useNews();
   const { items: posts, mode, speed } = useTickerPosts();
@@ -80,8 +80,18 @@ const Ticker = () => {
     base[5],
   ].map(plain);
 
+  const todayLines = [
+    temp === null
+      ? 'ОДЕВАЙТЕСЬ ПО ПОГОДЕ'
+      : temp <= 0
+        ? `ЗА ОКНОМ ${formatTemp(temp)}, ОДЕНЬТЕСЬ КАК ЛЮДИ`
+        : `ЗА ОКНОМ ${formatTemp(temp)} ГРАДУСОВ`,
+    dayForecastText(),
+  ];
   const tomorrow = tomorrowForecastText();
-  const forecastLine = tomorrow && evening ? [plain(tomorrow.toUpperCase())] : [];
+  const forecastLine = (evening ? [tomorrow] : todayLines)
+    .filter((t): t is string => Boolean(t))
+    .map((t) => plain(t.toUpperCase()));
 
   const core: TickerLine[] = newsLines.length
     ? [
