@@ -1153,7 +1153,7 @@ const AdminPanel = () => {
           >
             <Icon name="RefreshCw" size={13} className={cn(verBusy && 'animate-spin')} />
           </button>
-          <span className="flex w-full flex-wrap items-center gap-1.5 pt-1 md:ml-auto md:w-auto md:pt-0">
+          <span className="hidden flex-wrap items-center gap-1.5 md:ml-auto md:flex">
             <button
               onClick={() => grabFile('api')}
               title="Архив с одним api.php — для обновления уже работающего чата"
