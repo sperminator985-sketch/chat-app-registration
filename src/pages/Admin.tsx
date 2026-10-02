@@ -8,7 +8,7 @@ import { nickColorClass, rooms, staffNickClass } from '@/data/chat';
 import { useToast } from '@/hooks/use-toast';
 import { isPageVisible } from '@/hooks/use-polling';
 import VaultPanel from '@/components/VaultPanel';
-import { downloadApiZip, downloadFullZip } from '@/lib/server-files';
+import { downloadApiZip, downloadFullZip, downloadSiteWithApiZip } from '@/lib/server-files';
 
 const DAY_OPTIONS = [1, 3, 7, 14, 30, 0];
 
@@ -114,6 +114,23 @@ const AdminPanel = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [srvVersion, setSrvVersion] = useState<string | null>(null);
   const [verBusy, setVerBusy] = useState(false);
+  const [sitePack, setSitePack] = useState<string | null>(null);
+
+  const grabSite = useCallback(async () => {
+    setSitePack('…');
+    try {
+      const n = await downloadSiteWithApiZip((done, total) => setSitePack(`${done}/${total}`));
+      toast({ title: 'Архив скачан', description: `${n} файлов: сайт и chat/api.php. Распакуй в корень хостинга.` });
+    } catch (err) {
+      toast({
+        title: 'Архив не собрался',
+        description: err instanceof Error ? err.message : 'Попробуй ещё раз',
+        variant: 'destructive',
+      });
+    } finally {
+      setSitePack(null);
+    }
+  }, [toast]);
 
   const grabFile = useCallback(
     (kind: 'api' | 'full') => {
@@ -1131,7 +1148,7 @@ const AdminPanel = () => {
           >
             <Icon name="RefreshCw" size={13} className={cn(verBusy && 'animate-spin')} />
           </button>
-          <span className="flex w-full items-center gap-1.5 pt-1 md:ml-auto md:w-auto md:pt-0">
+          <span className="flex w-full flex-wrap items-center gap-1.5 pt-1 md:ml-auto md:w-auto md:pt-0">
             <button
               onClick={() => grabFile('api')}
               title="Архив с одним api.php — для обновления уже работающего чата"
@@ -1144,6 +1161,15 @@ const AdminPanel = () => {
             >
               <Icon name="Download" size={13} />
               api.php
+            </button>
+            <button
+              onClick={grabSite}
+              disabled={sitePack !== null}
+              title="Весь сайт и api.php одним архивом — распаковать в корень хостинга"
+              className="flex items-center gap-1.5 border-2 border-secondary px-2 py-1 font-bold text-secondary transition-colors hover:bg-secondary hover:text-secondary-foreground disabled:opacity-70"
+            >
+              <Icon name={sitePack ? 'Loader2' : 'Package'} size={13} className={cn(sitePack && 'animate-spin')} />
+              {sitePack ? `Сборка ${sitePack}` : 'Сайт + api.php'}
             </button>
             <button
               onClick={() => grabFile('full')}
