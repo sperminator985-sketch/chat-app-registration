@@ -50,7 +50,6 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
   const [clearedDm, setClearedDm] = useState(0);
   const [typingUsers, setTypingUsers] = useState<{ nick: string; color: number }[]>([]);
   const [privateTo, setPrivateTo] = useState<string | null>(null);
-  const [openNick, setOpenNick] = useState<string | null>(null);
   const [onlyPrivate, setOnlyPrivate] = useState(false);
   const [privateMsgs, setPrivateMsgs] = useState<(ApiMessage & { peer: string; outgoing: boolean })[]>([]);
   const [dmPlain, setDmPlain] = useState<Record<number, string>>({});
@@ -476,93 +475,73 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
                 const busy = Boolean(u.inPrivate);
                 const waiting = pendingNick === u.nick;
                 return (
-                  <li key={u.nick} className={cn(isMe && 'bg-muted/60', busy && !isMe && 'opacity-45')}>
+                  <li
+                    key={u.nick}
+                    className={cn(
+                      'flex items-center gap-1.5 pr-2 transition-colors hover:bg-muted/50 sm:pr-4',
+                      isMe && 'bg-muted/60',
+                      busy && !isMe && 'opacity-45',
+                    )}
+                  >
                     <button
                       type="button"
-                      onClick={() => setOpenNick((v) => (v === u.nick ? null : u.nick))}
-                      className="block w-full px-2 py-3 text-left transition-colors hover:bg-muted/50 sm:px-4"
+                      onClick={() => {
+                        setWhoOpen(false);
+                        setPrivateTo(u.nick);
+                      }}
+                      disabled={isMe || busy}
+                      title={isMe ? undefined : busy ? `${u.nick} сейчас в привате` : `Написать: ${u.nick}`}
+                      className="flex min-w-0 flex-1 items-center gap-2 py-3 pl-2 text-left disabled:cursor-default sm:pl-4"
                     >
-                      <div className="flex items-start gap-2">
-                        <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded-full border border-foreground/25 bg-muted">
-                          {u.avatarUrl ? (
-                            <img src={u.avatarUrl} alt="" className="h-full w-full object-cover" />
-                          ) : (
-                            <Icon name="User" size={14} className="text-muted-foreground" />
-                          )}
+                      <span className="flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded-full border border-foreground/25 bg-muted">
+                        {u.avatarUrl ? (
+                          <img src={u.avatarUrl} alt="" className="h-full w-full object-cover" />
+                        ) : (
+                          <Icon name="User" size={14} className="text-muted-foreground" />
+                        )}
+                      </span>
+                      <span className={cn('min-w-0 flex-1 break-all font-normal leading-tight', staffNickClass(u.nick, nickColorClass[u.color as 1]))}>
+                        {u.nick}
+                      </span>
+                      {isMe ? (
+                        <span className="shrink-0 whitespace-nowrap font-mono text-[0.7rem] uppercase text-secondary">это ты</span>
+                      ) : busy ? (
+                        <span className="flex shrink-0 items-center gap-1 whitespace-nowrap font-mono text-[0.66rem] uppercase text-sky-300/70">
+                          <Icon name="Lock" size={11} />
+                          приват
                         </span>
-                        <span className={cn('min-w-0 flex-1 break-all font-normal leading-tight', staffNickClass(u.nick, nickColorClass[u.color as 1]))}>
-                          {u.nick}
+                      ) : unread[u.nick] ? (
+                        <span className="shrink-0 border-2 border-secondary bg-secondary px-1.5 font-mono text-[0.7rem] font-bold text-secondary-foreground">
+                          {unread[u.nick]}
                         </span>
-                        {isMe ? (
-                          <span className="mt-1 shrink-0 whitespace-nowrap font-mono text-[0.7rem] uppercase text-secondary">это ты</span>
-                        ) : busy ? (
-                          <span className="mt-1 flex shrink-0 items-center gap-1 whitespace-nowrap font-mono text-[0.66rem] uppercase text-sky-300/70">
-                            <Icon name="Lock" size={11} />
-                            приват
-                          </span>
-                        ) : unread[u.nick] ? (
-                          <span className="mt-0.5 shrink-0 border-2 border-secondary bg-secondary px-1.5 font-mono text-[0.7rem] font-bold text-secondary-foreground">
-                            {unread[u.nick]}
-                          </span>
-                        ) : null}
-                        <Icon
-                          name="ChevronDown"
-                          size={14}
-                          className={cn(
-                            'mt-1 shrink-0 text-muted-foreground/60 transition-transform',
-                            openNick === u.nick && 'rotate-180',
-                          )}
-                        />
-                      </div>
+                      ) : null}
                     </button>
-                    {openNick === u.nick && (
-                    <div className="flex flex-wrap items-center gap-1.5 pb-3 pl-11 pr-2 sm:pl-[3.25rem] sm:pr-4">
-                      {!isMe && (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setWhoOpen(false);
-                            setOpenNick(null);
-                            setPrivateTo(u.nick);
-                          }}
-                          disabled={busy}
-                          title={busy ? `${u.nick} сейчас в привате` : `Написать: ${u.nick}`}
-                          aria-label={`Написать: ${u.nick}`}
-                          className="flex h-7 w-7 items-center justify-center border-2 border-foreground/30 text-muted-foreground transition-colors hover:border-secondary hover:text-secondary disabled:cursor-not-allowed disabled:border-foreground/15 disabled:text-muted-foreground/40 disabled:hover:border-foreground/15 disabled:hover:text-muted-foreground/40"
-                        >
-                          <Icon name="Mail" size={13} />
-                        </button>
-                      )}
+                    <button
+                      type="button"
+                      onClick={() => setCardPerson(u as CardPerson)}
+                      title={isMe ? 'Моя анкета' : `Анкета: ${u.nick}`}
+                      aria-label={isMe ? 'Моя анкета' : `Анкета: ${u.nick}`}
+                      className="flex h-7 w-7 shrink-0 items-center justify-center border-2 border-foreground/30 text-muted-foreground transition-colors hover:border-secondary hover:text-secondary"
+                    >
+                      <Icon name="Info" size={13} />
+                    </button>
+                    {!isMe && (
                       <button
                         type="button"
-                        onClick={() => setCardPerson(u as CardPerson)}
-                        title={isMe ? 'Моя анкета' : `Анкета: ${u.nick}`}
-                        aria-label={isMe ? 'Моя анкета' : `Анкета: ${u.nick}`}
-                        className="flex h-7 w-7 items-center justify-center border-2 border-foreground/30 text-muted-foreground transition-colors hover:border-secondary hover:text-secondary"
+                        onClick={() => invitePeer(u.nick)}
+                        disabled={busy || waiting}
+                        title={
+                          busy
+                            ? `${u.nick} сейчас в привате`
+                            : waiting
+                              ? 'Ждём ответа'
+                              : `Позвать в приват: ${u.nick}`
+                        }
+                        aria-label={`Позвать в приват: ${u.nick}`}
+                        className="flex h-7 w-7 shrink-0 items-center justify-center border-2 border-foreground/30 text-muted-foreground transition-colors hover:border-sky-400 hover:text-sky-300 disabled:cursor-not-allowed disabled:border-foreground/15 disabled:text-muted-foreground/40 disabled:hover:border-foreground/15 disabled:hover:text-muted-foreground/40"
                       >
-                        <Icon name="Info" size={13} />
+                        <Icon name={waiting ? 'Hourglass' : 'Lock'} size={13} />
                       </button>
-                      {!isMe && (
-                        <>
-                        <button
-                          type="button"
-                          onClick={() => invitePeer(u.nick)}
-                          disabled={busy || waiting}
-                          title={
-                            busy
-                              ? `${u.nick} сейчас в привате`
-                              : waiting
-                                ? 'Ждём ответа'
-                                : `Позвать в приват: ${u.nick}`
-                          }
-                          aria-label={`Позвать в приват: ${u.nick}`}
-                          className="flex h-7 w-7 items-center justify-center border-2 border-foreground/30 text-muted-foreground transition-colors hover:border-sky-400 hover:text-sky-300 disabled:cursor-not-allowed disabled:border-foreground/15 disabled:text-muted-foreground/40 disabled:hover:border-foreground/15 disabled:hover:text-muted-foreground/40"
-                        >
-                          <Icon name={waiting ? 'Hourglass' : 'Lock'} size={13} />
-                        </button>
-                        </>
-                      )}
-                    </div>
                     )}
                   </li>
                 );
