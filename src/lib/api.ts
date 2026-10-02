@@ -8,7 +8,7 @@ const API_URL = 'https://chat-tom.ru/chat/api.php';
 // Версия api.php, которую ожидает этот сайт. Должна совпадать с той,
 // что залита на хостинг — иначе в комендантской загорится красная метка.
 // Нумерация: 1.0.0 → 1.0.1 → 1.0.2 и так далее.
-export const API_VERSION = '1.0.5';
+export const API_VERSION = '1.0.6';
 const TOKEN_KEY = 'obshaga_token';
 
 export type ApiUser = {
@@ -475,7 +475,7 @@ export type PrivateState = {
   typing?: boolean;
   invite: { roomId: number; nick: string; color: NickColor } | null;
   pending: { roomId: number; nick: string } | null;
-  ended: { status: 'declined' | 'missed' | 'closed'; nick: string } | null;
+  ended: { id?: number; status: 'declined' | 'missed' | 'closed'; nick: string } | null;
   busy: number[];
 };
 

@@ -31,6 +31,7 @@ export const PrivateProvider = ({ children }: { children: ReactNode }) => {
   const [invite, setInvite] = useState<Invite | null>(null);
   const [pendingNick, setPendingNick] = useState<string | null>(null);
   const wasActive = useRef(false);
+  const shownEnded = useRef<Set<string>>(new Set());
 
   const load = useCallback(async () => {
     if (!user) return;
@@ -44,7 +45,11 @@ export const PrivateProvider = ({ children }: { children: ReactNode }) => {
 
       const nowActive = Boolean(data.room);
       if (!wasActive.current && nowActive) playKnock();
-      if (wasActive.current && !nowActive && data.ended) {
+      const endedKey = data.ended ? `${data.ended.id ?? ''}|${data.ended.status}|${data.ended.nick}` : '';
+      const fresh = Boolean(data.ended) && !shownEnded.current.has(endedKey);
+      if (fresh) shownEnded.current.add(endedKey);
+      if (!data.ended) shownEnded.current.clear();
+      if (wasActive.current && !nowActive && data.ended && fresh) {
         toast({
           title: 'Приват закрыт',
           description:
@@ -55,7 +60,7 @@ export const PrivateProvider = ({ children }: { children: ReactNode }) => {
                 : `${data.ended.nick} вышел из привата`,
         });
       }
-      if (!wasActive.current && !nowActive && data.ended && data.ended.status !== 'closed') {
+      if (!wasActive.current && !nowActive && data.ended && fresh && data.ended.status !== 'closed') {
         toast({
           title: 'Приват не состоялся',
           description:
