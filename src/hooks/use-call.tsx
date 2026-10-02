@@ -7,6 +7,7 @@ import { isPageVisible } from '@/hooks/use-polling';
 
 export type CallStatus = 'idle' | 'calling' | 'incoming' | 'active';
 export type CallMode = 'video' | 'audio';
+export type CallLink = 'connecting' | 'connected' | 'stuck';
 
 type CallState = {
   status: CallStatus;
@@ -16,6 +17,7 @@ type CallState = {
   micOn: boolean;
   camOn: boolean;
   mode: CallMode;
+  link: CallLink;
   startCall: (nick: string, mode?: CallMode) => void;
   acceptCall: () => void;
   declineCall: () => void;
@@ -43,6 +45,9 @@ export const CallProvider = ({ children }: { children: ReactNode }) => {
   const [camOn, setCamOn] = useState(true);
   const [mode, setMode] = useState<CallMode>('video');
   const modeRef = useRef<CallMode>('video');
+  const [link, setLink] = useState<CallLink>('connecting');
+  const dropTimerRef = useRef<number | null>(null);
+  const stuckTimerRef = useRef<number | null>(null);
 
   const pcRef = useRef<RTCPeerConnection | null>(null);
   const callIdRef = useRef<string>('');
@@ -100,6 +105,11 @@ export const CallProvider = ({ children }: { children: ReactNode }) => {
     }
     startedAtRef.current = null;
     isCallerRef.current = false;
+    if (dropTimerRef.current) window.clearTimeout(dropTimerRef.current);
+    if (stuckTimerRef.current) window.clearTimeout(stuckTimerRef.current);
+    dropTimerRef.current = null;
+    stuckTimerRef.current = null;
+    setLink('connecting');
     pcRef.current?.close();
     pcRef.current = null;
     localRef.current?.getTracks().forEach((t) => t.stop());
@@ -139,19 +149,44 @@ export const CallProvider = ({ children }: { children: ReactNode }) => {
       const remote = new MediaStream();
       setRemoteStream(remote);
       pc.ontrack = (e) => {
-        e.streams[0].getTracks().forEach((t) => remote.addTrack(t));
+        const tracks = e.streams[0] ? e.streams[0].getTracks() : [e.track];
+        tracks.forEach((t) => {
+          if (!remote.getTracks().includes(t)) remote.addTrack(t);
+        });
         setRemoteStream(new MediaStream(remote.getTracks()));
       };
       pc.onicecandidate = (e) => {
         if (e.candidate) send(nick, 'ice', e.candidate.toJSON());
       };
+      if (stuckTimerRef.current) window.clearTimeout(stuckTimerRef.current);
+      stuckTimerRef.current = window.setTimeout(() => {
+        if (pcRef.current === pc && pc.connectionState !== 'connected') setLink('stuck');
+      }, 25000);
       pc.onconnectionstatechange = () => {
-        if (pc.connectionState === 'connected') {
+        if (pcRef.current !== pc) return;
+        const st = pc.connectionState;
+        if (st === 'connected') {
+          if (dropTimerRef.current) window.clearTimeout(dropTimerRef.current);
+          dropTimerRef.current = null;
           if (!startedAtRef.current) startedAtRef.current = Date.now();
+          setLink('connected');
           setStatus('active');
         }
-        if (pc.connectionState === 'failed' || pc.connectionState === 'disconnected') {
-          toast({ title: 'Связь оборвалась', description: 'Провод в общаге опять барахлит' });
+        if (st === 'disconnected' && !dropTimerRef.current) {
+          setLink('connecting');
+          dropTimerRef.current = window.setTimeout(() => {
+            if (pcRef.current === pc && pc.connectionState !== 'connected') {
+              toast({ title: 'Связь оборвалась', description: 'Провод в общаге опять барахлит' });
+              cleanup();
+            }
+          }, 10000);
+        }
+        if (st === 'failed') {
+          toast({
+            title: 'Не удалось соединиться',
+            description: 'Сети не пропускают видео напрямую — попробуйте с Wi‑Fi или позже',
+            variant: 'destructive',
+          });
           cleanup();
         }
       };
@@ -335,10 +370,10 @@ export const CallProvider = ({ children }: { children: ReactNode }) => {
 
   const value = useMemo(
     () => ({
-      status, peerNick, localStream, remoteStream, micOn, camOn, mode,
+      status, peerNick, localStream, remoteStream, micOn, camOn, mode, link,
       startCall, acceptCall, declineCall, hangUp, toggleMic, toggleCam,
     }),
-    [status, peerNick, localStream, remoteStream, micOn, camOn, mode, startCall, acceptCall, declineCall, hangUp, toggleMic, toggleCam],
+    [status, peerNick, localStream, remoteStream, micOn, camOn, mode, link, startCall, acceptCall, declineCall, hangUp, toggleMic, toggleCam],
   );
 
   return <CallContext.Provider value={value}>{children}</CallContext.Provider>;

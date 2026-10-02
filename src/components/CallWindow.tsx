@@ -1,30 +1,66 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Icon from '@/components/ui/icon';
 import { cn } from '@/lib/utils';
 import { useCall } from '@/hooks/use-call';
 
-const Video = ({ stream, muted, className }: { stream: MediaStream | null; muted?: boolean; className?: string }) => {
+const Video = ({
+  stream,
+  muted,
+  className,
+  onBlocked,
+}: {
+  stream: MediaStream | null;
+  muted?: boolean;
+  className?: string;
+  onBlocked?: (play: (() => void) | null) => void;
+}) => {
   const ref = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
-    if (ref.current) ref.current.srcObject = stream;
-  }, [stream]);
+    const el = ref.current;
+    if (!el) return;
+    if (el.srcObject !== stream) el.srcObject = stream;
+    if (!stream) return;
+    const tryPlay = () => {
+      el.play()
+        .then(() => onBlocked?.(null))
+        .catch(() => onBlocked?.(() => el.play().then(() => onBlocked?.(null)).catch(() => undefined)));
+    };
+    tryPlay();
+    const tracks = stream.getTracks();
+    tracks.forEach((t) => t.addEventListener('unmute', tryPlay));
+    stream.addEventListener('addtrack', tryPlay);
+    el.addEventListener('loadedmetadata', tryPlay);
+    return () => {
+      tracks.forEach((t) => t.removeEventListener('unmute', tryPlay));
+      stream.removeEventListener('addtrack', tryPlay);
+      el.removeEventListener('loadedmetadata', tryPlay);
+    };
+  }, [stream, onBlocked]);
 
   return <video ref={ref} autoPlay playsInline muted={muted} className={className} />;
 };
 
-const Audio = ({ stream }: { stream: MediaStream | null }) => {
+const Audio = ({ stream, onBlocked }: { stream: MediaStream | null; onBlocked?: (play: (() => void) | null) => void }) => {
   const ref = useRef<HTMLAudioElement>(null);
 
   useEffect(() => {
-    if (ref.current) ref.current.srcObject = stream;
-  }, [stream]);
+    const el = ref.current;
+    if (!el) return;
+    if (el.srcObject !== stream) el.srcObject = stream;
+    if (!stream) return;
+    el.play()
+      .then(() => onBlocked?.(null))
+      .catch(() => onBlocked?.(() => el.play().then(() => onBlocked?.(null)).catch(() => undefined)));
+  }, [stream, onBlocked]);
 
   return <audio ref={ref} autoPlay className="hidden" />;
 };
 
 const CallWindow = () => {
-  const { status, peerNick, localStream, remoteStream, micOn, camOn, mode, acceptCall, declineCall, hangUp, toggleMic, toggleCam } = useCall();
+  const [resume, setResume] = useState<(() => void) | null>(null);
+  const onBlocked = useRef((play: (() => void) | null) => setResume(() => play)).current;
+  const { status, peerNick, localStream, remoteStream, micOn, camOn, mode, link, acceptCall, declineCall, hangUp, toggleMic, toggleCam } = useCall();
 
   if (status === 'idle') return null;
 
@@ -49,7 +85,7 @@ const CallWindow = () => {
         <div className="relative bg-muted/40">
           {voice ? (
             <div className="flex aspect-video w-full flex-col items-center justify-center gap-4 bg-black/90">
-              <Audio stream={remoteStream} />
+              <Audio stream={remoteStream} onBlocked={onBlocked} />
               <div className="flex h-24 w-24 items-center justify-center rounded-full border-2 border-secondary/70 bg-background/10">
                 <Icon name="Phone" size={40} className="text-secondary" />
               </div>
@@ -65,10 +101,40 @@ const CallWindow = () => {
               </span>
             </div>
           ) : (
+            <>
+            <Audio stream={remoteStream} onBlocked={onBlocked} />
             <Video
               stream={remoteStream}
+              muted
               className={cn('aspect-video w-full bg-black object-cover', ringing && 'opacity-40')}
             />
+            </>
+          )}
+
+          {status === 'active' && link !== 'connected' && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-black/60 px-6 text-center">
+              <span className="animate-pulse font-display text-lg font-extrabold uppercase tracking-[-0.02em] text-white">
+                {link === 'stuck' ? 'Связь не проходит' : 'Соединяемся…'}
+              </span>
+              {link === 'stuck' && (
+                <span className="max-w-sm text-[0.85rem] text-white/75">
+                  Похоже, сеть кого-то из вас не пропускает видео напрямую. Попробуйте подключиться к Wi‑Fi.
+                </span>
+              )}
+            </div>
+          )}
+
+          {status === 'active' && link === 'connected' && resume && (
+            <button
+              type="button"
+              onClick={() => resume()}
+              className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-black/60 text-white"
+            >
+              <Icon name="Play" size={44} />
+              <span className="font-display text-lg font-extrabold uppercase tracking-[-0.02em]">
+                {voice ? 'Нажми, чтобы включить звук' : 'Нажми, чтобы включить видео'}
+              </span>
+            </button>
           )}
 
           {!voice && ringing && (
