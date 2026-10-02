@@ -1,6 +1,7 @@
 import {defineConfig} from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
+import fs from "fs";
 import {componentTagger} from "pp-tagger";
 
 // DDoS Guard требует двусторонний app-level keepalive чаще 30s.
@@ -22,11 +23,32 @@ const hmrKeepalive = {
     },
 };
 
+const buildManifest = {
+    name: 'build-files-manifest',
+    apply: 'build' as const,
+    closeBundle() {
+        const outDir = path.resolve(__dirname, 'dist');
+        if (!fs.existsSync(outDir)) return;
+        const files: string[] = [];
+        const walk = (dir: string) => {
+            for (const entry of fs.readdirSync(dir, {withFileTypes: true})) {
+                const full = path.join(dir, entry.name);
+                if (entry.isDirectory()) walk(full);
+                else files.push(path.relative(outDir, full).split(path.sep).join('/'));
+            }
+        };
+        walk(outDir);
+        const list = files.filter((f) => f !== 'build-files.json' && !f.endsWith('.zip'));
+        fs.writeFileSync(path.join(outDir, 'build-files.json'), JSON.stringify({builtAt: new Date().toISOString(), files: list}));
+    },
+};
+
 // https://vitejs.dev/config/
 export default defineConfig(({mode}) => ({
     plugins: [
         react(),
         hmrKeepalive,
+        buildManifest,
         mode === 'development' &&
         componentTagger(),
     ].filter(Boolean),

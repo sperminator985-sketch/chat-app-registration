@@ -8,7 +8,7 @@ import { nickColorClass, rooms, staffNickClass } from '@/data/chat';
 import { useToast } from '@/hooks/use-toast';
 import { isPageVisible } from '@/hooks/use-polling';
 import VaultPanel from '@/components/VaultPanel';
-import { downloadApiZip, downloadFullZip } from '@/lib/server-files';
+import { downloadApiZip, downloadBuildZip, downloadFullZip } from '@/lib/server-files';
 
 const DAY_OPTIONS = [1, 3, 7, 14, 30, 0];
 
@@ -114,9 +114,10 @@ const AdminPanel = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [srvVersion, setSrvVersion] = useState<string | null>(null);
   const [verBusy, setVerBusy] = useState(false);
+  const [buildProgress, setBuildProgress] = useState<string | null>(null);
 
   const grabFile = useCallback(
-    (kind: 'api' | 'full') => {
+    async (kind: 'api' | 'full') => {
       try {
         if (kind === 'api') downloadApiZip();
         else downloadFullZip();
@@ -126,6 +127,29 @@ const AdminPanel = () => {
           description: 'Обнови страницу с зажатым Ctrl и попробуй ещё раз.',
           variant: 'destructive',
         });
+        return;
+      }
+      if (kind !== 'api') return;
+      setBuildProgress('0%');
+      try {
+        const n = await downloadBuildZip((done, total) =>
+          setBuildProgress(`${Math.round((done / Math.max(total, 1)) * 100)}%`),
+        );
+        const own = /chat-tom\.ru$/i.test(window.location.hostname);
+        toast({
+          title: 'Билд скачан',
+          description: own
+            ? `В архиве ${n} файлов — но это копия того, что уже лежит на хостинге. Свежий билд скачивай из админки на адресе публикации.`
+            : `В архиве ${n} файлов — залей их в корень сайта.`,
+        });
+      } catch (err) {
+        toast({
+          title: 'Билд не скачался',
+          description: err instanceof Error ? err.message : 'Попробуй ещё раз',
+          variant: 'destructive',
+        });
+      } finally {
+        setBuildProgress(null);
       }
     },
     [toast],
@@ -1134,7 +1158,8 @@ const AdminPanel = () => {
           <span className="flex w-full items-center gap-1.5 pt-1 md:ml-auto md:w-auto md:pt-0">
             <button
               onClick={() => grabFile('api')}
-              title="Архив с одним api.php — для обновления уже работающего чата"
+              disabled={buildProgress !== null}
+              title="api.php и свежий билд сайта — два архива для обновления чата"
               className={cn(
                 'flex items-center gap-1.5 border-2 px-2 py-1 font-bold transition-colors',
                 srvVersion === API_VERSION
@@ -1142,8 +1167,8 @@ const AdminPanel = () => {
                   : 'border-primary/60 hover:bg-primary hover:text-primary-foreground',
               )}
             >
-              <Icon name="Download" size={13} />
-              api.php
+              <Icon name={buildProgress ? 'Loader2' : 'Download'} size={13} className={cn(buildProgress && 'animate-spin')} />
+              {buildProgress ? `Билд ${buildProgress}` : 'api.php + билд'}
             </button>
             <button
               onClick={() => grabFile('full')}
