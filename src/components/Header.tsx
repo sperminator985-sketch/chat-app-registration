@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Icon from '@/components/ui/icon';
+import { press } from '@/lib/press';
 import Logo from '@/components/Logo';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/use-auth';
@@ -306,11 +307,12 @@ const Header = ({ onProfile }: HeaderProps) => {
             </>
           ) : (
             <>
-              <button onClick={() => openAuth('login')} className="nav-link">
+              <button type="button" {...press(() => openAuth('login'))} className="nav-link">
                 Вход
               </button>
               <button
-                onClick={() => openAuth('register')}
+                type="button"
+                {...press(() => openAuth('register'))}
                 className="nav-link"
               >
                 Регистрация

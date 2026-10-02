@@ -119,6 +119,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     api.logout().catch(() => undefined);
     clearToken();
     setUser(null);
+    setAuthOpen(false);
+    window.setTimeout(() => {
+      if (!document.querySelector('[role="dialog"][data-state="open"], [role="alertdialog"][data-state="open"]')) {
+        document.body.style.pointerEvents = '';
+      }
+      const el = document.activeElement as HTMLElement | null;
+      if (el && el !== document.body) el.blur();
+    }, 50);
   }, []);
 
   useEffect(() => {

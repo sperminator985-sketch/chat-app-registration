@@ -73,6 +73,10 @@ const PageBody = () => {
   }, []);
 
   useEffect(() => {
+    if (!user) setProfileOpen(false);
+  }, [user]);
+
+  useEffect(() => {
     if (user?.room) setActiveRoom(user.room);
   }, [user?.room]);
 
