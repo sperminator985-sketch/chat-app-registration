@@ -6,7 +6,6 @@ import { api, Resident } from '@/lib/api';
 import { nickColorClass, staffNickClass } from '@/data/chat';
 import { lastSeenText } from '@/lib/last-seen';
 import { CardPerson } from '@/components/UserCardDialog';
-import { useCall } from '@/hooks/use-call';
 import { usePrivate } from '@/hooks/use-private';
 
 type Props = {
@@ -25,7 +24,6 @@ const ResidentsDialog = ({ open, onOpenChange, onCard, onWrite, myNick }: Props)
   const [uni, setUni] = useState('all');
   const [onlyOnline, setOnlyOnline] = useState(false);
   const [openNick, setOpenNick] = useState<string | null>(null);
-  const { startCall } = useCall();
   const { invitePeer, pendingNick } = usePrivate();
 
   useEffect(() => {
@@ -274,32 +272,6 @@ const ResidentsDialog = ({ open, onOpenChange, onCard, onWrite, myNick }: Props)
                           className="flex h-7 w-7 items-center justify-center border-2 border-foreground/30 text-muted-foreground transition-colors hover:border-sky-400 hover:text-sky-300 disabled:cursor-not-allowed disabled:border-foreground/15 disabled:text-muted-foreground/30 disabled:hover:border-foreground/15 disabled:hover:text-muted-foreground/30"
                         >
                           <Icon name={pendingNick === r.nick ? 'Hourglass' : 'Lock'} size={13} />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            onOpenChange(false);
-                            startCall(r.nick, 'audio');
-                          }}
-                          disabled={!r.online}
-                          title={r.online ? `Аудиозвонок: ${r.nick}` : `${r.nick} не в сети`}
-                          aria-label={`Аудиозвонок: ${r.nick}`}
-                          className="flex h-7 w-7 items-center justify-center border-2 border-foreground/30 text-muted-foreground transition-colors hover:border-secondary hover:text-secondary disabled:cursor-not-allowed disabled:border-foreground/15 disabled:text-muted-foreground/30 disabled:hover:border-foreground/15 disabled:hover:text-muted-foreground/30"
-                        >
-                          <Icon name="Phone" size={13} />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            onOpenChange(false);
-                            startCall(r.nick);
-                          }}
-                          disabled={!r.online}
-                          title={r.online ? `Видеозвонок: ${r.nick}` : `${r.nick} не в сети`}
-                          aria-label={`Видеозвонок: ${r.nick}`}
-                          className="flex h-7 w-7 items-center justify-center border-2 border-foreground/30 text-muted-foreground transition-colors hover:border-secondary hover:text-secondary disabled:cursor-not-allowed disabled:border-foreground/15 disabled:text-muted-foreground/30 disabled:hover:border-foreground/15 disabled:hover:text-muted-foreground/30"
-                        >
-                          <Icon name="Video" size={13} />
                         </button>
                       </>
                     )}

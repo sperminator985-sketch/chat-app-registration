@@ -2,13 +2,11 @@ import { Dialog, DialogContent } from '@/components/ui/dialog';
 import Icon from '@/components/ui/icon';
 import { cn } from '@/lib/utils';
 import { useDm } from '@/hooks/use-dm';
-import { useCall } from '@/hooks/use-call';
 import { nickColorClass, staffNickClass } from '@/data/chat';
 import { lastSeenText } from '@/lib/last-seen';
 
 const DialogsList = () => {
   const { listOpen, closeList, dialogs, openDm, soundOn, toggleSound } = useDm();
-  const { startCall } = useCall();
 
   return (
     <Dialog open={listOpen} onOpenChange={(open) => !open && closeList()}>
@@ -76,26 +74,6 @@ const DialogsList = () => {
                   )}
                 </button>
                 <div className="absolute right-4 top-1/2 flex -translate-y-1/2 items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={() => startCall(d.nick, 'audio')}
-                    disabled={!d.online}
-                    title={d.online ? `Аудиозвонок: ${d.nick}` : `${d.nick} не в сети`}
-                    aria-label={`Аудиозвонок: ${d.nick}`}
-                    className="flex h-8 w-8 items-center justify-center border-2 border-foreground/30 text-muted-foreground transition-colors hover:border-secondary hover:text-secondary disabled:cursor-not-allowed disabled:border-foreground/15 disabled:text-muted-foreground/30 disabled:hover:border-foreground/15 disabled:hover:text-muted-foreground/30"
-                  >
-                    <Icon name="Phone" size={14} />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => startCall(d.nick)}
-                    disabled={!d.online}
-                    title={d.online ? `Видеозвонок: ${d.nick}` : `${d.nick} не в сети`}
-                    aria-label={`Видеозвонок: ${d.nick}`}
-                    className="flex h-8 w-8 items-center justify-center border-2 border-foreground/30 text-muted-foreground transition-colors hover:border-secondary hover:text-secondary disabled:cursor-not-allowed disabled:border-foreground/15 disabled:text-muted-foreground/30 disabled:hover:border-foreground/15 disabled:hover:text-muted-foreground/30"
-                  >
-                    <Icon name="Video" size={14} />
-                  </button>
                 </div>
               </li>
             ))}

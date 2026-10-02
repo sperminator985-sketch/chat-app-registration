@@ -7,7 +7,6 @@ import { api, ApiMessage } from '@/lib/api';
 import { nickColorClass, staffNickClass, isStaffNick } from '@/data/chat';
 import { usePrivate } from '@/hooks/use-private';
 import { useCrypto } from '@/hooks/use-crypto';
-import { useCall } from '@/hooks/use-call';
 import EmojiPicker from '@/components/EmojiPicker';
 import { playKnock } from '@/lib/notify-sound';
 
@@ -15,7 +14,6 @@ const PrivateRoom = () => {
   const { user } = useAuth();
   const { active, peer, peerTyping, messages, leave, pushMessage } = usePrivate();
   const { enabled: cryptoOn, seal, reveal } = useCrypto();
-  const { startCall } = useCall();
   const [draft, setDraft] = useState('');
   const [sending, setSending] = useState(false);
   const [plain, setPlain] = useState<Record<number, string>>({});
@@ -103,24 +101,6 @@ const PrivateRoom = () => {
               {cryptoOn ? 'зашифровано' : 'закрытая комната'}
             </span>
             <div className="ml-auto flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() => startCall(peer.nick, 'audio')}
-                title="Аудиозвонок"
-                aria-label="Аудиозвонок"
-                className="flex h-8 w-8 items-center justify-center border-2 border-foreground/35 text-muted-foreground transition-colors hover:border-secondary hover:text-secondary"
-              >
-                <Icon name="Phone" size={14} />
-              </button>
-              <button
-                type="button"
-                onClick={() => startCall(peer.nick)}
-                title="Видеозвонок"
-                aria-label="Видеозвонок"
-                className="flex h-8 w-8 items-center justify-center border-2 border-foreground/35 text-muted-foreground transition-colors hover:border-secondary hover:text-secondary"
-              >
-                <Icon name="Video" size={14} />
-              </button>
               <button
                 type="button"
                 onClick={leave}

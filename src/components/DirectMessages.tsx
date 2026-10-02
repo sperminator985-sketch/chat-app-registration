@@ -19,7 +19,6 @@ import { nickColorClass, NickColor, staffNickClass } from '@/data/chat';
 import { lastSeenText } from '@/lib/last-seen';
 import { useDm } from '@/hooks/use-dm';
 import { useCrypto } from '@/hooks/use-crypto';
-import { useCall } from '@/hooks/use-call';
 import { usePrivate } from '@/hooks/use-private';
 import EmojiPicker from '@/components/EmojiPicker';
 import { usePolling } from '@/hooks/use-polling';
@@ -28,7 +27,6 @@ import { playKnock } from '@/lib/notify-sound';
 const DirectMessages = () => {
   const { user } = useAuth();
   const { dmNick: nick, closeDm: onClose, refresh, soundOn } = useDm();
-  const { startCall } = useCall();
   const { invitePeer, pendingNick } = usePrivate();
   const { enabled: cryptoOn, seal, reveal } = useCrypto();
   const [messages, setMessages] = useState<ApiMessage[]>([]);
@@ -237,26 +235,6 @@ const DirectMessages = () => {
               </button>
               <button
                 type="button"
-                onClick={() => startCall(nick, 'audio')}
-                disabled={!peer?.online}
-                title={peer?.online ? 'Позвонить голосом' : 'Сосед не в сети — трубку не возьмут'}
-                aria-label="Позвонить голосом"
-                className="flex h-9 w-9 items-center justify-center border-2 border-foreground/35 text-foreground transition-colors hover:border-secondary hover:text-secondary disabled:cursor-not-allowed disabled:border-foreground/20 disabled:text-muted-foreground/40 disabled:hover:border-foreground/20 disabled:hover:text-muted-foreground/40"
-              >
-                <Icon name="Phone" size={18} />
-              </button>
-              <button
-                type="button"
-                onClick={() => startCall(nick)}
-                disabled={!peer?.online}
-                title={peer?.online ? 'Позвонить по видео' : 'Сосед не в сети — трубку не возьмут'}
-                aria-label="Позвонить по видео"
-                className="flex h-9 w-9 items-center justify-center border-2 border-foreground/35 text-foreground transition-colors hover:border-secondary hover:text-secondary disabled:cursor-not-allowed disabled:border-foreground/20 disabled:text-muted-foreground/40 disabled:hover:border-foreground/20 disabled:hover:text-muted-foreground/40"
-              >
-                <Icon name="Video" size={18} />
-              </button>
-              <button
-                type="button"
                 onClick={() => setConfirmClear(true)}
                 disabled={messages.length === 0}
                 title="Очистить переписку у себя"
@@ -293,18 +271,6 @@ const DirectMessages = () => {
                   <Icon name={missed ? 'PhoneMissed' : wasVoice ? 'Phone' : 'Video'} size={14} className="shrink-0" />
                   {body}
                   <span className="ml-auto text-[0.72rem] normal-case">{m.time}</span>
-                  {nick && (
-                    <button
-                      type="button"
-                      onClick={() => startCall(nick, wasVoice ? 'audio' : 'video')}
-                      disabled={!peer?.online}
-                      title={peer?.online ? 'Перезвонить' : 'Сосед не в сети'}
-                      className="flex shrink-0 items-center gap-1 border-2 border-current px-1.5 py-0.5 text-[0.7rem] font-semibold uppercase tracking-[0.06em] transition-colors hover:bg-current/10 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent"
-                    >
-                      <Icon name={wasVoice ? 'Phone' : 'Video'} size={12} />
-                      Перезвонить
-                    </button>
-                  )}
                 </p>
               );
             }
