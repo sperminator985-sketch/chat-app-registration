@@ -84,7 +84,7 @@ const CallWindow = () => {
   const [boxRatio, setBoxRatio] = useState(0);
   const boxRef = useRef<HTMLDivElement>(null);
   const { status, peerNick, localStream, remoteStream, micOn, camOn, mode, link, acceptCall, declineCall, hangUp, toggleMic, toggleCam, quality, setQuality, maintenance } = useCall();
-  const [pressed, setPressed] = useState<'accept' | 'hang' | null>(null);
+  const [pressed, setPressed] = useState<'accept' | 'hang' | 'decline' | null>(null);
   useEffect(() => {
     setPressed(null);
   }, [status]);
@@ -236,9 +236,19 @@ const CallWindow = () => {
                 <Icon name={pressed === 'accept' ? 'Loader2' : 'Phone'} size={16} className={cn(pressed === 'accept' && 'animate-spin')} />
                 {pressed === 'accept' ? 'Соединяю…' : 'Взять трубку'}
               </button>
-              <button onClick={declineCall} className="btn-ghost-brut flex items-center gap-2">
+              <button
+                onClick={() => {
+                  if (pressed) return;
+                  setPressed('decline');
+                  window.setTimeout(declineCall, 250);
+                }}
+                className={cn(
+                  'btn-ghost-brut flex items-center gap-2 active:scale-95 active:border-red-600 active:bg-red-600 active:text-white',
+                  pressed === 'decline' && '!border-red-600 !bg-red-600 !text-white',
+                )}
+              >
                 <Icon name="PhoneOff" size={16} />
-                Не сейчас
+                {pressed === 'decline' ? 'Отклоняю…' : 'Не сейчас'}
               </button>
             </>
           ) : (
