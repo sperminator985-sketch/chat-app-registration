@@ -83,7 +83,7 @@ const CallWindow = () => {
   const [localRatio, setLocalRatio] = useState(0);
   const [boxRatio, setBoxRatio] = useState(0);
   const boxRef = useRef<HTMLDivElement>(null);
-  const { status, peerNick, localStream, remoteStream, micOn, camOn, mode, link, acceptCall, declineCall, hangUp, toggleMic, toggleCam, quality, setQuality } = useCall();
+  const { status, peerNick, localStream, remoteStream, micOn, camOn, mode, link, acceptCall, declineCall, hangUp, toggleMic, toggleCam, quality, setQuality, maintenance } = useCall();
 
   useEffect(() => {
     const el = boxRef.current;
@@ -185,7 +185,23 @@ const CallWindow = () => {
             </div>
           )}
 
-          {!voice && localStream && (
+          {maintenance && (
+            <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-5 bg-[repeating-linear-gradient(-45deg,#111_0,#111_28px,#1c1c1c_28px,#1c1c1c_56px)] px-6 text-center">
+              <div className="flex h-24 w-24 items-center justify-center border-4 border-secondary bg-black sm:h-28 sm:w-28">
+                <Icon name="Wrench" size={48} className="text-secondary" />
+              </div>
+              <span className="bg-black px-3 py-1 font-display text-2xl font-extrabold uppercase leading-tight tracking-[-0.02em] text-secondary sm:text-4xl">
+                Технические работы
+                <br />
+                на сервере
+              </span>
+              <span className="max-w-md bg-black/80 px-3 py-1 text-[0.95rem] text-white/80">
+                Видеосвязь временно недоступна. Положи трубку и позвони чуть позже.
+              </span>
+            </div>
+          )}
+
+          {!voice && localStream && !maintenance && (
             <Video
               stream={localStream}
               muted

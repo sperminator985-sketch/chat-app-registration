@@ -55,6 +55,7 @@ type CallState = {
   toggleCam: () => void;
   quality: CallQuality;
   setQuality: (q: CallQuality) => void;
+  maintenance: boolean;
 };
 
 const CallContext = createContext<CallState | null>(null);
@@ -120,6 +121,8 @@ export const CallProvider = ({ children }: { children: ReactNode }) => {
   const [mode, setMode] = useState<CallMode>('video');
   const modeRef = useRef<CallMode>('video');
   const [link, setLink] = useState<CallLink>('connecting');
+  const [maintenance, setMaintenance] = useState(false);
+  const maintenanceRef = useRef(false);
   const [quality, setQualityState] = useState<CallQuality>(savedQuality);
   const qualityRef = useRef<CallQuality>(quality);
   const dropTimerRef = useRef<number | null>(null);
@@ -252,6 +255,7 @@ export const CallProvider = ({ children }: { children: ReactNode }) => {
         if (st === 'disconnected' && !dropTimerRef.current) {
           setLink('connecting');
           dropTimerRef.current = window.setTimeout(() => {
+            if (maintenanceRef.current) return;
             if (pcRef.current === pc && pc.connectionState !== 'connected') {
               toast({ title: 'Связь оборвалась', description: 'Провод в общаге опять барахлит' });
               cleanup();
@@ -259,6 +263,7 @@ export const CallProvider = ({ children }: { children: ReactNode }) => {
           }, 10000);
         }
         if (st === 'failed') {
+          if (maintenanceRef.current) return;
           toast({
             title: 'Не удалось соединиться',
             description: 'Прямое соединение не получилось — для таких сетей нужен промежуточный сервер для звонков',
@@ -280,6 +285,14 @@ export const CallProvider = ({ children }: { children: ReactNode }) => {
         return;
       }
       if (statusRef.current !== 'idle') return;
+      if (maintenanceRef.current) {
+        toast({
+          title: 'Технические работы на сервере',
+          description: 'Видеосвязь временно недоступна, попробуй позвонить чуть позже',
+          variant: 'destructive',
+        });
+        return;
+      }
       loggedRef.current = false;
       isCallerRef.current = true;
       startedAtRef.current = null;
@@ -418,6 +431,9 @@ export const CallProvider = ({ children }: { children: ReactNode }) => {
       try {
         const res = await api.callPoll();
         if (stop) return;
+        const m = !!res.maintenance;
+        maintenanceRef.current = m;
+        setMaintenance(m);
         for (const s of res.signals) await handleSignal(s);
       } catch {
         /* тихо */
@@ -443,9 +459,9 @@ export const CallProvider = ({ children }: { children: ReactNode }) => {
   const value = useMemo(
     () => ({
       status, peerNick, localStream, remoteStream, micOn, camOn, mode, link,
-      startCall, acceptCall, declineCall, hangUp, toggleMic, toggleCam, quality, setQuality,
+      startCall, acceptCall, declineCall, hangUp, toggleMic, toggleCam, quality, setQuality, maintenance,
     }),
-    [status, peerNick, localStream, remoteStream, micOn, camOn, mode, link, startCall, acceptCall, declineCall, hangUp, toggleMic, toggleCam, quality, setQuality],
+    [status, peerNick, localStream, remoteStream, micOn, camOn, mode, link, startCall, acceptCall, declineCall, hangUp, toggleMic, toggleCam, quality, setQuality, maintenance],
   );
 
   return <CallContext.Provider value={value}>{children}</CallContext.Provider>;

@@ -8,7 +8,7 @@ const API_URL = 'https://chat-tom.ru/chat/api.php';
 // Версия api.php, которую ожидает этот сайт. Должна совпадать с той,
 // что залита на хостинг — иначе в комендантской загорится красная метка.
 // Нумерация: 1.0.0 → 1.0.1 → 1.0.2 и так далее.
-export const API_VERSION = '1.0.6';
+export const API_VERSION = '1.0.7';
 const TOKEN_KEY = 'obshaga_token';
 
 export type ApiUser = {
@@ -444,7 +444,10 @@ export const api = {
   adminDmVault: () => request<{ messages: VaultMessage[] }>('admin_dm_vault'),
   callSignal: (body: { nick: string; callId: string; kind: CallKind; payload?: unknown }) =>
     request<{ ok: boolean }>('call_signal', { method: 'POST', body }),
-  callPoll: () => request<{ signals: CallSignal[] }>('call_poll'),
+  callPoll: () => request<{ signals: CallSignal[]; maintenance?: boolean }>('call_poll'),
+  adminCallMaintenance: () => request<{ on: boolean }>('admin_call_maintenance'),
+  adminCallMaintenanceSet: (on: boolean) =>
+    request<{ on: boolean }>('admin_call_maintenance', { method: 'POST', body: { on } }),
   callIce: () => request<{ iceServers: RTCIceServer[]; turn: boolean }>('call_ice'),
   privateInvite: (nick: string) =>
     request<{ ok: boolean; roomId: number }>('private_invite', { method: 'POST', body: { nick } }),
