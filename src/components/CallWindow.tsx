@@ -84,6 +84,10 @@ const CallWindow = () => {
   const [boxRatio, setBoxRatio] = useState(0);
   const boxRef = useRef<HTMLDivElement>(null);
   const { status, peerNick, localStream, remoteStream, micOn, camOn, mode, link, acceptCall, declineCall, hangUp, toggleMic, toggleCam, quality, setQuality, maintenance } = useCall();
+  const [pressed, setPressed] = useState<'accept' | 'hang' | null>(null);
+  useEffect(() => {
+    setPressed(null);
+  }, [status]);
 
   useEffect(() => {
     const el = boxRef.current;
@@ -218,9 +222,19 @@ const CallWindow = () => {
         <div className="flex flex-wrap items-center justify-center gap-3 border-t-2 border-foreground/35 px-5 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
           {status === 'incoming' ? (
             <>
-              <button onClick={acceptCall} className="btn-brut flex items-center gap-2">
-                <Icon name="Phone" size={16} />
-                Взять трубку
+              <button
+                onClick={() => {
+                  if (pressed) return;
+                  setPressed('accept');
+                  acceptCall();
+                }}
+                className={cn(
+                  'btn-brut flex items-center gap-2 active:scale-95 active:border-emerald-500 active:bg-emerald-500 active:text-black',
+                  pressed === 'accept' && '!border-emerald-500 !bg-emerald-500 !text-black',
+                )}
+              >
+                <Icon name={pressed === 'accept' ? 'Loader2' : 'Phone'} size={16} className={cn(pressed === 'accept' && 'animate-spin')} />
+                {pressed === 'accept' ? 'Соединяю…' : 'Взять трубку'}
               </button>
               <button onClick={declineCall} className="btn-ghost-brut flex items-center gap-2">
                 <Icon name="PhoneOff" size={16} />
@@ -271,9 +285,19 @@ const CallWindow = () => {
                   ))}
                 </div>
               )}
-              <button onClick={hangUp} className="btn-brut flex items-center gap-2">
+              <button
+                onClick={() => {
+                  if (pressed === 'hang') return;
+                  setPressed('hang');
+                  window.setTimeout(hangUp, 250);
+                }}
+                className={cn(
+                  'btn-brut flex items-center gap-2 active:scale-95 active:border-red-600 active:bg-red-600 active:text-white',
+                  pressed === 'hang' && '!border-red-600 !bg-red-600 !text-white',
+                )}
+              >
                 <Icon name="PhoneOff" size={16} />
-                Положить трубку
+                {pressed === 'hang' ? 'Кладу трубку…' : 'Положить трубку'}
               </button>
             </>
           )}
