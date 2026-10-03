@@ -1858,7 +1858,7 @@ try {
             }
             $servers[] = ['urls' => $urls, 'username' => $username, 'credential' => $credential];
         }
-        out(200, ['iceServers' => $servers, 'turn' => (bool) $urls]);
+        out(200, ['iceServers' => $servers, 'turn' => (bool) $urls, 'maintenance' => setting('call_maintenance', '0') === '1']);
     }
 
     if ($method === 'GET' && $action === 'call_poll') {

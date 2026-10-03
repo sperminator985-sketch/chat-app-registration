@@ -448,7 +448,7 @@ export const api = {
   adminCallMaintenance: () => request<{ on: boolean }>('admin_call_maintenance'),
   adminCallMaintenanceSet: (on: boolean) =>
     request<{ on: boolean }>('admin_call_maintenance', { method: 'POST', body: { on } }),
-  callIce: () => request<{ iceServers: RTCIceServer[]; turn: boolean }>('call_ice'),
+  callIce: () => request<{ iceServers: RTCIceServer[]; turn: boolean; maintenance?: boolean }>('call_ice'),
   privateInvite: (nick: string) =>
     request<{ ok: boolean; roomId: number }>('private_invite', { method: 'POST', body: { nick } }),
   privateAnswer: (roomId: number, accept: boolean) =>

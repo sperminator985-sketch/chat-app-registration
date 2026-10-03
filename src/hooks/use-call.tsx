@@ -89,6 +89,26 @@ const isInstalledApp = () =>
   window.matchMedia?.('(display-mode: minimal-ui)').matches ||
   (navigator as Navigator & { standalone?: boolean }).standalone === true;
 
+const maintenanceToast = (kind: CallMode) =>
+  toast({
+    title: kind === 'audio' ? 'Голосовая связь недоступна' : 'Видеосвязь недоступна',
+    description: 'Технические работы на сервере',
+    variant: 'destructive',
+    duration: 8000,
+  });
+
+const checkMaintenance = async (): Promise<boolean> => {
+  try {
+    const res = await Promise.race([
+      api.callIce(),
+      new Promise<never>((_, rej) => setTimeout(() => rej(new Error('timeout')), 3000)),
+    ]);
+    return !!res.maintenance;
+  } catch {
+    return false;
+  }
+};
+
 const mediaErrorToast = (err: unknown, kind: CallMode) => {
   const name = err instanceof DOMException ? err.name : '';
   const what = kind === 'audio' ? 'микрофону' : 'камере и микрофону';
@@ -285,14 +305,13 @@ export const CallProvider = ({ children }: { children: ReactNode }) => {
         return;
       }
       if (statusRef.current !== 'idle') return;
-      if (maintenanceRef.current) {
-        toast({
-          title: 'Технические работы на сервере',
-          description: 'Видеосвязь временно недоступна, попробуй позвонить чуть позже',
-          variant: 'destructive',
-        });
+      if (maintenanceRef.current || (await checkMaintenance())) {
+        maintenanceRef.current = true;
+        setMaintenance(true);
+        maintenanceToast(kind);
         return;
       }
+      if (statusRef.current !== 'idle') return;
       loggedRef.current = false;
       isCallerRef.current = true;
       startedAtRef.current = null;
