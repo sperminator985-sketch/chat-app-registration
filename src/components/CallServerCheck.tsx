@@ -40,9 +40,8 @@ const findRelay = (iceServers: RTCIceServer[]) =>
 
 const loopback = (iceServers: RTCIceServer[]) =>
   new Promise<boolean>((resolve) => {
-    const cfg: RTCConfiguration = { iceServers, iceTransportPolicy: 'relay' };
-    const a = new RTCPeerConnection(cfg);
-    const b = new RTCPeerConnection(cfg);
+    const a = new RTCPeerConnection({ iceServers, iceTransportPolicy: 'relay' });
+    const b = new RTCPeerConnection({ iceServers });
     const finish = (ok: boolean) => {
       window.clearTimeout(timer);
       a.close();
@@ -122,7 +121,7 @@ const CallServerCheck = () => {
         set(
           2,
           'warn',
-          'Сервер работает, но данные не прошли. Проверь правило на роутере для UDP 49160–49200. Если ты сейчас в той же домашней сети, что и сервер, — повтори проверку с мобильного интернета',
+          'Сервер работает, но данные не прошли. Проверь на роутере правило для UDP 49160–49200 на адрес компьютера с сервером и что в eturnal.yml те же порты. Проверку запускай с мобильного интернета, не из домашней сети',
         );
       }
     } finally {
