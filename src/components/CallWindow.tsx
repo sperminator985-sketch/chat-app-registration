@@ -7,12 +7,16 @@ const Video = ({
   stream,
   muted,
   className,
+  style,
   onBlocked,
+  onRatio,
 }: {
   stream: MediaStream | null;
   muted?: boolean;
   className?: string;
+  style?: React.CSSProperties;
   onBlocked?: (play: (() => void) | null) => void;
+  onRatio?: (ratio: number) => void;
 }) => {
   const ref = useRef<HTMLVideoElement>(null);
 
@@ -38,7 +42,22 @@ const Video = ({
     };
   }, [stream, onBlocked]);
 
-  return <video ref={ref} autoPlay playsInline muted={muted} className={className} />;
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || !onRatio) return;
+    const update = () => {
+      if (el.videoWidth && el.videoHeight) onRatio(el.videoWidth / el.videoHeight);
+    };
+    update();
+    el.addEventListener('loadedmetadata', update);
+    el.addEventListener('resize', update);
+    return () => {
+      el.removeEventListener('loadedmetadata', update);
+      el.removeEventListener('resize', update);
+    };
+  }, [onRatio]);
+
+  return <video ref={ref} autoPlay playsInline muted={muted} className={className} style={style} />;
 };
 
 const Audio = ({ stream, onBlocked }: { stream: MediaStream | null; onBlocked?: (play: (() => void) | null) => void }) => {
@@ -60,9 +79,26 @@ const Audio = ({ stream, onBlocked }: { stream: MediaStream | null; onBlocked?: 
 const CallWindow = () => {
   const [resume, setResume] = useState<(() => void) | null>(null);
   const onBlocked = useRef((play: (() => void) | null) => setResume(() => play)).current;
+  const [remoteRatio, setRemoteRatio] = useState(0);
+  const [localRatio, setLocalRatio] = useState(0);
+  const [boxRatio, setBoxRatio] = useState(0);
+  const boxRef = useRef<HTMLDivElement>(null);
   const { status, peerNick, localStream, remoteStream, micOn, camOn, mode, link, acceptCall, declineCall, hangUp, toggleMic, toggleCam, quality, setQuality } = useCall();
 
+  useEffect(() => {
+    const el = boxRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(() => {
+      if (el.clientWidth && el.clientHeight) setBoxRatio(el.clientWidth / el.clientHeight);
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [status]);
+
   if (status === 'idle') return null;
+
+  const sameShape = remoteRatio > 0 && boxRatio > 0 && remoteRatio > 1 === boxRatio > 1;
+  const pipPortrait = localRatio > 0 && localRatio < 1;
 
   const ringing = status === 'calling' || status === 'incoming';
   const voice = mode === 'audio';
@@ -82,7 +118,7 @@ const CallWindow = () => {
           </p>
         </div>
 
-        <div className="relative min-h-0 flex-1 bg-black">
+        <div ref={boxRef} className="relative min-h-0 flex-1 bg-black">
           {voice ? (
             <div className="flex h-full w-full flex-col items-center justify-center gap-4 bg-black/90">
               <Audio stream={remoteStream} onBlocked={onBlocked} />
@@ -106,7 +142,8 @@ const CallWindow = () => {
             <Video
               stream={remoteStream}
               muted
-              className={cn('h-full w-full bg-black object-cover', ringing && 'opacity-40')}
+              onRatio={setRemoteRatio}
+              className={cn('h-full w-full bg-black', sameShape ? 'object-cover' : 'object-contain', ringing && 'opacity-40')}
             />
             </>
           )}
@@ -152,7 +189,12 @@ const CallWindow = () => {
             <Video
               stream={localStream}
               muted
-              className="absolute bottom-4 right-4 h-40 w-28 border-2 sm:h-36 sm:w-56 lg:h-44 lg:w-72 border-foreground/50 bg-black object-cover"
+              onRatio={setLocalRatio}
+              style={{ aspectRatio: localRatio || undefined }}
+              className={cn(
+                'absolute bottom-4 right-4 border-2 border-foreground/50 bg-black object-cover',
+                pipPortrait ? 'h-40 w-auto sm:h-48 lg:h-56' : 'h-auto w-32 sm:w-56 lg:w-72',
+              )}
             />
           )}
         </div>
