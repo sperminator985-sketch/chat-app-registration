@@ -9,6 +9,7 @@ import { nickColorClass, rooms, canEnterRoom, isStaffNick, staffNickClass } from
 import { useDm } from '@/hooks/use-dm';
 import { useCrypto } from '@/hooks/use-crypto';
 import { usePrivate } from '@/hooks/use-private';
+import { useCall } from '@/hooks/use-call';
 import EmojiPicker from '@/components/EmojiPicker';
 import { useTicker } from '@/hooks/use-ticker';
 import UserCardDialog, { CardPerson } from '@/components/UserCardDialog';
@@ -56,6 +57,7 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
   const typingSentAt = useRef(0);
   const { unreadBy: unread } = useDm();
   const { invitePeer, pendingNick } = usePrivate();
+  const { startCall } = useCall();
   const { setPending: setTickerPending } = useTicker();
   const feedRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -526,6 +528,7 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
                       <Icon name="Info" size={13} />
                     </button>
                     {!isMe && (
+                      <>
                       <button
                         type="button"
                         onClick={() => invitePeer(u.nick)}
@@ -542,6 +545,17 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
                       >
                         <Icon name={waiting ? 'Hourglass' : 'Lock'} size={13} />
                       </button>
+                      <button
+                        type="button"
+                        onClick={() => startCall(u.nick)}
+                        disabled={busy}
+                        title={busy ? `${u.nick} сейчас в привате` : `Видеозвонок: ${u.nick}`}
+                        aria-label={`Видеозвонок: ${u.nick}`}
+                        className="flex h-7 w-7 shrink-0 items-center justify-center border-2 border-foreground/30 text-muted-foreground transition-colors hover:border-secondary hover:text-secondary disabled:cursor-not-allowed disabled:border-foreground/15 disabled:text-muted-foreground/40 disabled:hover:border-foreground/15 disabled:hover:text-muted-foreground/40"
+                      >
+                        <Icon name="Video" size={13} />
+                      </button>
+                      </>
                     )}
                   </li>
                 );

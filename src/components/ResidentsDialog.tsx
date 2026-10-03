@@ -7,6 +7,7 @@ import { nickColorClass, staffNickClass } from '@/data/chat';
 import { lastSeenText } from '@/lib/last-seen';
 import { CardPerson } from '@/components/UserCardDialog';
 import { usePrivate } from '@/hooks/use-private';
+import { useCall } from '@/hooks/use-call';
 
 type Props = {
   open: boolean;
@@ -25,6 +26,7 @@ const ResidentsDialog = ({ open, onOpenChange, onCard, onWrite, myNick }: Props)
   const [onlyOnline, setOnlyOnline] = useState(false);
   const [openNick, setOpenNick] = useState<string | null>(null);
   const { invitePeer, pendingNick } = usePrivate();
+  const { startCall } = useCall();
 
   useEffect(() => {
     if (!open) return;
@@ -272,6 +274,16 @@ const ResidentsDialog = ({ open, onOpenChange, onCard, onWrite, myNick }: Props)
                           className="flex h-7 w-7 items-center justify-center border-2 border-foreground/30 text-muted-foreground transition-colors hover:border-sky-400 hover:text-sky-300 disabled:cursor-not-allowed disabled:border-foreground/15 disabled:text-muted-foreground/30 disabled:hover:border-foreground/15 disabled:hover:text-muted-foreground/30"
                         >
                           <Icon name={pendingNick === r.nick ? 'Hourglass' : 'Lock'} size={13} />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => startCall(r.nick)}
+                          disabled={!r.online}
+                          title={r.online ? `Видеозвонок: ${r.nick}` : `${r.nick} не в сети`}
+                          aria-label={`Видеозвонок: ${r.nick}`}
+                          className="flex h-7 w-7 items-center justify-center border-2 border-foreground/30 text-muted-foreground transition-colors hover:border-secondary hover:text-secondary disabled:cursor-not-allowed disabled:border-foreground/15 disabled:text-muted-foreground/30 disabled:hover:border-foreground/15 disabled:hover:text-muted-foreground/30"
+                        >
+                          <Icon name="Video" size={13} />
                         </button>
                       </>
                     )}

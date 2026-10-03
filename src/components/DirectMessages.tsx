@@ -20,6 +20,7 @@ import { lastSeenText } from '@/lib/last-seen';
 import { useDm } from '@/hooks/use-dm';
 import { useCrypto } from '@/hooks/use-crypto';
 import { usePrivate } from '@/hooks/use-private';
+import { useCall } from '@/hooks/use-call';
 import EmojiPicker from '@/components/EmojiPicker';
 import { usePolling } from '@/hooks/use-polling';
 import { playKnock } from '@/lib/notify-sound';
@@ -28,6 +29,7 @@ const DirectMessages = () => {
   const { user } = useAuth();
   const { dmNick: nick, closeDm: onClose, refresh, soundOn } = useDm();
   const { invitePeer, pendingNick } = usePrivate();
+  const { startCall } = useCall();
   const { enabled: cryptoOn, seal, reveal } = useCrypto();
   const [messages, setMessages] = useState<ApiMessage[]>([]);
   const [plain, setPlain] = useState<Record<number, string>>({});
@@ -250,6 +252,16 @@ const DirectMessages = () => {
                 className="flex h-9 w-9 items-center justify-center border-2 border-foreground/35 text-foreground transition-colors hover:border-sky-400 hover:text-sky-300 disabled:cursor-not-allowed disabled:border-foreground/20 disabled:text-muted-foreground/40 disabled:hover:border-foreground/20 disabled:hover:text-muted-foreground/40"
               >
                 <Icon name={pendingNick === nick ? 'Hourglass' : 'Lock'} size={18} />
+              </button>
+              <button
+                type="button"
+                onClick={() => startCall(nick)}
+                disabled={!peer?.online}
+                title={peer?.online ? 'Позвонить по видео' : 'Сосед не в сети — трубку не возьмут'}
+                aria-label="Позвонить по видео"
+                className="flex h-9 w-9 items-center justify-center border-2 border-foreground/35 text-foreground transition-colors hover:border-secondary hover:text-secondary disabled:cursor-not-allowed disabled:border-foreground/20 disabled:text-muted-foreground/40 disabled:hover:border-foreground/20 disabled:hover:text-muted-foreground/40"
+              >
+                <Icon name="Video" size={18} />
               </button>
               <button
                 type="button"
