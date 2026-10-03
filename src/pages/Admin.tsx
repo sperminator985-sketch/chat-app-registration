@@ -8,6 +8,7 @@ import { nickColorClass, rooms, staffNickClass } from '@/data/chat';
 import { useToast } from '@/hooks/use-toast';
 import { isPageVisible } from '@/hooks/use-polling';
 import VaultPanel from '@/components/VaultPanel';
+import CallServerCheck from '@/components/CallServerCheck';
 import { downloadApiZip, downloadFullZip, downloadFreshBuild } from '@/lib/server-files';
 
 const DAY_OPTIONS = [1, 3, 7, 14, 30, 0];
@@ -1122,6 +1123,8 @@ const AdminPanel = () => {
             </div>
           </>
         )}
+
+        <CallServerCheck />
 
         <div
           className={cn(
