@@ -83,6 +83,32 @@ const loadIce = async (): Promise<RTCIceServer[]> => {
   return FALLBACK_ICE;
 };
 
+const isInstalledApp = () =>
+  window.matchMedia?.('(display-mode: standalone)').matches ||
+  window.matchMedia?.('(display-mode: minimal-ui)').matches ||
+  (navigator as Navigator & { standalone?: boolean }).standalone === true;
+
+const mediaErrorToast = (err: unknown, kind: CallMode) => {
+  const name = err instanceof DOMException ? err.name : '';
+  const what = kind === 'audio' ? 'микрофону' : 'камере и микрофону';
+  const title = kind === 'audio' ? 'Микрофон не открылся' : 'Камера не открылась';
+  let description: string;
+  if (name === 'NotAllowedError' || name === 'SecurityError') {
+    description = isInstalledApp()
+      ? `У приложения «Общага» нет доступа к ${what}. Долго удерживай значок на рабочем столе → «О приложении» (или Настройки → Приложения) → Разрешения → включи Камеру и Микрофон. Либо открой чат в браузере, разреши доступ там и запусти значок снова.`
+      : `Нажми на значок слева от адреса сайта → Разрешения → разреши доступ к ${what}.`;
+  } else if (name === 'NotReadableError' || name === 'AbortError') {
+    description = 'Камеру сейчас занимает другое приложение или вкладка браузера. Закрой их и позвони снова.';
+  } else if (name === 'NotFoundError' || name === 'OverconstrainedError') {
+    description = kind === 'audio' ? 'Микрофон на устройстве не найден.' : 'Камера на устройстве не найдена.';
+  } else if (!navigator.mediaDevices?.getUserMedia) {
+    description = 'Этот браузер не умеет звонить. Открой чат в Chrome, Opera или Яндекс Браузере.';
+  } else {
+    description = `Разреши доступ к ${what} и попробуй ещё раз.`;
+  }
+  toast({ title, description, variant: 'destructive', duration: 15000 });
+};
+
 export const CallProvider = ({ children }: { children: ReactNode }) => {
   const { user, openAuth } = useAuth();
   const [status, setStatus] = useState<CallStatus>('idle');
@@ -269,15 +295,8 @@ export const CallProvider = ({ children }: { children: ReactNode }) => {
         const offer = await pc.createOffer();
         await pc.setLocalDescription(offer);
         await send(nick, 'offer', { ...offer, callMode: kind });
-      } catch {
-        toast({
-          title: kind === 'audio' ? 'Микрофон не открылся' : 'Камера не открылась',
-          description:
-            kind === 'audio'
-              ? 'Разреши доступ к микрофону в браузере'
-              : 'Разреши доступ к камере и микрофону в браузере',
-          variant: 'destructive',
-        });
+      } catch (err) {
+        mediaErrorToast(err, kind);
         cleanup();
       }
     },
@@ -299,15 +318,8 @@ export const CallProvider = ({ children }: { children: ReactNode }) => {
       await send(nick, 'answer', answer);
       startedAtRef.current = Date.now();
       setStatus('active');
-    } catch {
-      toast({
-        title: modeRef.current === 'audio' ? 'Микрофон не открылся' : 'Камера не открылась',
-        description:
-          modeRef.current === 'audio'
-            ? 'Разреши доступ к микрофону в браузере'
-            : 'Разреши доступ к камере и микрофону в браузере',
-        variant: 'destructive',
-      });
+    } catch (err) {
+      mediaErrorToast(err, modeRef.current);
       cleanup();
     }
   }, [getMedia, buildPc, send, cleanup]);
