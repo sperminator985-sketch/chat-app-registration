@@ -6,7 +6,6 @@ import { useAuth } from '@/hooks/use-auth';
 import { getToken, api, ApiMessage } from '@/lib/api';
 import { toast } from '@/hooks/use-toast';
 import { nickColorClass, rooms, canEnterRoom, isStaffNick, staffNickClass } from '@/data/chat';
-import { useDm } from '@/hooks/use-dm';
 import { useCrypto } from '@/hooks/use-crypto';
 import { usePrivate } from '@/hooks/use-private';
 import { useCall } from '@/hooks/use-call';
@@ -55,7 +54,6 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
   const [privateMsgs, setPrivateMsgs] = useState<(ApiMessage & { peer: string; outgoing: boolean })[]>([]);
   const [dmPlain, setDmPlain] = useState<Record<number, string>>({});
   const typingSentAt = useRef(0);
-  const { unreadBy: unread } = useDm();
   const { invitePeer, pendingNick } = usePrivate();
   const { startCall } = useCall();
   const { setPending: setTickerPending } = useTicker();
@@ -511,10 +509,6 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
                         <span className="flex shrink-0 items-center gap-1 whitespace-nowrap font-mono text-[0.66rem] uppercase text-sky-300/70">
                           <Icon name="Lock" size={11} />
                           приват
-                        </span>
-                      ) : unread[u.nick] ? (
-                        <span className="shrink-0 border-2 border-secondary bg-secondary px-1.5 font-mono text-[0.7rem] font-bold text-secondary-foreground">
-                          {unread[u.nick]}
                         </span>
                       ) : null}
                     </button>
