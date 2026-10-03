@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import Icon from '@/components/ui/icon';
 import { cn } from '@/lib/utils';
-import { useCall } from '@/hooks/use-call';
+import { useCall, QUALITY_PRESETS, type CallQuality } from '@/hooks/use-call';
 
 const Video = ({
   stream,
@@ -60,7 +60,7 @@ const Audio = ({ stream, onBlocked }: { stream: MediaStream | null; onBlocked?: 
 const CallWindow = () => {
   const [resume, setResume] = useState<(() => void) | null>(null);
   const onBlocked = useRef((play: (() => void) | null) => setResume(() => play)).current;
-  const { status, peerNick, localStream, remoteStream, micOn, camOn, mode, link, acceptCall, declineCall, hangUp, toggleMic, toggleCam } = useCall();
+  const { status, peerNick, localStream, remoteStream, micOn, camOn, mode, link, acceptCall, declineCall, hangUp, toggleMic, toggleCam, quality, setQuality } = useCall();
 
   if (status === 'idle') return null;
 
@@ -193,6 +193,26 @@ const CallWindow = () => {
               >
                 <Icon name={camOn ? 'Video' : 'VideoOff'} size={18} />
               </button>
+              {!voice && (
+                <div className="flex border-2 border-foreground/40" role="group" aria-label="Качество видео">
+                  {(Object.keys(QUALITY_PRESETS) as CallQuality[]).map((q) => (
+                    <button
+                      key={q}
+                      type="button"
+                      onClick={() => setQuality(q)}
+                      title={`Качество: ${QUALITY_PRESETS[q].label}`}
+                      className={cn(
+                        'h-10 px-2.5 text-[0.68rem] font-bold uppercase tracking-[0.06em] transition-colors sm:px-3 sm:text-[0.72rem]',
+                        quality === q
+                          ? 'bg-secondary text-secondary-foreground'
+                          : 'text-muted-foreground hover:text-secondary',
+                      )}
+                    >
+                      {QUALITY_PRESETS[q].label}
+                    </button>
+                  ))}
+                </div>
+              )}
               <button onClick={hangUp} className="btn-brut flex items-center gap-2">
                 <Icon name="PhoneOff" size={16} />
                 Положить трубку

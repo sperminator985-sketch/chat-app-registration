@@ -8,6 +8,35 @@ import { isPageVisible } from '@/hooks/use-polling';
 export type CallStatus = 'idle' | 'calling' | 'incoming' | 'active';
 export type CallMode = 'video' | 'audio';
 export type CallLink = 'connecting' | 'connected' | 'stuck';
+export type CallQuality = 'eco' | 'normal' | 'high';
+
+export const QUALITY_PRESETS: Record<CallQuality, { label: string; width: number; height: number; fps: number; bitrate: number }> = {
+  eco: { label: 'Эконом', width: 640, height: 360, fps: 15, bitrate: 300_000 },
+  normal: { label: 'Обычное', width: 1280, height: 720, fps: 24, bitrate: 1_000_000 },
+  high: { label: 'Высокое', width: 1920, height: 1080, fps: 30, bitrate: 2_500_000 },
+};
+
+const QUALITY_KEY = 'call-quality';
+
+const savedQuality = (): CallQuality => {
+  const v = localStorage.getItem(QUALITY_KEY);
+  return v === 'eco' || v === 'normal' || v === 'high' ? v : 'normal';
+};
+
+const videoConstraints = (q: CallQuality): MediaTrackConstraints => {
+  const p = QUALITY_PRESETS[q];
+  return { width: { ideal: p.width }, height: { ideal: p.height }, frameRate: { ideal: p.fps, max: p.fps } };
+};
+
+const applySenderBitrate = async (pc: RTCPeerConnection | null, q: CallQuality) => {
+  const sender = pc?.getSenders().find((s) => s.track?.kind === 'video');
+  if (!sender) return;
+  const params = sender.getParameters();
+  if (!params.encodings || params.encodings.length === 0) params.encodings = [{}];
+  params.encodings[0].maxBitrate = QUALITY_PRESETS[q].bitrate;
+  params.encodings[0].maxFramerate = QUALITY_PRESETS[q].fps;
+  await sender.setParameters(params).catch(() => undefined);
+};
 
 type CallState = {
   status: CallStatus;
@@ -24,6 +53,8 @@ type CallState = {
   hangUp: () => void;
   toggleMic: () => void;
   toggleCam: () => void;
+  quality: CallQuality;
+  setQuality: (q: CallQuality) => void;
 };
 
 const CallContext = createContext<CallState | null>(null);
@@ -63,6 +94,8 @@ export const CallProvider = ({ children }: { children: ReactNode }) => {
   const [mode, setMode] = useState<CallMode>('video');
   const modeRef = useRef<CallMode>('video');
   const [link, setLink] = useState<CallLink>('connecting');
+  const [quality, setQualityState] = useState<CallQuality>(savedQuality);
+  const qualityRef = useRef<CallQuality>(quality);
   const dropTimerRef = useRef<number | null>(null);
   const stuckTimerRef = useRef<number | null>(null);
 
@@ -152,7 +185,7 @@ export const CallProvider = ({ children }: { children: ReactNode }) => {
 
   const getMedia = useCallback(async (kind: CallMode) => {
     const stream = await navigator.mediaDevices.getUserMedia(
-      kind === 'audio' ? { video: false, audio: true } : { video: true, audio: true },
+      kind === 'audio' ? { video: false, audio: true } : { video: videoConstraints(qualityRef.current), audio: true },
     );
     localRef.current = stream;
     setLocalStream(stream);
@@ -183,6 +216,7 @@ export const CallProvider = ({ children }: { children: ReactNode }) => {
         if (pcRef.current !== pc) return;
         const st = pc.connectionState;
         if (st === 'connected') {
+          applySenderBitrate(pc, qualityRef.current);
           if (dropTimerRef.current) window.clearTimeout(dropTimerRef.current);
           dropTimerRef.current = null;
           if (!startedAtRef.current) startedAtRef.current = Date.now();
@@ -304,6 +338,15 @@ export const CallProvider = ({ children }: { children: ReactNode }) => {
     setCamOn(track.enabled);
   }, []);
 
+  const setQuality = useCallback((q: CallQuality) => {
+    qualityRef.current = q;
+    setQualityState(q);
+    localStorage.setItem(QUALITY_KEY, q);
+    const track = localRef.current?.getVideoTracks()[0];
+    if (track) track.applyConstraints(videoConstraints(q)).catch(() => undefined);
+    applySenderBitrate(pcRef.current, q);
+  }, []);
+
   const handleSignal = useCallback(
     async (s: CallSignal) => {
       const pc = pcRef.current;
@@ -388,9 +431,9 @@ export const CallProvider = ({ children }: { children: ReactNode }) => {
   const value = useMemo(
     () => ({
       status, peerNick, localStream, remoteStream, micOn, camOn, mode, link,
-      startCall, acceptCall, declineCall, hangUp, toggleMic, toggleCam,
+      startCall, acceptCall, declineCall, hangUp, toggleMic, toggleCam, quality, setQuality,
     }),
-    [status, peerNick, localStream, remoteStream, micOn, camOn, mode, link, startCall, acceptCall, declineCall, hangUp, toggleMic, toggleCam],
+    [status, peerNick, localStream, remoteStream, micOn, camOn, mode, link, startCall, acceptCall, declineCall, hangUp, toggleMic, toggleCam, quality, setQuality],
   );
 
   return <CallContext.Provider value={value}>{children}</CallContext.Provider>;
