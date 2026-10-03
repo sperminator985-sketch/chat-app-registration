@@ -68,9 +68,9 @@ const CallWindow = () => {
   const voice = mode === 'audio';
 
   return (
-    <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/85 p-4">
-      <div className="flex w-full max-w-[900px] flex-col border-2 border-foreground/40 bg-background">
-        <div className="flex items-center gap-3 border-b-2 border-foreground/35 px-5 py-4">
+    <div className="fixed inset-0 z-[80] flex bg-black">
+      <div className="flex h-[100dvh] w-full flex-col bg-background">
+        <div className="flex items-center gap-3 border-b-2 border-foreground/35 px-5 pb-3 pt-[max(0.75rem,env(safe-area-inset-top))]">
           <Icon name={voice ? 'Phone' : 'Video'} size={18} className="text-secondary" />
           <p className="font-display text-base font-extrabold uppercase leading-none tracking-[-0.02em] sm:text-lg">
             {status === 'incoming'
@@ -82,9 +82,9 @@ const CallWindow = () => {
           </p>
         </div>
 
-        <div className="relative bg-muted/40">
+        <div className="relative min-h-0 flex-1 bg-black">
           {voice ? (
-            <div className="flex aspect-video w-full flex-col items-center justify-center gap-4 bg-black/90">
+            <div className="flex h-full w-full flex-col items-center justify-center gap-4 bg-black/90">
               <Audio stream={remoteStream} onBlocked={onBlocked} />
               <div className="flex h-24 w-24 items-center justify-center rounded-full border-2 border-secondary/70 bg-background/10">
                 <Icon name="Phone" size={40} className="text-secondary" />
@@ -106,7 +106,7 @@ const CallWindow = () => {
             <Video
               stream={remoteStream}
               muted
-              className={cn('aspect-video w-full bg-black object-cover', ringing && 'opacity-40')}
+              className={cn('h-full w-full bg-black object-cover', ringing && 'opacity-40')}
             />
             </>
           )}
@@ -152,12 +152,12 @@ const CallWindow = () => {
             <Video
               stream={localStream}
               muted
-              className="absolute bottom-4 right-4 h-[22%] w-[28%] border-2 border-foreground/50 bg-black object-cover"
+              className="absolute bottom-4 right-4 h-40 w-28 border-2 sm:h-36 sm:w-56 lg:h-44 lg:w-72 border-foreground/50 bg-black object-cover"
             />
           )}
         </div>
 
-        <div className="flex flex-wrap items-center justify-center gap-3 border-t-2 border-foreground/35 px-5 py-4">
+        <div className="flex flex-wrap items-center justify-center gap-3 border-t-2 border-foreground/35 px-5 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
           {status === 'incoming' ? (
             <>
               <button onClick={acceptCall} className="btn-brut flex items-center gap-2">
