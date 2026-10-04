@@ -4,7 +4,7 @@ import Icon from '@/components/ui/icon';
 import { cn } from '@/lib/utils';
 import { AuthProvider, useAuth } from '@/hooks/use-auth';
 import { api, API_VERSION, type AdminMessage, type AdminTickerPost, type AdminUser, type SecurityEvent, type TickerMode } from '@/lib/api';
-import { nickColorClass, rooms, staffNickClass } from '@/data/chat';
+import { isStaffNick, nickColorClass, rooms, staffNickClass } from '@/data/chat';
 import { useToast } from '@/hooks/use-toast';
 import { isPageVisible } from '@/hooks/use-polling';
 import VaultPanel from '@/components/VaultPanel';
@@ -195,7 +195,7 @@ const AdminPanel = () => {
   const loadUsers = useCallback(async () => {
     try {
       const res = await api.adminUsers();
-      setUsers(res.users);
+      setUsers(res.users.filter((u) => !isStaffNick(u.nick)));
       setDenied(false);
     } catch (e) {
       setDenied(true);
