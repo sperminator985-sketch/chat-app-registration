@@ -45,7 +45,7 @@ const Header = ({ onProfile }: HeaderProps) => {
         extra,
       )}
     >
-      <Icon name={theme === 'day' ? 'Sun' : 'Moon'} size={18} />
+      <Icon name={theme === 'day' ? 'Moon' : 'Sun'} size={18} />
     </button>
   );
 
@@ -369,7 +369,7 @@ const Header = ({ onProfile }: HeaderProps) => {
               </a>
             )}
             <button onClick={toggle} className="btn-ghost-brut flex items-center justify-center gap-2">
-              <Icon name={theme === 'day' ? 'Sun' : 'Moon'} size={16} />
+              <Icon name={theme === 'day' ? 'Moon' : 'Sun'} size={16} />
               {themeLabel}
             </button>
 
