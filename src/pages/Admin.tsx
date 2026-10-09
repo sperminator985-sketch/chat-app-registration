@@ -1126,6 +1126,8 @@ const AdminPanel = () => {
           </>
         )}
 
+        {tab === 'vault' && (
+        <>
         <CallMaintenance />
 
         <CallServerCheck />
@@ -1193,6 +1195,8 @@ const AdminPanel = () => {
             </button>
           </span>
         </div>
+        </>
+        )}
       </main>
     </div>
   );
