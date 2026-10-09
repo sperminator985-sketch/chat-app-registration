@@ -289,7 +289,7 @@ const AuthDialog = () => {
         onPointerDownOutside={(e) => mode === 'verify' && e.preventDefault()}
         onInteractOutside={(e) => mode === 'verify' && e.preventDefault()}
         onEscapeKeyDown={(e) => mode === 'verify' && e.preventDefault()}
-        className="max-h-[calc(100dvh-1.5rem)] max-w-[520px] overscroll-contain overflow-y-auto border-2 border-foreground/40 bg-card p-0 text-card-foreground [&>button]:hidden">
+        className="top-[max(0.75rem,env(safe-area-inset-top))] translate-y-0 sm:top-[50%] sm:translate-y-[-50%] max-h-[calc(100dvh-1.5rem)] max-w-[520px] overscroll-contain overflow-y-auto border-2 border-foreground/40 bg-card p-0 text-card-foreground [&>button]:hidden">
         <div className="sticky top-0 z-20 flex border-b-2 border-foreground/35 bg-card">
           {(['register', 'login'] as const).filter((t) => t === authTab).map((tab) => (
             <button
