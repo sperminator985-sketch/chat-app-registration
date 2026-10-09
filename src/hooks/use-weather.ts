@@ -7,6 +7,19 @@ export type Sky = 'clear' | 'partly' | 'cloudy' | 'fog' | 'drizzle' | 'rain' | '
 
 const CACHE_KEY = 'weather-cache-v1';
 
+const MONTHS = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'];
+
+const tomskTomorrowLabel = () => {
+  const d = new Date(Date.now() + 7 * 3600000 + 86400000);
+  return `${d.getUTCDate()} ${MONTHS[d.getUTCMonth()]}`;
+};
+
+const isActualTomorrow = (text: unknown): text is string => {
+  if (typeof text !== 'string' || !text) return false;
+  const m = text.match(/^Завтра,\s*(\d{1,2}\s+\S+)/i);
+  return Boolean(m) && m![1].toLowerCase() === tomskTomorrowLabel();
+};
+
 let lastSky: Sky = 'clear';
 let lastIsDay = true;
 let lastDayText: string | null = null;
@@ -21,7 +34,7 @@ try {
     if (typeof c?.sky === 'string') lastSky = c.sky as Sky;
     if (typeof c?.isDay === 'boolean') lastIsDay = c.isDay;
     if (typeof c?.dayText === 'string') lastDayText = c.dayText;
-    if (typeof c?.tomorrowText === 'string') lastTomorrowText = c.tomorrowText;
+    if (isActualTomorrow(c?.tomorrowText)) lastTomorrowText = c.tomorrowText;
   }
 } catch {
   /* кэш не критичен */
@@ -91,7 +104,8 @@ export const useWeather = () => {
       if (typeof main.sky === 'string') lastSky = main.sky as Sky;
       if (typeof main.isDay === 'boolean') lastIsDay = main.isDay;
       if (typeof main.dayText === 'string' && main.dayText) lastDayText = main.dayText;
-      if (typeof main.tomorrowText === 'string' && main.tomorrowText) lastTomorrowText = main.tomorrowText;
+      if (isActualTomorrow(main.tomorrowText)) lastTomorrowText = main.tomorrowText;
+      else if (!isActualTomorrow(lastTomorrowText)) lastTomorrowText = null;
 
       lastTemp = Math.round(main.t);
       setTemp(lastTemp);
@@ -135,7 +149,7 @@ export const useWeather = () => {
 
 export const dayForecastText = () => lastDayText;
 
-export const tomorrowForecastText = () => lastTomorrowText;
+export const tomorrowForecastText = () => (isActualTomorrow(lastTomorrowText) ? lastTomorrowText : null);
 
 export const formatTemp = (t: number) => (t > 0 ? `+${t}` : `${t}`);
 
