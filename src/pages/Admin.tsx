@@ -113,7 +113,6 @@ const AdminPanel = () => {
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState<'all' | 'banned' | 'online'>('all');
   const [denied, setDenied] = useState(false);
-  const [refreshing, setRefreshing] = useState(false);
   const [srvVersion, setSrvVersion] = useState<string | null>(null);
   const [verBusy, setVerBusy] = useState(false);
   const [sitePack, setSitePack] = useState<string | null>(null);
@@ -353,20 +352,6 @@ const AdminPanel = () => {
       ev.note.toLowerCase().includes(s)
     );
   });
-
-  const refresh = async () => {
-    if (refreshing) return;
-    setRefreshing(true);
-    try {
-      if (tab === 'users') await loadUsers();
-      else if (tab === 'ticker') await loadTicker();
-      else if (tab === 'security') await loadSecurity();
-      else await loadMessages();
-      toast({ title: 'Данные обновлены' });
-    } finally {
-      setRefreshing(false);
-    }
-  };
 
   const hide = async (m: AdminMessage) => {
     if (busy) return;
@@ -642,15 +627,6 @@ const AdminPanel = () => {
                   {pendingCount}
                 </span>
               )}
-            </button>
-            <button
-              onClick={refresh}
-              disabled={refreshing}
-              title="Обновить данные"
-              className="flex items-center gap-1.5 border-2 border-foreground/35 px-1.5 py-1.5 text-[0.55rem] font-bold uppercase tracking-[0.02em] text-muted-foreground transition-colors hover:border-secondary hover:text-secondary disabled:opacity-50 md:px-3 md:text-[0.72rem] md:tracking-[0.1em]"
-            >
-              <Icon name="RefreshCw" size={13} className={refreshing ? 'animate-spin' : ''} />
-              <span className="hidden sm:inline">Обновить</span>
             </button>
           </div>
         </div>
