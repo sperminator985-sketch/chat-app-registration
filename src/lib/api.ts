@@ -8,7 +8,7 @@ const API_URL = 'https://chat-tom.ru/chat/api.php';
 // Версия api.php, которую ожидает этот сайт. Должна совпадать с той,
 // что залита на хостинг — иначе в комендантской загорится красная метка.
 // Нумерация: 1.0.0 → 1.0.1 → 1.0.2 и так далее.
-export const API_VERSION = '1.0.7';
+export const API_VERSION = '1.0.8';
 const TOKEN_KEY = 'obshaga_token';
 
 export type ApiUser = {
@@ -60,6 +60,8 @@ export type AdminMessage = {
 };
 
 export type TickerMode = 'news' | 'posts' | 'mix' | 'off';
+
+export type HoroscopeDay = { date: string; signs: { sign: string; text: string }[] };
 
 export type TickerLine = {
   nick: string;
@@ -347,6 +349,7 @@ export const api = {
     request<FeedResponse>('feed', { query: `&room=${room}${here ? '&here=1' : ''}` }),
   away: () => request<{ ok: boolean }>('away', { method: 'POST' }),
   news: () => request<{ news: string[] }>('news'),
+  horoscope: () => request<{ days: HoroscopeDay[] }>('horoscope'),
   version: () => request<{ version: string; note: string; php: string }>('version'),
   me: () => request<{ user: ApiUser }>('me'),
   recoverMailCode: (nick: string) =>

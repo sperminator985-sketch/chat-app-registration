@@ -4,6 +4,7 @@ import { useWeather, formatTemp, dayForecastText, tomorrowForecastText } from '@
 import { useLiveStats } from '@/hooks/use-live-stats';
 import { useNews } from '@/hooks/use-news';
 import { useTickerPosts } from '@/hooks/use-ticker-posts';
+import { useHoroscope } from '@/hooks/use-horoscope';
 import { nickColorClass } from '@/data/chat';
 import type { NickColor } from '@/data/chat';
 import type { TickerLine } from '@/lib/api';
@@ -32,6 +33,7 @@ const Ticker = () => {
   const temp = useWeather();
   const live = useLiveStats();
   const news = useNews();
+  const horoscope = useHoroscope();
   const { items: posts, mode, speed } = useTickerPosts();
 
   const plural = (n: number, one: string, few: string, many: string) => {
@@ -93,15 +95,29 @@ const Ticker = () => {
     .filter((t): t is string => Boolean(t))
     .map((t) => plain(t.toUpperCase()));
 
+  const horoLines: TickerLine[] = horoscope.map((h) => ({
+    nick: h.title,
+    color: 0,
+    text: h.text.toUpperCase(),
+  }));
+
+  const restNews = newsLines.slice(1);
+  const step = horoLines.length ? Math.max(1, Math.ceil(restNews.length / horoLines.length)) : 0;
+  const newsWithHoro = horoLines.length
+    ? restNews
+        .flatMap((n, i) => (i % step === step - 1 && horoLines[Math.floor(i / step)] ? [n, horoLines[Math.floor(i / step)]] : [n]))
+        .concat(horoLines.slice(Math.floor(restNews.length / step)))
+    : restNews;
+
   const core: TickerLine[] = newsLines.length
     ? [
         plain(liveLine),
         newsLines[0],
         ...forecastLine,
-        ...newsLines.slice(1),
+        ...newsWithHoro,
         plain(base[2]),
       ]
-    : [...fallback, ...forecastLine];
+    : [...fallback, ...forecastLine, ...horoLines];
 
   const mixed = postLines.length
     ? core.flatMap((t, i) => (postLines[i] ? [t, postLines[i]] : [t])).concat(postLines.slice(core.length))

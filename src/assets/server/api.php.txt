@@ -2,8 +2,8 @@
 // Версия серверной части. При каждом изменении api.php поднимайте
 // последнюю цифру: 1.0.0 → 1.0.1 → 1.0.2 и так далее.
 // Проверить, что залито на хостинг: https://ваш-домен.ru/chat/api.php?action=version
-const API_VERSION = '1.0.7';
-const API_VERSION_NOTE = 'Режим технических работ для видеосвязи';
+const API_VERSION = '1.0.8';
+const API_VERSION_NOTE = 'Гороскоп в бегущей строке';
 
 ini_set('display_errors', '0');
 error_reporting(E_ALL & ~E_WARNING & ~E_NOTICE & ~E_DEPRECATED);
@@ -2254,6 +2254,87 @@ try {
             }
         }
         fail(503, 'Погода временно недоступна');
+    }
+
+    // --- Гороскоп на 4 дня (ignio.com, кэш 3 часа) ---
+    if ($method === 'GET' && $action === 'horoscope') {
+        $cacheFile = sys_get_temp_dir() . '/obshaga_horoscope.json';
+        $ttl = 10800;
+
+        if (is_readable($cacheFile)) {
+            $cached = json_decode((string) file_get_contents($cacheFile), true);
+            $age = time() - (int) ($cached['ts'] ?? 0);
+            if (is_array($cached) && !empty($cached['days']) && $age >= 0 && $age < $ttl) {
+                out(200, ['days' => $cached['days']]);
+            }
+        }
+
+        $url = 'https://ignio.com/r/export/utf/xml/daily/com.xml';
+        $raw = null;
+        if (function_exists('curl_init')) {
+            $ch = curl_init($url);
+            curl_setopt_array($ch, [
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_FOLLOWLOCATION => true,
+                CURLOPT_TIMEOUT => 8,
+                CURLOPT_CONNECTTIMEOUT => 5,
+                CURLOPT_SSL_VERIFYPEER => false,
+                CURLOPT_USERAGENT => 'ObshagaChat/1.0',
+            ]);
+            $res = curl_exec($ch);
+            $code = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            curl_close($ch);
+            if (is_string($res) && $res !== '' && $code < 400) {
+                $raw = $res;
+            }
+        }
+        if ($raw === null) {
+            $ctx = stream_context_create(['http' => [
+                'timeout' => 8,
+                'header' => "User-Agent: ObshagaChat/1.0\r\n",
+            ], 'ssl' => ['verify_peer' => false, 'verify_peer_name' => false]]);
+            $res = @file_get_contents($url, false, $ctx);
+            if (is_string($res) && $res !== '') {
+                $raw = $res;
+            }
+        }
+
+        $signs = [
+            'aries' => 'Овен', 'taurus' => 'Телец', 'gemini' => 'Близнецы', 'cancer' => 'Рак',
+            'leo' => 'Лев', 'virgo' => 'Дева', 'libra' => 'Весы', 'scorpio' => 'Скорпион',
+            'sagittarius' => 'Стрелец', 'capricorn' => 'Козерог', 'aquarius' => 'Водолей', 'pisces' => 'Рыбы',
+        ];
+        $days = [];
+        $doc = $raw !== null ? @simplexml_load_string($raw) : false;
+        if ($doc && isset($doc->date)) {
+            foreach (['yesterday', 'today', 'tomorrow', 'tomorrow02'] as $slot) {
+                $dmy = (string) ($doc->date[$slot] ?? '');
+                if (!preg_match('/^(\d{2})\.(\d{2})\.(\d{4})$/', $dmy, $m)) {
+                    continue;
+                }
+                $list = [];
+                foreach ($signs as $key => $name) {
+                    $text = trim(preg_replace('/\s+/u', ' ', (string) ($doc->{$key}->{$slot} ?? '')) ?? '');
+                    if ($text !== '') {
+                        $list[] = ['sign' => $name, 'text' => $text];
+                    }
+                }
+                if ($list) {
+                    $days[] = ['date' => "{$m[3]}-{$m[2]}-{$m[1]}", 'signs' => $list];
+                }
+            }
+        }
+
+        if ($days) {
+            @file_put_contents($cacheFile, json_encode(['ts' => time(), 'days' => $days], JSON_UNESCAPED_UNICODE));
+        } elseif (is_readable($cacheFile)) {
+            $old = json_decode((string) file_get_contents($cacheFile), true);
+            if (is_array($old) && !empty($old['days'])) {
+                $days = $old['days'];
+            }
+        }
+
+        out(200, ['days' => $days]);
     }
 
     // --- Бегущая строка: одобренные объявления ---
