@@ -5,6 +5,7 @@ import { useLiveStats } from '@/hooks/use-live-stats';
 import { useNews } from '@/hooks/use-news';
 import { useTickerPosts } from '@/hooks/use-ticker-posts';
 import { useHoroscope } from '@/hooks/use-horoscope';
+import { useRates, formatRate } from '@/hooks/use-rates';
 import { nickColorClass } from '@/data/chat';
 import type { NickColor } from '@/data/chat';
 import type { TickerLine } from '@/lib/api';
@@ -36,6 +37,7 @@ const Ticker = () => {
   const live = useLiveStats();
   const news = useNews();
   const horoscope = useHoroscope();
+  const rates = useRates();
   const { items: posts, mode, speed } = useTickerPosts();
 
   const plural = (n: number, one: string, few: string, many: string) => {
@@ -104,6 +106,10 @@ const Ticker = () => {
       ]
     : [];
 
+  const ratesLine: Line[] = rates
+    ? [plain(`КУРС ЦБ НА СЕГОДНЯ: ДОЛЛАР ${formatRate(rates.usd)} ₽, ЕВРО ${formatRate(rates.eur)} ₽`)]
+    : [];
+
   const one = (t: Line): Line[] => [t];
   const horoBlock: Line[][] = horoLines.length ? [horoLines] : [];
   const coreGroups: Line[][] = newsLines.length
@@ -111,11 +117,12 @@ const Ticker = () => {
         one(plain(liveLine)),
         one(newsLines[0]),
         ...forecastLine.map(one),
+        ...ratesLine.map(one),
         ...horoBlock,
         ...newsLines.slice(1).map(one),
         one(plain(base[2])),
       ]
-    : [...fallback.map(one), ...forecastLine.map(one), ...horoBlock];
+    : [...fallback.map(one), ...forecastLine.map(one), ...ratesLine.map(one), ...horoBlock];
 
   const core: Line[] = coreGroups.flat();
   const mixed: Line[] = postLines.length

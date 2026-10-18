@@ -299,13 +299,53 @@ def horoscope_response() -> dict:
     }
 
 
+RATES_SOURCE = 'https://www.cbr.ru/scripts/XML_daily.asp'
+_rates_cache = {'ts': 0.0, 'data': None}
+
+
+def _load_rates():
+    req = urllib.request.Request(RATES_SOURCE, headers={'User-Agent': 'Mozilla/5.0 ObshagaChat/1.0'})
+    with urllib.request.urlopen(req, timeout=4) as r:
+        root = ET.fromstring(r.read())
+    m = re.match(r'^(\d{2})\.(\d{2})\.(\d{4})$', root.get('Date', ''))
+    if not m:
+        return None
+    out = {'date': f'{m.group(3)}-{m.group(2)}-{m.group(1)}'}
+    for v in root.findall('Valute'):
+        code = (v.findtext('CharCode') or '').lower()
+        if code in ('usd', 'eur'):
+            value = float((v.findtext('Value') or '0').replace(',', '.'))
+            nominal = int(v.findtext('Nominal') or '1') or 1
+            out[code] = round(value / nominal, 4)
+    return out if 'usd' in out and 'eur' in out else None
+
+
+def rates_response() -> dict:
+    if not _rates_cache['data'] or time.time() - _rates_cache['ts'] > 3600:
+        try:
+            data = _load_rates()
+            if data:
+                _rates_cache['data'] = data
+                _rates_cache['ts'] = time.time()
+        except Exception:
+            pass
+    return {
+        'statusCode': 200,
+        'headers': {**CORS, 'Cache-Control': 'public, max-age=1800'},
+        'body': json.dumps({'rates': _rates_cache['data']}, ensure_ascii=False),
+    }
+
+
 def handler(event: dict, context) -> dict:
-    """Температура в Томске для шапки сайта (Яндекс.Погода, при сбое — резервный источник); с ?action=horoscope — гороскоп по знакам для бегущей строки."""
+    """Температура в Томске для шапки сайта (Яндекс.Погода, при сбое — резервный источник); с ?action=horoscope — гороскоп, с ?action=rates — курс доллара и евро ЦБ для бегущей строки."""
     if event.get('httpMethod') == 'OPTIONS':
         return {'statusCode': 200, 'headers': CORS, 'body': ''}
 
-    if (event.get('queryStringParameters') or {}).get('action') == 'horoscope':
+    action = (event.get('queryStringParameters') or {}).get('action')
+    if action == 'horoscope':
         return horoscope_response()
+    if action == 'rates':
+        return rates_response()
 
     pool = ThreadPoolExecutor(max_workers=1)
     tomorrow_job = pool.submit(tomorrow_forecast)

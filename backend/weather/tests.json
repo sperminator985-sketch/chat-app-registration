@@ -11,6 +11,12 @@
       "method": "GET",
       "path": "/?action=horoscope",
       "expectedStatus": 200
+    },
+    {
+      "name": "Курс валют ЦБ",
+      "method": "GET",
+      "path": "/?action=rates",
+      "expectedStatus": 200
     }
   ]
 }
