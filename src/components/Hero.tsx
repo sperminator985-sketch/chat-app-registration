@@ -16,8 +16,8 @@ const Hero = () => {
           the rebirth of a legend
         </p>
 
-        <div className="relative z-10 flex animate-rise flex-col items-center gap-6 md:flex-row md:items-start md:justify-between md:gap-7">
-          <h1 className="mt-0 hidden min-w-0 md:mt-[2cm] flex-nowrap items-center justify-center gap-x-2 font-extrabold uppercase tracking-[-0.035em] md:flex md:justify-start md:gap-x-4">
+        <div className="relative z-10 flex animate-rise flex-col items-center gap-6 md:gap-8 xl:flex-row xl:items-start xl:justify-between xl:gap-7">
+          <h1 className="mt-0 hidden min-w-0 flex-nowrap items-center justify-center gap-x-2 font-extrabold uppercase tracking-[-0.035em] md:flex md:gap-x-4 xl:mt-[2cm] xl:justify-start">
             <span className="flex shrink-0 flex-col items-center justify-end border-[3px] border-foreground bg-window-off p-[5px] h-[clamp(1.9rem,8.4vw,3.2rem)] w-[clamp(1.9rem,8.4vw,3.2rem)] md:h-[clamp(2rem,6.7vw,6.3rem)] md:w-[clamp(2rem,6.7vw,6.3rem)]">
               <span className="grid w-full flex-1 grid-cols-3 gap-[3px]">
                 {windows.map((on, i) => (
@@ -35,8 +35,11 @@ const Hero = () => {
               <span className="absolute -bottom-[16px] left-6 h-0 w-0 border-l-[18px] border-t-[18px] border-l-transparent border-t-secondary" />
             </span>
           </h1>
+          <p className="-mt-2 hidden whitespace-nowrap text-center font-display text-[clamp(0.95rem,2.6vw,1.6rem)] font-semibold uppercase tracking-[0.34em] text-secondary md:block xl:hidden">
+            the rebirth of a legend
+          </p>
           <Facade
-            className="w-full max-w-[436px] md:-mt-[1.1cm]"
+            className="w-full max-w-[436px] xl:-mt-[1.1cm]"
             rows={9}
             cellAspect="1/0.68"
             floorCounts={floorCounts}
@@ -44,12 +47,12 @@ const Hero = () => {
           />
         </div>
 
-        <p className="hidden -mt-1 md:-mt-[3.1cm] whitespace-nowrap text-center font-display text-[clamp(0.7rem,3.1vw,1.1rem)] font-semibold uppercase tracking-[0.34em] text-secondary md:block md:text-left md:text-[clamp(0.95rem,2.42vw,2.1rem)]">
+        <p className="hidden whitespace-nowrap font-display font-semibold uppercase tracking-[0.34em] text-secondary xl:-mt-[3.1cm] xl:block xl:text-left xl:text-[clamp(0.95rem,2.42vw,2.1rem)]">
           the rebirth of a legend
         </p>
 
         <div
-          className="animate-rise h-[3px] w-full bg-foreground md:mt-[1.85cm]"
+          className="animate-rise h-[3px] w-full bg-foreground md:mt-4 xl:mt-[1.85cm]"
           style={{ animationDelay: '.12s' }}
         />
 
