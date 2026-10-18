@@ -19,6 +19,8 @@ const base = [
   'СВЕТ НА ВСЕХ ЭТАЖАХ',
 ];
 
+type Line = TickerLine & { joined?: boolean };
+
 const tomskHour = () => (new Date().getUTCHours() + 7) % 24;
 const isEvening = () => tomskHour() >= 18;
 
@@ -95,35 +97,34 @@ const Ticker = () => {
     .filter((t): t is string => Boolean(t))
     .map((t) => plain(t.toUpperCase()));
 
-  const horoLines: TickerLine[] = horoscope.map((h) => ({
-    nick: h.title,
-    color: 0,
-    text: h.text.toUpperCase(),
-  }));
-
-  const restNews = newsLines.slice(1);
-  const step = horoLines.length ? Math.max(1, Math.ceil(restNews.length / horoLines.length)) : 0;
-  const newsWithHoro = horoLines.length
-    ? restNews
-        .flatMap((n, i) => (i % step === step - 1 && horoLines[Math.floor(i / step)] ? [n, horoLines[Math.floor(i / step)]] : [n]))
-        .concat(horoLines.slice(Math.floor(restNews.length / step)))
-    : restNews;
-
-  const core: TickerLine[] = newsLines.length
+  const horoLines: Line[] = horoscope
     ? [
-        plain(liveLine),
-        newsLines[0],
-        ...forecastLine,
-        ...newsWithHoro,
-        plain(base[2]),
+        { nick: '', color: 0, text: horoscope.heading.toUpperCase(), joined: true },
+        ...horoscope.signs.map((h) => ({ nick: h.sign.toUpperCase(), color: 0, text: h.text.toUpperCase() })),
       ]
-    : [...fallback, ...forecastLine, ...horoLines];
+    : [];
 
-  const mixed = postLines.length
-    ? core.flatMap((t, i) => (postLines[i] ? [t, postLines[i]] : [t])).concat(postLines.slice(core.length))
+  const one = (t: Line): Line[] => [t];
+  const horoBlock: Line[][] = horoLines.length ? [horoLines] : [];
+  const coreGroups: Line[][] = newsLines.length
+    ? [
+        one(plain(liveLine)),
+        one(newsLines[0]),
+        ...forecastLine.map(one),
+        ...horoBlock,
+        ...newsLines.slice(1).map(one),
+        one(plain(base[2])),
+      ]
+    : [...fallback.map(one), ...forecastLine.map(one), ...horoBlock];
+
+  const core: Line[] = coreGroups.flat();
+  const mixed: Line[] = postLines.length
+    ? coreGroups
+        .flatMap((g, i) => (postLines[i] ? [...g, postLines[i]] : g))
+        .concat(postLines.slice(coreGroups.length))
     : core;
 
-  const items = mode === 'news' ? core : mode === 'posts' ? postLines : mixed;
+  const items: Line[] = mode === 'news' ? core : mode === 'posts' ? postLines : mixed;
 
   if (mode === 'off' || items.length === 0) return null;
 
@@ -162,8 +163,10 @@ const Ticker = () => {
                     <span className="mx-1.5 text-foreground/50">—</span>
                   </>
                 )}
-                {t.text}
-                {(!solo || idx < items.length - 1) && (
+                <span className={t.joined ? 'text-secondary' : undefined}>{t.text}</span>
+                {t.joined ? (
+                  <span className="w-3 shrink-0 md:w-4" />
+                ) : (!solo || idx < items.length - 1) && (
                   <span className="mx-5 h-[5px] w-[5px] shrink-0 rounded-full bg-primary md:mx-7 md:h-1.5 md:w-1.5" />
                 )}
               </span>

@@ -5,8 +5,6 @@ const CACHE_KEY = 'obshaga-horoscope';
 const TTL = 3 * 60 * 60 * 1000;
 const CLOUD_URL = 'https://functions.poehali.dev/2c6a74d1-2f8a-481c-ac3e-49927c9727a9';
 
-const MONTHS = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'];
-
 type Cached = { ts: number; days: HoroscopeDay[] };
 
 const readCache = (): Cached | null => {
@@ -28,12 +26,12 @@ const pickTarget = () => {
   const evening = now.getUTCHours() >= 18;
   const d = evening ? new Date(now.getTime() + 86400000) : now;
   const iso = d.toISOString().slice(0, 10);
-  return { iso, evening, label: `${d.getUTCDate()} ${MONTHS[d.getUTCMonth()]}` };
+  return { iso, evening };
 };
 
-export type HoroscopeLine = { title: string; text: string };
+export type Horoscope = { heading: string; signs: { sign: string; text: string }[] };
 
-export const useHoroscope = (): HoroscopeLine[] => {
+export const useHoroscope = (): Horoscope | null => {
   const [days, setDays] = useState<HoroscopeDay[]>(() => readCache()?.days ?? []);
   const [target, setTarget] = useState(pickTarget);
 
@@ -73,9 +71,8 @@ export const useHoroscope = (): HoroscopeLine[] => {
   }, []);
 
   const day = days.find((d) => d.date === target.iso);
-  if (!day) return [];
-  const when = target.evening ? `ГОРОСКОП НА ЗАВТРА, ${target.label}` : `ГОРОСКОП НА СЕГОДНЯ, ${target.label}`;
-  return day.signs.map((s) => ({ title: `${when.toUpperCase()} · ${s.sign.toUpperCase()}`, text: s.text }));
+  if (!day || !day.signs.length) return null;
+  return { heading: target.evening ? 'Гороскоп на завтра:' : 'Гороскоп на сегодня:', signs: day.signs };
 };
 
 export default useHoroscope;
