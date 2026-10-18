@@ -247,7 +247,7 @@ const Header = ({ onProfile }: HeaderProps) => {
           </>
         )}
 
-        <div className="mx-auto hidden items-center gap-3 md:flex">
+        <div className={cn('mx-auto hidden items-center gap-3', user ? 'lg:flex' : 'md:flex')}>
           {temp !== null && (
             <a
               href="https://yandex.ru/pogoda/ru/tomsk"
@@ -271,7 +271,7 @@ const Header = ({ onProfile }: HeaderProps) => {
           {themeButton()}
         </div>
 
-        <nav className="hidden items-center gap-7 md:flex">
+        <nav className={cn('hidden items-center md:flex', user ? 'ml-auto gap-2 lg:ml-0 xl:gap-7' : 'gap-7')}>
           {links.map((l) => (
             <a
               key={l.href}
@@ -284,6 +284,7 @@ const Header = ({ onProfile }: HeaderProps) => {
           ))}
           {user ? (
             <>
+              {themeButton('lg:hidden')}
               {mailButton()}
               {tickerButton()}
               {soundButton()}
