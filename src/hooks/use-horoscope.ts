@@ -31,6 +31,13 @@ const pickTarget = () => {
 
 export type Horoscope = { heading: string; signs: { sign: string; text: string }[] };
 
+const SAME_CASE = (from: string, to: string) => (from[0] === from[0].toUpperCase() ? to[0].toUpperCase() + to.slice(1) : to);
+
+const toTomorrow = (text: string) =>
+  text
+    .replace(/(^|[^а-яё])([Сс]егодняшн)(?=[а-яё])/g, (_m, pre, base) => `${pre}${SAME_CASE(base, 'завтрашн')}`)
+    .replace(/(^|[^а-яё])([Сс]егодня)(?![а-яё])/g, (_m, pre, word) => `${pre}${SAME_CASE(word, 'завтра')}`);
+
 export const useHoroscope = (): Horoscope | null => {
   const [days, setDays] = useState<HoroscopeDay[]>(() => readCache()?.days ?? []);
   const [target, setTarget] = useState(pickTarget);
@@ -72,7 +79,10 @@ export const useHoroscope = (): Horoscope | null => {
 
   const day = days.find((d) => d.date === target.iso);
   if (!day || !day.signs.length) return null;
-  return { heading: target.evening ? 'Гороскоп на завтра:' : 'Гороскоп на сегодня:', signs: day.signs };
+  return {
+    heading: target.evening ? 'Гороскоп на завтра:' : 'Гороскоп на сегодня:',
+    signs: target.evening ? day.signs.map((s) => ({ ...s, text: toTomorrow(s.text) })) : day.signs,
+  };
 };
 
 export default useHoroscope;
