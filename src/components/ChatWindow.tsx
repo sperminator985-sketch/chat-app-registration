@@ -336,24 +336,24 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
                       'border-l-4 border-sky-400 bg-sky-400/25 px-2 py-1 [.day_&]:border-sky-600 [.day_&]:bg-sky-500/20',
                   )}
                 >
-                  <p className="chat-font flex flex-wrap items-baseline gap-x-1.5">
+                  <p className="chat-font break-words [overflow-wrap:anywhere]">
                     {m.private && (
                       <button
                         type="button"
                         onClick={() => setPrivateTo(m.peer)}
-                        className="font-mono text-[0.62rem] font-bold uppercase tracking-[0.1em] text-sky-200 hover:underline sm:text-[0.7rem] [.day_&]:text-sky-800"
+                        className="mr-1.5 inline font-mono text-[0.62rem] font-bold uppercase tracking-[0.1em] text-sky-200 hover:underline sm:text-[0.7rem] [.day_&]:text-sky-800"
                       >
                         {m.outgoing ? `лично → ${m.peer}` : `лично от ${m.peer}`}
                       </button>
                     )}
-                    <span className="font-mono text-[0.66rem] text-muted-foreground sm:text-[0.78rem]">[{m.time}]</span>
+                    <span className="mr-1.5 font-mono text-[0.66rem] text-muted-foreground sm:text-[0.78rem]">[{m.time}]</span>
                     <button
                       type="button"
                       onClick={() => user && m.nick !== user.nick && !busyNicks.has(m.nick) && setPrivateTo(m.nick)}
                       disabled={busyNicks.has(m.nick)}
                       title={busyNicks.has(m.nick) ? `${m.nick} сейчас в привате` : `Написать лично: ${m.nick}`}
                       className={cn(
-                        'text-[0.82rem] font-normal hover:underline sm:text-[0.92rem]',
+                        'mr-1.5 inline text-[0.82rem] font-normal hover:underline sm:text-[0.92rem]',
                         isStaffNick(m.nick) ? 'font-bold text-red-500 [.day_&]:text-red-600' : nickColorClass[m.color],
                         busyNicks.has(m.nick) && 'opacity-40 hover:no-underline',
                       )}
