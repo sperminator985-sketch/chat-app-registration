@@ -1,6 +1,9 @@
 import json
 import os
+import re
+import time
 import urllib.request
+import xml.etree.ElementTree as ET
 from concurrent.futures import ThreadPoolExecutor
 from datetime import date, datetime, timedelta, timezone
 
@@ -245,10 +248,64 @@ def from_open_meteo() -> tuple:
     )
 
 
+HORO_SOURCE = 'https://ignio.com/r/export/utf/xml/daily/com.xml'
+
+SIGNS = [
+    ('aries', 'Овен'), ('taurus', 'Телец'), ('gemini', 'Близнецы'), ('cancer', 'Рак'),
+    ('leo', 'Лев'), ('virgo', 'Дева'), ('libra', 'Весы'), ('scorpio', 'Скорпион'),
+    ('sagittarius', 'Стрелец'), ('capricorn', 'Козерог'), ('aquarius', 'Водолей'), ('pisces', 'Рыбы'),
+]
+
+SLOTS = ['yesterday', 'today', 'tomorrow', 'tomorrow02']
+
+_horo_cache = {'ts': 0.0, 'days': []}
+
+
+def _load_days() -> list:
+    req = urllib.request.Request(HORO_SOURCE, headers={'User-Agent': 'ObshagaChat/1.0'})
+    with urllib.request.urlopen(req, timeout=4) as r:
+        root = ET.fromstring(r.read())
+    date_el = root.find('date')
+    if date_el is None:
+        return []
+    days = []
+    for slot in SLOTS:
+        m = re.match(r'^(\d{2})\.(\d{2})\.(\d{4})$', date_el.get(slot, ''))
+        if not m:
+            continue
+        signs = []
+        for key, name in SIGNS:
+            text = re.sub(r'\s+', ' ', root.findtext(f'{key}/{slot}') or '').strip()
+            if text:
+                signs.append({'sign': name, 'text': text})
+        if signs:
+            days.append({'date': f'{m.group(3)}-{m.group(2)}-{m.group(1)}', 'signs': signs})
+    return days
+
+
+def horoscope_response() -> dict:
+    if not _horo_cache['days'] or time.time() - _horo_cache['ts'] > 3 * 3600:
+        try:
+            days = _load_days()
+            if days:
+                _horo_cache['days'] = days
+                _horo_cache['ts'] = time.time()
+        except Exception:
+            pass
+    return {
+        'statusCode': 200,
+        'headers': {**CORS, 'Cache-Control': 'public, max-age=1800'},
+        'body': json.dumps({'days': _horo_cache['days']}, ensure_ascii=False),
+    }
+
+
 def handler(event: dict, context) -> dict:
-    """Текущая температура в Томске для шапки сайта: сначала Яндекс.Погода, при сбое — резервный источник."""
+    """Температура в Томске для шапки сайта (Яндекс.Погода, при сбое — резервный источник); с ?action=horoscope — гороскоп по знакам для бегущей строки."""
     if event.get('httpMethod') == 'OPTIONS':
         return {'statusCode': 200, 'headers': CORS, 'body': ''}
+
+    if (event.get('queryStringParameters') or {}).get('action') == 'horoscope':
+        return horoscope_response()
 
     pool = ThreadPoolExecutor(max_workers=1)
     tomorrow_job = pool.submit(tomorrow_forecast)

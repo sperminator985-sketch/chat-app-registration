@@ -3,6 +3,7 @@ import { api, type HoroscopeDay } from '@/lib/api';
 
 const CACHE_KEY = 'obshaga-horoscope';
 const TTL = 3 * 60 * 60 * 1000;
+const CLOUD_URL = 'https://functions.poehali.dev/2c6a74d1-2f8a-481c-ac3e-49927c9727a9';
 
 const MONTHS = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'];
 
@@ -43,13 +44,20 @@ export const useHoroscope = (): HoroscopeLine[] => {
       const hasTarget = cached?.days.some((d) => d.date === pickTarget().iso);
       if (fresh && hasTarget) return;
 
+      const save = (list: HoroscopeDay[] | undefined) => {
+        if (!list?.length) throw new Error('empty');
+        setDays(list);
+        localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), days: list }));
+      };
+
       api
         .horoscope()
-        .then((res) => {
-          if (!res.days?.length) return;
-          setDays(res.days);
-          localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), days: res.days }));
-        })
+        .then((res) => save(res.days))
+        .catch(() =>
+          fetch(`${CLOUD_URL}?action=horoscope`)
+            .then((r) => r.json())
+            .then((res: { days?: HoroscopeDay[] }) => save(res.days)),
+        )
         .catch(() => undefined);
     };
 

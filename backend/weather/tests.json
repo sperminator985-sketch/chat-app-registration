@@ -5,6 +5,12 @@
       "method": "GET",
       "path": "/",
       "expectedStatus": 200
+    },
+    {
+      "name": "Гороскоп по знакам",
+      "method": "GET",
+      "path": "/?action=horoscope",
+      "expectedStatus": 200
     }
   ]
 }
