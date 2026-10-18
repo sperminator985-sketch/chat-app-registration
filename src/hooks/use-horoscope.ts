@@ -57,7 +57,7 @@ export const useHoroscope = (): HoroscopeLine[] => {
     const timer = window.setInterval(() => {
       setTarget((prev) => {
         const next = pickTarget();
-        return next.iso === prev.iso ? prev : next;
+        return next.iso === prev.iso && next.evening === prev.evening ? prev : next;
       });
       load();
     }, 60000);
