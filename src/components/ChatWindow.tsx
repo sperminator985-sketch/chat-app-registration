@@ -296,8 +296,9 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
                 </button>
                 <button
                   onClick={clearFeed}
+                  onTouchStart={() => {}}
                   title="Очистить поле сообщений"
-                  className="flex items-center gap-1.5 border-2 border-foreground/35 h-7 px-2.5 py-0 leading-none text-[0.72rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground transition-colors [@media(hover:hover)]:hover:border-secondary [@media(hover:hover)]:hover:text-secondary"
+                  className="flex active:border-secondary active:text-secondary [-webkit-tap-highlight-color:transparent] items-center gap-1.5 border-2 border-foreground/35 h-7 px-2.5 py-0 leading-none text-[0.72rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground transition-colors [@media(hover:hover)]:hover:border-secondary [@media(hover:hover)]:hover:text-secondary"
                 >
                   <Icon name="Eraser" size={14} />
                   <span className="hidden sm:inline md:hidden xl:inline">Очистить</span>
