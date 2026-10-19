@@ -264,7 +264,7 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
                   onClick={() => setWhoOpen((v) => !v)}
                   title="Кто в чате"
                   className={cn(
-                    'flex items-center gap-1.5 border-2 px-2.5 py-1 text-[0.72rem] font-semibold uppercase tracking-[0.1em] transition-colors lg:hidden',
+                    'flex items-center gap-1.5 border-2 h-7 px-2.5 py-0 leading-none text-[0.72rem] font-semibold uppercase tracking-[0.1em] transition-colors lg:hidden',
                     whoOpen
                       ? 'border-secondary bg-secondary text-secondary-foreground'
                       : 'border-foreground/35 text-muted-foreground hover:border-secondary',
@@ -276,7 +276,7 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
                 <button
                   onClick={() => setResidentsOpen(true)}
                   title="Кто зарегистрирован"
-                  className="flex items-center gap-1.5 border-2 border-foreground/35 px-2.5 py-1 text-[0.72rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground transition-colors hover:border-secondary hover:text-secondary"
+                  className="flex items-center gap-1.5 border-2 border-foreground/35 h-7 px-2.5 py-0 leading-none text-[0.72rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground transition-colors hover:border-secondary hover:text-secondary"
                 >
                   <Icon name="BookUser" size={14} />
                   <span className="hidden sm:inline md:hidden xl:inline">Жильцы</span>
@@ -285,7 +285,7 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
                   onClick={() => setOnlyPrivate((v) => !v)}
                   title="Показывать только личные сообщения"
                   className={cn(
-                    'flex items-center gap-1.5 border-2 px-2.5 py-1 text-[0.72rem] font-semibold uppercase tracking-[0.1em] transition-colors',
+                    'flex items-center gap-1.5 border-2 h-7 px-2.5 py-0 leading-none text-[0.72rem] font-semibold uppercase tracking-[0.1em] transition-colors',
                     onlyPrivate
                       ? 'border-sky-400 bg-sky-400 text-background'
                       : 'border-foreground/35 text-muted-foreground hover:border-sky-400 hover:text-sky-300',
@@ -297,7 +297,7 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
                 <button
                   onClick={clearFeed}
                   title="Очистить поле сообщений"
-                  className="flex items-center gap-1.5 border-2 border-foreground/35 px-2.5 py-1 text-[0.72rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground transition-colors hover:border-secondary hover:text-secondary"
+                  className="flex items-center gap-1.5 border-2 border-foreground/35 h-7 px-2.5 py-0 leading-none text-[0.72rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground transition-colors hover:border-secondary hover:text-secondary"
                 >
                   <Icon name="Eraser" size={14} />
                   <span className="hidden sm:inline md:hidden xl:inline">Очистить</span>
@@ -305,7 +305,7 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
                 <button
                   onClick={signOut}
                   title="Выйти из общаги"
-                  className="hidden items-center gap-1.5 border-2 border-foreground/35 px-2.5 py-1 text-[0.72rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground transition-colors hover:border-primary hover:text-primary md:flex"
+                  className="hidden items-center gap-1.5 border-2 border-foreground/35 h-7 px-2.5 py-0 leading-none text-[0.72rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground transition-colors hover:border-primary hover:text-primary md:flex"
                 >
                   <Icon name="LogOut" size={14} />
                   <span className="hidden sm:inline md:hidden xl:inline">Выйти</span>
