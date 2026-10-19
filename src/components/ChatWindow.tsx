@@ -276,7 +276,7 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
                 <button
                   onClick={() => setResidentsOpen(true)}
                   title="Кто зарегистрирован"
-                  className="flex items-center gap-1.5 border-2 border-foreground/35 h-7 px-2.5 py-0 leading-none text-[0.72rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground transition-colors hover:border-secondary hover:text-secondary"
+                  className="hidden items-center md:flex gap-1.5 border-2 border-foreground/35 h-7 px-2.5 py-0 leading-none text-[0.72rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground transition-colors hover:border-secondary hover:text-secondary"
                 >
                   <Icon name="BookUser" size={14} />
                   <span className="hidden sm:inline md:hidden xl:inline">Жильцы</span>
