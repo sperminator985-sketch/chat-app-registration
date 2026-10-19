@@ -539,17 +539,17 @@ const AdminPanel = () => {
     <div className="min-h-screen bg-background text-foreground">
       <header className="sticky top-0 z-50 border-b-2 border-foreground/35 bg-background/95 backdrop-blur-sm">
         <div className="relative mx-auto flex max-w-[1200px] flex-col gap-2 px-4 py-3 md:flex-row md:items-center md:gap-3 md:px-8 md:py-4">
-          <div className="relative flex items-center">
+          <div className="relative flex items-center md:[&>button]:flex">
             <button
               onClick={() => navigate('/')}
               title="Выход"
               aria-label="Выход"
-              className="relative z-10 flex items-center gap-1.5 border-2 border-foreground/35 px-2.5 py-1 text-[0.72rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground transition-colors hover:border-primary hover:text-primary"
+              className="relative z-10 hidden items-center gap-1.5 border-2 border-foreground/35 px-2.5 py-1 text-[0.72rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground transition-colors hover:border-primary hover:text-primary"
             >
               <Icon name="LogOut" size={14} />
-              <span className="hidden md:inline">Выйти</span>
+              <span>Выйти</span>
             </button>
-            <span className="pointer-events-none absolute left-1/2 -translate-x-1/2 whitespace-nowrap font-display text-[0.95rem] font-extrabold uppercase tracking-[0.04em] md:hidden">
+            <span className="pointer-events-none w-full whitespace-nowrap text-center font-display text-[0.95rem] font-extrabold uppercase tracking-[0.04em] md:hidden">
               Комендантская
             </span>
           </div>
@@ -557,6 +557,14 @@ const AdminPanel = () => {
             Комендантская
           </span>
           <div className="flex items-center justify-end gap-1 md:gap-2">
+            <button
+              onClick={() => navigate('/')}
+              title="Выход"
+              aria-label="Выход"
+              className="mr-auto flex items-center border-2 border-foreground/35 px-1.5 py-1.5 text-muted-foreground transition-colors hover:border-primary hover:text-primary md:hidden"
+            >
+              <Icon name="LogOut" size={13} />
+            </button>
             <button
               onClick={() => setTab('vault')}
               className={cn(
