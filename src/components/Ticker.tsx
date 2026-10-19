@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { CSSProperties } from 'react';
-import { useWeather, formatTemp, dayForecastText, tomorrowForecastText } from '@/hooks/use-weather';
+import { useWeather, formatTemp, dayForecastText, tomorrowForecastText, degreeWord } from '@/hooks/use-weather';
 import { useLiveStats } from '@/hooks/use-live-stats';
 import { useNews } from '@/hooks/use-news';
 import { useTickerPosts } from '@/hooks/use-ticker-posts';
@@ -91,7 +91,7 @@ const Ticker = () => {
       ? 'ОДЕВАЙТЕСЬ ПО ПОГОДЕ'
       : temp <= 0
         ? `ЗА ОКНОМ ${formatTemp(temp)}, ОДЕНЬТЕСЬ КАК ЛЮДИ`
-        : `ЗА ОКНОМ ${formatTemp(temp)} ГРАДУСОВ`,
+        : `ЗА ОКНОМ ${formatTemp(temp)} ${degreeWord(temp).toUpperCase()}`,
     dayForecastText(),
   ];
   const tomorrow = tomorrowForecastText();
