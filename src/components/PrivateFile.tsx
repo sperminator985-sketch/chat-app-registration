@@ -54,7 +54,33 @@ const PrivateVideo = ({ file, localUrl }: { file: ApiFile; localUrl?: string }) 
   );
 };
 
-const PrivateFile = ({ file, localUrl }: { file: ApiFile; localUrl?: string }) => {
+type Props = { file: ApiFile; localUrl?: string; gone?: boolean; receiving?: number | null };
+
+const PrivateFile = ({ file, localUrl, gone, receiving }: Props) => {
+  if (gone) {
+    return (
+      <div className="mt-1 flex w-fit max-w-full items-center gap-2 border-2 border-dashed border-foreground/25 px-3 py-2 text-[0.82rem] text-muted-foreground">
+        <Icon name="FileX" size={16} className="shrink-0" />
+        <span className="truncate">{file.name}</span>
+        <span className="shrink-0 font-mono text-[0.66rem]">не сохранён на этом устройстве</span>
+      </div>
+    );
+  }
+  if (receiving != null) {
+    return (
+      <div className="mt-1 w-fit max-w-full border-2 border-sky-400/60 px-3 py-2 text-[0.82rem] text-foreground">
+        <div className="flex items-center gap-2">
+          <Icon name="Download" size={16} className="shrink-0 animate-pulse text-sky-300" />
+          <span className="truncate">{file.name}</span>
+          <span className="shrink-0 font-mono text-[0.7rem] text-sky-300">{receiving}%</span>
+        </div>
+        <div className="mt-1.5 h-1 w-48 max-w-full bg-foreground/15">
+          <div className="h-full bg-sky-400 transition-[width] duration-200" style={{ width: `${receiving}%` }} />
+        </div>
+      </div>
+    );
+  }
+  if (!file.url) return null;
   if (file.type === 'image') {
     return (
       <a href={file.url} target="_blank" rel="noreferrer" className="mt-1 block w-fit">

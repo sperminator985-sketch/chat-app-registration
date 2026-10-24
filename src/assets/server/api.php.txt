@@ -2,8 +2,8 @@
 // Версия серверной части. При каждом изменении api.php поднимайте
 // последнюю цифру: 1.0.0 → 1.0.1 → 1.0.2 и так далее.
 // Проверить, что залито на хостинг: https://ваш-домен.ru/chat/api.php?action=version
-const API_VERSION = '1.0.10';
-const API_VERSION_NOTE = 'Приват не закрывается при свёрнутой вкладке';
+const API_VERSION = '1.0.11';
+const API_VERSION_NOTE = 'Переписка привата хранится на устройствах';
 
 ini_set('display_errors', '0');
 error_reporting(E_ALL & ~E_WARNING & ~E_NOTICE & ~E_DEPRECATED);
@@ -525,9 +525,60 @@ function privateExpire(): void
                AND answered_at < UTC_TIMESTAMP() - INTERVAL ? SECOND",
             [PRIVATE_ALIVE_SEC, PRIVATE_ALIVE_SEC, PRIVATE_ALIVE_SEC]
         );
+        privateSweep();
     } catch (Throwable $e) {
         // молча
     }
+}
+
+function privateSweep(): void
+{
+    static $done = false;
+    if ($done) {
+        return;
+    }
+    $done = true;
+    try {
+        $rows = db()->query(
+            "SELECT DISTINCT m.room_id FROM private_messages m
+             LEFT JOIN private_rooms p ON p.id = m.room_id
+             WHERE p.id IS NULL OR p.status <> 'active'
+             LIMIT 50"
+        )->fetchAll();
+        foreach ($rows as $r) {
+            dropPrivateFiles((int) $r['room_id']);
+            q('DELETE FROM private_messages WHERE room_id = ?', [(int) $r['room_id']]);
+        }
+        if (mt_rand(1, 30) !== 1) {
+            return;
+        }
+        $dir = __DIR__ . '/uploads';
+        foreach (glob($dir . '/priv-*') ?: [] as $path) {
+            if (is_file($path) && filemtime($path) < time() - 86400) {
+                $name = basename($path);
+                $used = one('SELECT id FROM private_messages WHERE file_url LIKE ? LIMIT 1', ['%/' . $name]);
+                if (!$used) {
+                    @unlink($path);
+                }
+            }
+        }
+    } catch (Throwable $e) {
+        // молча
+    }
+}
+
+function dropPrivateMessage(array $row): void
+{
+    if (!empty($row['file_url'])) {
+        $name = basename(parse_url((string) $row['file_url'], PHP_URL_PATH) ?: '');
+        if ($name !== '' && preg_match('/^priv-\d+-[a-f0-9]+\.[a-z0-9]+$/', $name)) {
+            $path = __DIR__ . '/uploads/' . $name;
+            if (is_file($path)) {
+                @unlink($path);
+            }
+        }
+    }
+    q('DELETE FROM private_messages WHERE id = ?', [(int) $row['id']]);
 }
 
 function privateBusyIds(): array
@@ -989,6 +1040,7 @@ function shapeMessage(array $r): array
         'text' => $r['text'],
         'cipher' => empty($r['cipher']) ? null : (string) $r['cipher'],
         'time' => fmtTime($r['created_at']),
+        'ts' => ((int) strtotime($r['created_at'] . ' UTC')) * 1000,
         'avatar' => (int) (array_key_exists('avatar', $r) ? $r['avatar'] : ($r['sender_avatar'] ?? 1)),
         'avatarUrl' => array_key_exists('avatar_url', $r) ? $r['avatar_url'] : ($r['sender_avatar_url'] ?? null),
         'file' => empty($r['file_url']) ? null : [
@@ -1494,6 +1546,7 @@ try {
             'color' => $user['color'],
             'text' => $text,
             'time' => fmtTime(),
+            'ts' => time() * 1000,
             'avatar' => $user['avatar'],
             'avatarUrl' => $user['avatarUrl'],
         ]]);
@@ -1868,6 +1921,7 @@ try {
             'text' => $text,
             'cipher' => $cipher !== '' ? $cipher : null,
             'time' => fmtTime(),
+            'ts' => time() * 1000,
             'avatar' => $user['avatar'],
             'avatarUrl' => $user['avatarUrl'],
         ]]);
@@ -2175,6 +2229,7 @@ try {
             'text' => $text,
             'cipher' => $cipher !== '' ? $cipher : null,
             'time' => fmtTime(),
+            'ts' => time() * 1000,
             'avatar' => $user['avatar'],
             'avatarUrl' => $user['avatarUrl'],
         ]]);
@@ -2257,10 +2312,41 @@ try {
             'text' => '',
             'cipher' => null,
             'time' => fmtTime(),
+            'ts' => time() * 1000,
             'avatar' => $user['avatar'],
             'avatarUrl' => $user['avatarUrl'],
             'file' => $file,
         ]]);
+    }
+
+    // --- Приват: собеседник сохранил сообщения у себя — убираем с сервера ---
+    if ($method === 'POST' && $action === 'private_ack') {
+        $user = requireUser();
+        if (!hasPrivateTables()) {
+            out(200, ['ok' => true, 'removed' => 0]);
+        }
+        $room = privateRoomOf($user['id']);
+        $ids = param('ids', []);
+        if (!$room || !is_array($ids)) {
+            out(200, ['ok' => true, 'removed' => 0]);
+        }
+        $ids = array_slice(array_values(array_unique(array_map('intval', $ids))), 0, 200);
+        $removed = 0;
+        foreach ($ids as $id) {
+            if ($id <= 0) {
+                continue;
+            }
+            $row = one(
+                'SELECT * FROM private_messages WHERE id = ? AND room_id = ? AND sender_id <> ?',
+                [$id, (int) $room['id'], $user['id']]
+            );
+            if ($row) {
+                dropPrivateMessage($row);
+                $removed++;
+            }
+        }
+        privateTouch($room, $user['id']);
+        out(200, ['ok' => true, 'removed' => $removed]);
     }
 
     // --- Приват: выйти из комнаты ---

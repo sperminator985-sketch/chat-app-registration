@@ -1,9 +1,9 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Icon from '@/components/ui/icon';
 import { cn } from '@/lib/utils';
 import { toast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/use-auth';
-import { api, ApiMessage, PRIVATE_FILE_MAX, uploadPrivateFile } from '@/lib/api';
+import { api, PRIVATE_FILE_MAX, uploadPrivateFile } from '@/lib/api';
 import { makeFastStart } from '@/lib/faststart';
 import { nickColorClass, staffNickClass, isStaffNick } from '@/data/chat';
 import { usePrivate } from '@/hooks/use-private';
@@ -11,6 +11,7 @@ import { useCrypto } from '@/hooks/use-crypto';
 import EmojiPicker from '@/components/EmojiPicker';
 import PrivateFile from '@/components/PrivateFile';
 import { playKnock } from '@/lib/notify-sound';
+import { usePrivateHistory } from '@/hooks/use-private-history';
 
 const FILE_ACCEPT =
   'image/jpeg,image/png,image/gif,image/webp,video/mp4,video/webm,video/quicktime,audio/*,.pdf,.txt,.zip,.rar,.doc,.docx,.xls,.xlsx,.ppt,.pptx';
@@ -22,7 +23,6 @@ const PrivateRoom = () => {
   const { enabled: cryptoOn, seal, reveal } = useCrypto();
   const [draft, setDraft] = useState('');
   const [sending, setSending] = useState(false);
-  const [plain, setPlain] = useState<Record<number, string>>({});
   const feedRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -30,37 +30,12 @@ const PrivateRoom = () => {
   const [progress, setProgress] = useState(0);
   const lastIncoming = useRef<number | null>(null);
   const typingSentAt = useRef(0);
-  const [localUrls, setLocalUrls] = useState<Record<number, string>>({});
-  const localUrlsRef = useRef(localUrls);
-  localUrlsRef.current = localUrls;
-
-  useEffect(() => {
-    if (active) return;
-    Object.values(localUrlsRef.current).forEach((u) => URL.revokeObjectURL(u));
-    setLocalUrls({});
-  }, [active]);
-
-  useEffect(
-    () => () => {
-      Object.values(localUrlsRef.current).forEach((u) => URL.revokeObjectURL(u));
-    },
-    [],
-  );
-
-  useEffect(() => {
-    let alive = true;
-    const run = async () => {
-      const next: Record<number, string> = {};
-      for (const m of messages) {
-        if (m.cipher) next[m.id] = await reveal(m.cipher);
-      }
-      if (alive) setPlain((prev) => ({ ...prev, ...next }));
-    };
-    if (messages.some((m) => m.cipher)) run();
-    return () => {
-      alive = false;
-    };
-  }, [messages, reveal]);
+  const { items, saveOwn, clear, hasHistory } = usePrivateHistory({
+    me: user?.nick,
+    peer: peer?.nick,
+    serverMessages: messages,
+    reveal,
+  });
 
   const stickBottom = useRef(true);
   const lastSeenId = useRef(0);
@@ -73,7 +48,7 @@ const PrivateRoom = () => {
   useEffect(() => {
     const el = feedRef.current;
     if (!el) return;
-    const last = messages.length ? messages[messages.length - 1] : null;
+    const last = items.length ? items[items.length - 1] : null;
     const lastId = last?.id ?? 0;
     const fresh = lastId !== lastSeenId.current;
     const mine = fresh && last?.nick === user?.nick;
@@ -82,7 +57,7 @@ const PrivateRoom = () => {
       el.scrollTop = el.scrollHeight;
       stickBottom.current = true;
     }
-  }, [messages, plain, user?.nick]);
+  }, [items, user?.nick]);
 
   useEffect(() => {
     if (!active) {
@@ -103,11 +78,6 @@ const PrivateRoom = () => {
     lastIncoming.current = lastId;
   }, [messages, user?.nick, active]);
 
-  const textOf = useCallback(
-    (m: ApiMessage) => (m.cipher ? (plain[m.id] ?? '🔒 расшифровываем…') : m.text),
-    [plain],
-  );
-
   const send = async (e: React.FormEvent) => {
     e.preventDefault();
     const text = draft.trim();
@@ -117,7 +87,7 @@ const PrivateRoom = () => {
       const cipher = cryptoOn ? await seal(peer.nick, text) : null;
       const res = await api.privateSend(cipher ? { cipher } : { text });
       const shown = cipher ? { ...res.message, cipher, text: '' } : res.message;
-      if (cipher) setPlain((prev) => ({ ...prev, [shown.id]: text }));
+      await saveOwn(shown, text);
       pushMessage(shown);
       setDraft('');
       typingSentAt.current = 0;
@@ -149,11 +119,7 @@ const PrivateRoom = () => {
     try {
       const ready = await makeFastStart(file);
       const res = await uploadPrivateFile(ready, setProgress);
-      const kind = res.message.file?.type;
-      if (kind === 'video' || kind === 'audio' || kind === 'image') {
-        const url = URL.createObjectURL(file);
-        setLocalUrls((prev) => ({ ...prev, [res.message.id]: url }));
-      }
+      await saveOwn(res.message, '', ready);
       pushMessage(res.message);
     } catch (err) {
       toast({
@@ -184,6 +150,21 @@ const PrivateRoom = () => {
               {cryptoOn ? 'зашифровано' : 'закрытая комната'}
             </span>
             <div className="ml-auto flex items-center gap-2">
+              {hasHistory && (
+                <button
+                  type="button"
+                  onClick={async () => {
+                    if (!window.confirm(`Стереть всю переписку с ${peer.nick} на этом устройстве? Восстановить будет нельзя.`)) return;
+                    await clear();
+                    toast({ title: 'История очищена', description: 'Переписка удалена с этого устройства' });
+                  }}
+                  title="Очистить историю на этом устройстве"
+                  className="flex items-center gap-1.5 border-2 border-foreground/35 px-2.5 py-1 text-[0.72rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground transition-colors hover:border-primary hover:text-primary"
+                >
+                  <Icon name="Trash2" size={14} />
+                  <span className="hidden sm:inline">Очистить</span>
+                </button>
+              )}
               <button
                 type="button"
                 onClick={leave}
@@ -200,7 +181,12 @@ const PrivateRoom = () => {
             onScroll={onFeedScroll}
             className="scrollbar-brut min-h-0 flex-1 space-y-1 overflow-y-auto overscroll-contain px-4 py-3 sm:px-5"
           >
-            {messages.map((m) => (
+            {hasHistory && (
+              <p className="pb-2 text-center font-mono text-[0.62rem] uppercase tracking-[0.08em] text-muted-foreground/70">
+                История хранится только на этом устройстве
+              </p>
+            )}
+            {items.map((m) => (
               <div key={m.id} className="animate-fade-in leading-[1.3]">
                 <p className="chat-font flex flex-wrap items-baseline gap-x-1.5">
                   <span className="font-mono text-[0.66rem] text-muted-foreground sm:text-[0.78rem]">[{m.time}]</span>
@@ -213,10 +199,12 @@ const PrivateRoom = () => {
                     &lt;{m.nick}&gt;
                   </span>
                   {!m.file && (
-                    <span className="text-[0.95rem] leading-[1.35] text-foreground sm:text-[0.94rem]">{textOf(m)}</span>
+                    <span className="text-[0.95rem] leading-[1.35] text-foreground sm:text-[0.94rem]">{m.text}</span>
                   )}
                 </p>
-                {m.file && <PrivateFile file={m.file} localUrl={localUrls[m.id]} />}
+                {m.file && (
+                  <PrivateFile file={m.file} gone={m.fileGone} receiving={m.receiving} />
+                )}
               </div>
             ))}
           </div>
