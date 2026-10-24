@@ -66,12 +66,22 @@ const Hero = () => {
               <span className="sr-only">ТОМСК НА СВЯЗИ</span>
               <span aria-hidden className="inline-flex items-center">
                 Т
-                <img
-                  src={theme === 'day' ? '/sun.png' : '/moon.png'}
-                  alt=""
-                  className="mx-[0.04em] inline-block h-[0.9em] w-[0.9em] select-none rounded-full object-contain"
-                  style={{ animation: `${theme === 'day' ? 'sun-glow' : 'moon-glow'} 7s ease-in-out infinite` }}
-                />
+                <span className="relative mx-[0.04em] inline-block h-[0.9em] w-[0.9em]">
+                  {(['moon', 'sun'] as const).map((body) => {
+                    const visible = (body === 'sun') === (theme === 'day');
+                    return (
+                      <img
+                        key={body}
+                        src={`/${body}.png`}
+                        alt=""
+                        className={`absolute inset-0 h-full w-full select-none rounded-full object-contain transition-all duration-700 ease-in-out ${
+                          visible ? 'rotate-0 scale-100 opacity-100' : `scale-50 opacity-0 ${body === 'sun' ? '-rotate-90' : 'rotate-90'}`
+                        }`}
+                        style={{ animation: `${body}-glow 7s ease-in-out infinite` }}
+                      />
+                    );
+                  })}
+                </span>
                 МСК НА СВЯЗИ
               </span>
             </span>
