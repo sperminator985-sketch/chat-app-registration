@@ -250,6 +250,9 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
 
             <div
               ref={feedRef}
+              onPointerDown={() => {
+                if (isTouchInput() && document.activeElement === inputRef.current) inputRef.current?.blur();
+              }}
               className="scrollbar-brut min-h-0 flex-1 space-y-1 overflow-y-auto overscroll-contain px-2 py-3 sm:px-5"
             >
               {!loaded && (
