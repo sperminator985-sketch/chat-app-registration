@@ -6,7 +6,7 @@ KEY=$(tr -d '\n' < scripts/.upload-key)
 VER=$(grep -m1 "export const API_VERSION" src/lib/api.ts | sed -E "s/.*'([^']+)'.*/\1/")
 OUT=/tmp/site-build
 rm -rf "$OUT" /tmp/chat-site.zip
-NODE_OPTIONS=--max-old-space-size=4096 npx vite build --outDir "$OUT" --emptyOutDir >/tmp/site-build.log 2>&1 || { tail -30 /tmp/site-build.log; exit 1; }
+NODE_OPTIONS=--max-old-space-size=4096 npx vite build --minify false --outDir "$OUT" --emptyOutDir >/tmp/site-build.log 2>&1 || { tail -30 /tmp/site-build.log; exit 1; }
 mkdir -p "$OUT/chat"
 cp src/assets/server/api.php.txt "$OUT/chat/api.php"
 ( cd "$OUT" && python3 -c "
