@@ -23,14 +23,12 @@ const ResidentsDialog = ({ open, onOpenChange, onCard, myNick }: Props) => {
   const [query, setQuery] = useState('');
   const [uni, setUni] = useState('all');
   const [onlyOnline, setOnlyOnline] = useState(false);
-  const [openNick, setOpenNick] = useState<string | null>(null);
   const { invitePeer, pendingNick } = usePrivate();
   const { startCall } = useCall();
 
   useEffect(() => {
     if (!open) return;
     let alive = true;
-    setOpenNick(null);
     setLoading(true);
     setError('');
     api
@@ -180,11 +178,12 @@ const ResidentsDialog = ({ open, onOpenChange, onCard, myNick }: Props) => {
             {filtered.map((r) => {
               const isMe = Boolean(myNick && r.nick === myNick);
               return (
-                <li key={r.nick} className={cn('px-3 py-2 sm:px-5', isMe && 'bg-muted/60')}>
+                <li key={r.nick} className={cn('flex items-center gap-1.5 px-3 py-2 sm:px-5', isMe && 'bg-muted/60')}>
                   <button
                     type="button"
-                    onClick={() => setOpenNick((v) => (v === r.nick ? null : r.nick))}
-                    className="block w-full py-1 text-left transition-colors hover:bg-muted/50"
+                    onClick={() => onCard(r as CardPerson)}
+                    title={isMe ? 'Моя анкета' : `Анкета: ${r.nick}`}
+                    className="block min-w-0 flex-1 py-1 text-left transition-colors hover:bg-muted/50"
                   >
                     <div className="flex items-start gap-2">
                       <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full border border-foreground/25 bg-muted">
@@ -223,58 +222,37 @@ const ResidentsDialog = ({ open, onOpenChange, onCard, myNick }: Props) => {
                           )}
                         </span>
                       </span>
-                      <Icon
-                        name="ChevronDown"
-                        size={14}
-                        className={cn(
-                          'mt-1.5 shrink-0 text-muted-foreground/60 transition-transform',
-                          openNick === r.nick && 'rotate-180',
-                        )}
-                      />
                     </div>
                   </button>
-                  {openNick === r.nick && (
-                  <div className="mt-2 flex flex-wrap items-center gap-1.5 pl-10">
-                    <button
-                      type="button"
-                      onClick={() => onCard(r as CardPerson)}
-                      title={isMe ? 'Моя анкета' : `Анкета: ${r.nick}`}
-                      aria-label={isMe ? 'Моя анкета' : `Анкета: ${r.nick}`}
-                      className="flex h-7 w-7 items-center justify-center border-2 border-foreground/30 text-muted-foreground transition-colors hover:border-secondary hover:text-secondary"
-                    >
-                      <Icon name="Info" size={13} />
-                    </button>
-                    {!isMe && (
-                      <>
-                        <button
-                          type="button"
-                          onClick={() => invitePeer(r.nick)}
-                          disabled={!r.online || pendingNick === r.nick}
-                          title={
-                            !r.online
-                              ? `${r.nick} не в сети`
-                              : pendingNick === r.nick
-                                ? 'Ждём ответа'
-                                : `Позвать в приват: ${r.nick}`
-                          }
-                          aria-label={`Позвать в приват: ${r.nick}`}
-                          className="flex h-7 w-7 items-center justify-center border-2 border-foreground/30 text-muted-foreground transition-colors hover:border-sky-400 hover:text-sky-300 disabled:cursor-not-allowed disabled:border-foreground/15 disabled:text-muted-foreground/30 disabled:hover:border-foreground/15 disabled:hover:text-muted-foreground/30"
-                        >
-                          <Icon name={pendingNick === r.nick ? 'Hourglass' : 'Lock'} size={13} />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => startCall(r.nick)}
-                          disabled={!r.online}
-                          title={r.online ? `Видеозвонок: ${r.nick}` : `${r.nick} не в сети`}
-                          aria-label={`Видеозвонок: ${r.nick}`}
-                          className="flex h-7 w-7 items-center justify-center border-2 border-foreground/30 text-muted-foreground transition-colors hover:border-secondary hover:text-secondary disabled:cursor-not-allowed disabled:border-foreground/15 disabled:text-muted-foreground/30 disabled:hover:border-foreground/15 disabled:hover:text-muted-foreground/30"
-                        >
-                          <Icon name="Video" size={13} />
-                        </button>
-                      </>
-                    )}
-                  </div>
+                  {!isMe && (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => invitePeer(r.nick)}
+                        disabled={!r.online || pendingNick === r.nick}
+                        title={
+                          !r.online
+                            ? `${r.nick} не в сети`
+                            : pendingNick === r.nick
+                              ? 'Ждём ответа'
+                              : `Позвать в приват: ${r.nick}`
+                        }
+                        aria-label={`Позвать в приват: ${r.nick}`}
+                        className="flex h-7 w-7 shrink-0 items-center justify-center border-2 border-foreground/30 text-muted-foreground transition-colors hover:border-sky-400 hover:text-sky-300 disabled:cursor-not-allowed disabled:border-foreground/15 disabled:text-muted-foreground/30 disabled:hover:border-foreground/15 disabled:hover:text-muted-foreground/30"
+                      >
+                        <Icon name={pendingNick === r.nick ? 'Hourglass' : 'Lock'} size={13} />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => startCall(r.nick)}
+                        disabled={!r.online}
+                        title={r.online ? `Видеозвонок: ${r.nick}` : `${r.nick} не в сети`}
+                        aria-label={`Видеозвонок: ${r.nick}`}
+                        className="flex h-7 w-7 shrink-0 items-center justify-center border-2 border-foreground/30 text-muted-foreground transition-colors hover:border-secondary hover:text-secondary disabled:cursor-not-allowed disabled:border-foreground/15 disabled:text-muted-foreground/30 disabled:hover:border-foreground/15 disabled:hover:text-muted-foreground/30"
+                      >
+                        <Icon name="Video" size={13} />
+                      </button>
+                    </>
                   )}
                 </li>
               );
