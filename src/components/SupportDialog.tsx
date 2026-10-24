@@ -88,21 +88,17 @@ const SupportDialog = () => {
           if (!v) setTimeout(reset, 200);
         }}
       >
-        <DialogContent className="max-h-[92vh] max-w-[540px] overflow-y-auto border-2 border-foreground/40 bg-card p-0 text-card-foreground [&>button]:hidden">
-          <div className="flex items-stretch border-b-2 border-foreground/35 bg-secondary text-secondary-foreground">
-            <div className="m-2 w-9 shrink-0" aria-hidden />
-            <div className="flex flex-1 items-center justify-center gap-2.5 px-5 py-3.5">
-              <Icon name="Mail" size={18} className="shrink-0" />
-              <DialogTitle className="font-display text-[0.95rem] font-extrabold uppercase tracking-[0.06em]">
-                Письмо в поддержку
-              </DialogTitle>
-            </div>
+        <DialogContent className="max-h-[92vh] max-w-[520px] overflow-y-auto border-2 border-foreground/40 bg-card p-0 text-card-foreground [&>button]:hidden">
+          <div className="sticky top-0 z-20 flex border-b-2 border-foreground/35 bg-card">
+            <DialogTitle className="flex-1 bg-secondary px-4 py-4 text-center font-display text-sm font-extrabold uppercase tracking-[0.08em] text-secondary-foreground sm:py-2.5">
+              Письмо в поддержку
+            </DialogTitle>
             <button
               type="button"
               onClick={() => setOpen(false)}
               aria-label="Закрыть"
               title="Закрыть"
-              className="m-2 flex w-9 shrink-0 items-center justify-center support-close"
+              className="flex w-14 shrink-0 items-center justify-center border-l-2 border-foreground/35 text-muted-foreground transition-colors hover:bg-foreground/10 hover:text-foreground"
             >
               <Icon name="X" size={20} />
             </button>
