@@ -61,7 +61,17 @@ const Hero = () => {
         >
           <h1 className="relative z-10 text-center font-extrabold uppercase tracking-[-0.035em] md:text-left">
             <span className="block whitespace-nowrap text-[clamp(1.6rem,4.6vw,4.4rem)] leading-[.92] tracking-[-0.03em] text-foreground text-stroke-plate">
-              ТОМСК НА СВЯЗИ
+              <span className="sr-only">ТОМСК НА СВЯЗИ</span>
+              <span aria-hidden className="inline-flex items-center">
+                Т
+                <img
+                  src="/moon.png"
+                  alt=""
+                  className="mx-[0.03em] inline-block h-[0.74em] w-[0.74em] select-none rounded-full object-contain"
+                  style={{ animation: 'moon-glow 7s ease-in-out infinite' }}
+                />
+                МСК НА СВЯЗИ
+              </span>
             </span>
           </h1>
         </div>
