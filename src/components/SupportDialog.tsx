@@ -88,7 +88,7 @@ const SupportDialog = () => {
           if (!v) setTimeout(reset, 200);
         }}
       >
-        <DialogContent className="top-[4vh] max-h-[92vh] max-w-[540px] translate-y-0 overflow-y-auto border-2 border-foreground/40 bg-card p-0 text-card-foreground [&>button]:hidden">
+        <DialogContent className="max-h-[92vh] max-w-[540px] overflow-y-auto border-2 border-foreground/40 bg-card p-0 text-card-foreground [&>button]:hidden">
           <div className="flex items-stretch border-b-2 border-foreground/35 bg-secondary text-secondary-foreground">
             <div className="flex flex-1 items-center justify-center gap-2.5 px-5 py-3.5">
               <Icon name="Mail" size={18} className="shrink-0" />
