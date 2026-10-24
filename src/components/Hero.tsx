@@ -1,5 +1,4 @@
 import Facade from '@/components/Facade';
-import Moon from '@/components/Moon';
 import { useLiveStats } from '@/hooks/use-live-stats';
 import { rooms } from '@/data/chat';
 
@@ -61,7 +60,6 @@ const Hero = () => {
           style={{ animationDelay: '.18s' }}
         >
           <h1 className="relative z-10 text-center font-extrabold uppercase tracking-[-0.035em] md:text-left">
-            <Moon className="left-[-5cm] top-1/2 hidden h-[64px] w-[64px] -translate-y-1/2 lg:block" />
             <span className="block whitespace-nowrap text-[clamp(1.6rem,4.6vw,4.4rem)] leading-[.92] tracking-[-0.03em] text-foreground text-stroke-plate">
               ТОМСК НА СВЯЗИ
             </span>

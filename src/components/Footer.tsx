@@ -10,7 +10,7 @@ const Footer = () => (
         Все права защищены.
       </span>
 
-      <div className="order-2 flex shrink-0 flex-col items-center gap-1 text-center sm:order-none">
+      <div className="order-2 hidden shrink-0 lg:flex flex-col items-center gap-1 text-center sm:order-none">
         <Link
           to="/privacy"
           className="underline underline-offset-4 transition-colors hover:text-secondary"

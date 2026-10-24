@@ -90,7 +90,7 @@ const Ticker = () => {
     temp === null
       ? 'ОДЕВАЙТЕСЬ ПО ПОГОДЕ'
       : temp <= 0
-        ? `ЗА ОКНОМ ${formatTemp(temp)}, ОДЕНЬТЕСЬ КАК ЛЮДИ`
+        ? `ЗА ОКНОМ ${formatTemp(temp)} ${degreeWord(temp).toUpperCase()}, ОДЕНЬТЕСЬ КАК ЛЮДИ`
         : `ЗА ОКНОМ ${formatTemp(temp)} ${degreeWord(temp).toUpperCase()}`,
     dayForecastText(),
   ];
