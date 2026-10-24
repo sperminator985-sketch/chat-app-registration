@@ -7,7 +7,6 @@ import { api, API_VERSION, type AdminMessage, type AdminTickerPost, type AdminUs
 import { isStaffNick, nickColorClass, rooms, staffNickClass } from '@/data/chat';
 import { useToast } from '@/hooks/use-toast';
 import { isPageVisible } from '@/hooks/use-polling';
-import VaultPanel from '@/components/VaultPanel';
 import CallServerCheck from '@/components/CallServerCheck';
 import CallMaintenance from '@/components/CallMaintenance';
 import { downloadApiZip, downloadFullZip, downloadFreshBuild } from '@/lib/server-files';
@@ -669,9 +668,7 @@ const AdminPanel = () => {
             </button>
           )}
         </div>
-        {tab === 'vault' ? (
-          <VaultPanel />
-        ) : tab === 'security' ? (
+        {tab === 'vault' ? null : tab === 'security' ? (
           <div className="space-y-3">
             <div className="flex flex-wrap items-center justify-between gap-2 border-2 border-foreground/35 bg-card px-4 py-3">
               <p className="text-[0.85rem] leading-snug text-muted-foreground">
