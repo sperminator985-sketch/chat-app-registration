@@ -2,6 +2,10 @@ import Facade from '@/components/Facade';
 import { useLiveStats } from '@/hooks/use-live-stats';
 import { rooms } from '@/data/chat';
 import { useTheme } from '@/hooks/use-theme';
+import moonImg from '@/assets/moon.png';
+import sunImg from '@/assets/sun.png';
+
+const bodies = { moon: moonImg, sun: sunImg };
 
 const windows = [1, 0, 1, 1, 1, 1, 0, 0, 1];
 
@@ -72,7 +76,7 @@ const Hero = () => {
                     return (
                       <img
                         key={body}
-                        src={`/${body}.png`}
+                        src={bodies[body]}
                         alt=""
                         className={`absolute inset-0 h-full w-full select-none rounded-full object-contain transition-all duration-700 ease-in-out ${
                           visible ? 'rotate-0 scale-100 opacity-100' : `scale-50 opacity-0 ${body === 'sun' ? '-rotate-90' : 'rotate-90'}`
