@@ -397,15 +397,6 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
                         </span>
                       ) : null}
                     </button>
-                    <button
-                      type="button"
-                      onClick={() => setCardPerson(u as CardPerson)}
-                      title={isMe ? 'Моя анкета' : `Анкета: ${u.nick}`}
-                      aria-label={isMe ? 'Моя анкета' : `Анкета: ${u.nick}`}
-                      className="flex h-7 w-7 shrink-0 items-center justify-center border-2 border-foreground/30 text-muted-foreground transition-colors hover:border-secondary hover:text-secondary"
-                    >
-                      <Icon name="Info" size={13} />
-                    </button>
                     {!isMe && (
                       <>
                       <button
