@@ -26,7 +26,11 @@ const PrivateInvite = () => {
 
   return (
     <Dialog open={Boolean(invite)} onOpenChange={(open) => !open && answer(false)}>
-      <DialogContent className="max-w-[420px] border-2 border-sky-400 bg-background p-0 [&>button]:hidden">
+      <DialogContent
+        onInteractOutside={(e) => e.preventDefault()}
+        onEscapeKeyDown={(e) => e.preventDefault()}
+        className="max-w-[420px] border-2 border-sky-400 bg-background p-0 [&>button]:hidden"
+      >
         <div className="flex items-center justify-center gap-3 border-b-2 border-sky-400 bg-sky-400/10 px-5 py-4">
           <Icon name="Lock" size={18} className="shrink-0 text-sky-300" />
           <p className="font-display text-lg font-extrabold uppercase leading-none tracking-[-0.02em]">
