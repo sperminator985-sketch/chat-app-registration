@@ -3,7 +3,7 @@ import Icon from '@/components/ui/icon';
 import { cn } from '@/lib/utils';
 import { toast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/use-auth';
-import { api, ApiMessage } from '@/lib/api';
+import { api, ApiMessage, PRIVATE_FILE_MAX, uploadPrivateFile } from '@/lib/api';
 import { nickColorClass, staffNickClass, isStaffNick } from '@/data/chat';
 import { usePrivate } from '@/hooks/use-private';
 import { useCrypto } from '@/hooks/use-crypto';
@@ -11,17 +11,9 @@ import EmojiPicker from '@/components/EmojiPicker';
 import PrivateFile from '@/components/PrivateFile';
 import { playKnock } from '@/lib/notify-sound';
 
-const FILE_MAX = 5 * 1024 * 1024;
 const FILE_ACCEPT =
   'image/jpeg,image/png,image/gif,image/webp,video/mp4,video/webm,video/quicktime,audio/*,.pdf,.txt,.zip,.rar,.doc,.docx,.xls,.xlsx,.ppt,.pptx';
 
-const readAsDataUrl = (file: File) =>
-  new Promise<string>((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(String(reader.result));
-    reader.onerror = () => reject(new Error('Не получилось прочитать файл'));
-    reader.readAsDataURL(file);
-  });
 
 const PrivateRoom = () => {
   const { user } = useAuth();
@@ -34,6 +26,7 @@ const PrivateRoom = () => {
   const inputRef = useRef<HTMLInputElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
+  const [progress, setProgress] = useState(0);
   const lastIncoming = useRef<number | null>(null);
   const typingSentAt = useRef(0);
 
@@ -100,15 +93,20 @@ const PrivateRoom = () => {
   };
 
   const sendFile = async (file: File) => {
+    if (fileRef.current) fileRef.current.value = '';
     if (!peer || uploading) return;
-    if (file.size > FILE_MAX) {
-      toast({ title: 'Файл слишком большой', description: 'Можно отправить файл до 5 МБ', variant: 'destructive' });
+    if (file.size > PRIVATE_FILE_MAX) {
+      toast({
+        title: 'Файл слишком большой',
+        description: `Файлы можно пересылать размером до 100 МБ. Этот весит ${(file.size / 1024 / 1024).toFixed(0)} МБ`,
+        variant: 'destructive',
+      });
       return;
     }
     setUploading(true);
+    setProgress(0);
     try {
-      const data = await readAsDataUrl(file);
-      const res = await api.privateSend({ file: data, fileName: file.name });
+      const res = await uploadPrivateFile(file, setProgress);
       pushMessage(res.message);
     } catch (err) {
       toast({
@@ -118,7 +116,7 @@ const PrivateRoom = () => {
       });
     } finally {
       setUploading(false);
-      if (fileRef.current) fileRef.current.value = '';
+      setProgress(0);
     }
   };
 
@@ -217,11 +215,26 @@ const PrivateRoom = () => {
                 type="button"
                 onClick={() => fileRef.current?.click()}
                 disabled={uploading || !user}
-                title="Отправить фото или файл (до 5 МБ)"
-                aria-label="Прикрепить файл"
-                className="flex h-9 w-9 shrink-0 items-center justify-center border-2 border-foreground/35 text-muted-foreground transition-colors hover:border-secondary hover:text-secondary disabled:opacity-60"
+                title={uploading ? `Загрузка: ${progress}%` : 'Отправить фото или файл (до 100 МБ)'}
+                aria-label={uploading ? `Загрузка ${progress}%` : 'Прикрепить файл'}
+                className={cn(
+                  'relative flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden border-2 transition-colors disabled:cursor-wait',
+                  uploading
+                    ? 'border-sky-400 text-foreground'
+                    : 'border-foreground/35 text-muted-foreground hover:border-secondary hover:text-secondary disabled:opacity-60',
+                )}
               >
-                <Icon name={uploading ? 'Loader2' : 'Paperclip'} size={18} className={uploading ? 'animate-spin' : undefined} />
+                {uploading ? (
+                  <>
+                    <span
+                      className="absolute inset-x-0 bottom-0 bg-sky-400/35 transition-[height] duration-200"
+                      style={{ height: `${progress}%` }}
+                    />
+                    <span className="relative font-mono text-[0.62rem] font-bold leading-none">{progress}%</span>
+                  </>
+                ) : (
+                  <Icon name="Paperclip" size={18} />
+                )}
               </button>
               <EmojiPicker onPick={(em) => setDraft((prev) => (prev + em).slice(0, 480))} />
               <button

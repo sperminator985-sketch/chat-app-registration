@@ -8,7 +8,7 @@ const API_URL = 'https://chat-tom.ru/chat/api.php';
 // Версия api.php, которую ожидает этот сайт. Должна совпадать с той,
 // что залита на хостинг — иначе в комендантской загорится красная метка.
 // Нумерация: 1.0.0 → 1.0.1 → 1.0.2 и так далее.
-export const API_VERSION = '1.0.8';
+export const API_VERSION = '1.0.9';
 const TOKEN_KEY = 'obshaga_token';
 
 export type ApiUser = {
@@ -352,6 +352,41 @@ const request = async <T>(action: string, options: { method?: string; body?: unk
   return data as T;
 };
 
+export const PRIVATE_FILE_MAX = 100 * 1024 * 1024;
+
+export const uploadPrivateFile = (file: File, onProgress: (percent: number) => void) =>
+  new Promise<{ message: ApiMessage }>((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', `${API_URL}?action=private_file&_=${Date.now()}`);
+    xhr.setRequestHeader('X-Auth-Token', getToken());
+    xhr.upload.onprogress = (e) => {
+      if (e.lengthComputable) onProgress(Math.min(99, Math.round((e.loaded / e.total) * 100)));
+    };
+    xhr.onload = () => {
+      let data: { error?: string; message?: ApiMessage } | null = null;
+      try {
+        data = JSON.parse(xhr.responseText);
+      } catch {
+        data = null;
+      }
+      if (xhr.status === 413 && !data?.error) {
+        reject(new Error('Сервер не принял такой большой файл — проверьте настройки PHP'));
+        return;
+      }
+      if (xhr.status >= 200 && xhr.status < 300 && data?.message) {
+        onProgress(100);
+        resolve({ message: data.message });
+        return;
+      }
+      reject(new Error(data?.error || 'Файл не загрузился, попробуй ещё раз'));
+    };
+    xhr.onerror = () => reject(new Error('Связь оборвалась во время загрузки'));
+    xhr.ontimeout = () => reject(new Error('Загрузка шла слишком долго'));
+    const form = new FormData();
+    form.append('file', file, file.name);
+    xhr.send(form);
+  });
+
 export const api = {
   feed: (room: string, here = false) =>
     request<FeedResponse>('feed', { query: `&room=${room}${here ? '&here=1' : ''}` }),
@@ -471,7 +506,7 @@ export const api = {
     request<{ ok: boolean }>('support_mail', { method: 'POST', body }),
   privateState: () => request<PrivateState>('private_state'),
   privateTyping: () => request<{ ok: boolean }>('private_typing', { method: 'POST' }),
-  privateSend: (body: { text?: string; cipher?: string; file?: string; fileName?: string }) =>
+  privateSend: (body: { text?: string; cipher?: string }) =>
     request<{ message: ApiMessage }>('private_send', { method: 'POST', body }),
   privateLeave: () => request<{ ok: boolean }>('private_leave', { method: 'POST' }),
 };

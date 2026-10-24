@@ -2,8 +2,8 @@
 // Версия серверной части. При каждом изменении api.php поднимайте
 // последнюю цифру: 1.0.0 → 1.0.1 → 1.0.2 и так далее.
 // Проверить, что залито на хостинг: https://ваш-домен.ru/chat/api.php?action=version
-const API_VERSION = '1.0.8';
-const API_VERSION_NOTE = 'Гороскоп в бегущей строке';
+const API_VERSION = '1.0.9';
+const API_VERSION_NOTE = 'Файлы до 100 МБ в привате';
 
 ini_set('display_errors', '0');
 error_reporting(E_ALL & ~E_WARNING & ~E_NOTICE & ~E_DEPRECATED);
@@ -473,7 +473,7 @@ function hasPrivateFileColumns(): bool
     return $ok;
 }
 
-const PRIVATE_FILE_MAX = 5 * 1024 * 1024;
+const PRIVATE_FILE_MAX = 100 * 1024 * 1024;
 const PRIVATE_FILE_EXT = [
     'jpg' => 'image', 'jpeg' => 'image', 'png' => 'image', 'gif' => 'image', 'webp' => 'image',
     'mp4' => 'video', 'webm' => 'video', 'mov' => 'video',
@@ -2145,71 +2145,23 @@ try {
         }
         $cipher = (string) param('cipher', '');
         $text = mb_substr(trim((string) param('text', '')), 0, 500);
-        $file = null;
-        if ($fileData = param('file')) {
-            if (!hasPrivateFileColumns()) {
-                fail(500, 'Отправка файлов на сервере недоступна');
-            }
-            $origName = mb_substr(trim(basename((string) param('fileName', 'файл'))), 0, 160);
-            $ext = strtolower(pathinfo($origName, PATHINFO_EXTENSION));
-            if (!isset(PRIVATE_FILE_EXT[$ext])) {
-                fail(400, 'Такой тип файла отправить нельзя');
-            }
-            [$head, $payload] = array_pad(explode(',', (string) $fileData, 2), 2, null);
-            $raw = base64_decode($payload ?? $head, true);
-            if ($raw === false || $raw === '') {
-                fail(400, 'Не получилось прочитать файл');
-            }
-            if (strlen($raw) > PRIVATE_FILE_MAX) {
-                fail(400, 'Файл тяжелее 5 МБ');
-            }
-            $dir = __DIR__ . '/uploads';
-            if (!is_dir($dir)) {
-                @mkdir($dir, 0755, true);
-            }
-            $name = 'priv-' . (int) $room['id'] . '-' . bin2hex(random_bytes(8)) . '.' . $ext;
-            if (@file_put_contents($dir . '/' . $name, $raw) === false) {
-                fail(500, 'Папка uploads недоступна для записи');
-            }
-            $file = [
-                'url' => rtrim(cfg()['base_url'], '/') . '/uploads/' . $name,
-                'name' => $origName !== '' ? $origName : $name,
-                'type' => PRIVATE_FILE_EXT[$ext],
-                'size' => strlen($raw),
-            ];
-            $cipher = '';
-        }
         if ($cipher !== '') {
             if (mb_strlen($cipher) > 20000) {
                 fail(400, 'Сообщение слишком длинное');
             }
             $text = '';
-        } elseif ($text === '' && !$file) {
+        } elseif ($text === '') {
             fail(400, 'Пустое сообщение');
         }
-        if ($file) {
-            q(
-                'INSERT INTO private_messages
-                 (room_id, sender_id, sender_nick, sender_color, text, cipher, sender_avatar, sender_avatar_url,
-                  file_url, file_name, file_type, file_size, created_at)
-                 VALUES (?, ?, ?, ?, ?, NULL, ?, ?, ?, ?, ?, ?, UTC_TIMESTAMP())',
-                [
-                    (int) $room['id'], $user['id'], $user['nick'], $user['color'],
-                    $text, $user['avatar'], $user['avatarUrl'],
-                    $file['url'], $file['name'], $file['type'], $file['size'],
-                ]
-            );
-        } else {
-            q(
-                'INSERT INTO private_messages
-                 (room_id, sender_id, sender_nick, sender_color, text, cipher, sender_avatar, sender_avatar_url, created_at)
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, UTC_TIMESTAMP())',
-                [
-                    (int) $room['id'], $user['id'], $user['nick'], $user['color'],
-                    $text, $cipher !== '' ? $cipher : null, $user['avatar'], $user['avatarUrl'],
-                ]
-            );
-        }
+        q(
+            'INSERT INTO private_messages
+             (room_id, sender_id, sender_nick, sender_color, text, cipher, sender_avatar, sender_avatar_url, created_at)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, UTC_TIMESTAMP())',
+            [
+                (int) $room['id'], $user['id'], $user['nick'], $user['color'],
+                $text, $cipher !== '' ? $cipher : null, $user['avatar'], $user['avatarUrl'],
+            ]
+        );
         $id = (int) db()->lastInsertId();
         privateTouch($room, $user['id']);
         if (hasTypingColumns()) {
@@ -2222,6 +2174,88 @@ try {
             'color' => $user['color'],
             'text' => $text,
             'cipher' => $cipher !== '' ? $cipher : null,
+            'time' => fmtTime(),
+            'avatar' => $user['avatar'],
+            'avatarUrl' => $user['avatarUrl'],
+        ]]);
+    }
+
+    // --- Приват: отправить файл (обычная загрузка, до 100 МБ) ---
+    if ($method === 'POST' && $action === 'private_file') {
+        $user = requireUser('Сначала займи ник');
+        $maxMb = (int) (PRIVATE_FILE_MAX / 1024 / 1024);
+        $contentLen = (int) ($_SERVER['CONTENT_LENGTH'] ?? 0);
+        if ($contentLen > PRIVATE_FILE_MAX + 1024 * 1024) {
+            fail(413, "Файлы можно пересылать размером до {$maxMb} МБ");
+        }
+        if (empty($_FILES['file']) && $contentLen > 0) {
+            fail(413, 'Сервер не принял файл: увеличьте upload_max_filesize и post_max_size в настройках PHP');
+        }
+        if (!hasPrivateTables() || !hasPrivateFileColumns()) {
+            fail(500, 'Отправка файлов на сервере недоступна');
+        }
+        privateExpire();
+        $room = privateRoomOf($user['id']);
+        if (!$room) {
+            fail(404, 'Приватная комната закрыта');
+        }
+        $up = $_FILES['file'] ?? null;
+        if (!$up || is_array($up['error'])) {
+            fail(400, 'Файл не получен');
+        }
+        $err = (int) $up['error'];
+        if ($err === UPLOAD_ERR_INI_SIZE || $err === UPLOAD_ERR_FORM_SIZE) {
+            fail(413, 'Сервер не принял файл: увеличьте upload_max_filesize и post_max_size в настройках PHP');
+        }
+        if ($err !== UPLOAD_ERR_OK || !is_uploaded_file($up['tmp_name'])) {
+            fail(400, 'Файл загрузился не полностью, попробуй ещё раз');
+        }
+        $size = (int) $up['size'];
+        if ($size <= 0) {
+            fail(400, 'Пустой файл');
+        }
+        if ($size > PRIVATE_FILE_MAX) {
+            fail(413, "Файлы можно пересылать размером до {$maxMb} МБ");
+        }
+        $origName = mb_substr(trim(basename((string) $up['name'])), 0, 160);
+        $ext = strtolower(pathinfo($origName, PATHINFO_EXTENSION));
+        if (!isset(PRIVATE_FILE_EXT[$ext])) {
+            fail(400, 'Такой тип файла отправить нельзя');
+        }
+        $dir = __DIR__ . '/uploads';
+        if (!is_dir($dir)) {
+            @mkdir($dir, 0755, true);
+        }
+        $name = 'priv-' . (int) $room['id'] . '-' . bin2hex(random_bytes(8)) . '.' . $ext;
+        if (!@move_uploaded_file($up['tmp_name'], $dir . '/' . $name)) {
+            fail(500, 'Папка uploads недоступна для записи');
+        }
+        $file = [
+            'url' => rtrim(cfg()['base_url'], '/') . '/uploads/' . $name,
+            'name' => $origName !== '' ? $origName : $name,
+            'type' => PRIVATE_FILE_EXT[$ext],
+            'size' => $size,
+        ];
+        q(
+            'INSERT INTO private_messages
+             (room_id, sender_id, sender_nick, sender_color, text, cipher, sender_avatar, sender_avatar_url,
+              file_url, file_name, file_type, file_size, created_at)
+             VALUES (?, ?, ?, ?, ?, NULL, ?, ?, ?, ?, ?, ?, UTC_TIMESTAMP())',
+            [
+                (int) $room['id'], $user['id'], $user['nick'], $user['color'],
+                '', $user['avatar'], $user['avatarUrl'],
+                $file['url'], $file['name'], $file['type'], $file['size'],
+            ]
+        );
+        $id = (int) db()->lastInsertId();
+        privateTouch($room, $user['id']);
+        touch_user($user['id']);
+        out(200, ['message' => [
+            'id' => $id,
+            'nick' => $user['nick'],
+            'color' => $user['color'],
+            'text' => '',
+            'cipher' => null,
             'time' => fmtTime(),
             'avatar' => $user['avatar'],
             'avatarUrl' => $user['avatarUrl'],
