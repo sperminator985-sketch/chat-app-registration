@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { isTouchInput } from '@/lib/touch';
 import Icon from '@/components/ui/icon';
 import { cn } from '@/lib/utils';
 import { usePolling } from '@/hooks/use-polling';
@@ -110,7 +111,7 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
       openAuth('register');
       return;
     }
-    const isTouch = window.matchMedia('(hover: none), (pointer: coarse)').matches;
+    const isTouch = isTouchInput();
     const afterSend = () => {
       setDraft('');
       if (isTouch) inputRef.current?.blur();

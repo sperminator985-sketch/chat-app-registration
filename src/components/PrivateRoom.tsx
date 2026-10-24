@@ -5,6 +5,7 @@ import { toast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/use-auth';
 import { api, PRIVATE_FILE_MAX, uploadPrivateFile } from '@/lib/api';
 import { makeFastStart } from '@/lib/faststart';
+import { isTouchInput } from '@/lib/touch';
 import { nickColorClass, staffNickClass, isStaffNick } from '@/data/chat';
 import { usePrivate } from '@/hooks/use-private';
 import { useCrypto } from '@/hooks/use-crypto';
@@ -16,9 +17,6 @@ import { usePrivateHistory } from '@/hooks/use-private-history';
 const FILE_ACCEPT =
   'image/jpeg,image/png,image/gif,image/webp,video/mp4,video/webm,video/quicktime,audio/*,.pdf,.txt,.zip,.rar,.doc,.docx,.xls,.xlsx,.ppt,.pptx';
 
-
-const isTouch = () =>
-  typeof window !== 'undefined' && window.matchMedia('(hover: none), (pointer: coarse)').matches;
 
 const PrivateRoom = () => {
   const { user } = useAuth();
@@ -94,7 +92,7 @@ const PrivateRoom = () => {
       pushMessage(shown);
       setDraft('');
       typingSentAt.current = 0;
-      if (isTouch()) inputRef.current?.blur();
+      if (isTouchInput()) inputRef.current?.blur();
       else inputRef.current?.focus();
     } catch (err) {
       toast({
@@ -184,7 +182,7 @@ const PrivateRoom = () => {
             ref={feedRef}
             onScroll={onFeedScroll}
             onPointerDown={() => {
-              if (isTouch() && document.activeElement === inputRef.current) inputRef.current?.blur();
+              if (isTouchInput() && document.activeElement === inputRef.current) inputRef.current?.blur();
             }}
             className="scrollbar-brut min-h-0 flex-1 space-y-1 overflow-y-auto overscroll-contain px-4 py-3 sm:px-5"
           >
