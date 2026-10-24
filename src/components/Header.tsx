@@ -417,7 +417,7 @@ const Header = ({ onProfile }: HeaderProps) => {
               {themeLabel}
             </button>
             {theme === 'day' && (
-              <div className="grid grid-cols-4 gap-2">
+              <div className="grid grid-cols-3 gap-2">
                 {PALETTES.map((p) => (
                   <button
                     key={p.id}

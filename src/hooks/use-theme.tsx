@@ -1,13 +1,15 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 
 type Theme = 'night' | 'day';
-export type Palette = 'sky' | 'sunset' | 'mint' | 'sand';
+export type Palette = 'sky' | 'sunset' | 'mint' | 'sand' | 'lavender' | 'peach';
 
 export const PALETTES: { id: Palette; label: string; swatch: string; bar: string }[] = [
   { id: 'sky', label: 'Небо', swatch: '#A9DDF4', bar: '#A9DDF4' },
   { id: 'sunset', label: 'Закат', swatch: '#F8C6A8', bar: '#F8C6A8' },
   { id: 'mint', label: 'Мята', swatch: '#B9E6CF', bar: '#B9E6CF' },
   { id: 'sand', label: 'Песок', swatch: '#F1DFB4', bar: '#F1DFB4' },
+  { id: 'lavender', label: 'Лаванда', swatch: '#D6CBF0', bar: '#D6CBF0' },
+  { id: 'peach', label: 'Персик', swatch: '#FBD3C0', bar: '#FBD3C0' },
 ];
 
 type ThemeCtx = {
