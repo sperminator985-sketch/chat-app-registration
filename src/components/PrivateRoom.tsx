@@ -221,7 +221,7 @@ const PrivateRoom = () => {
                   'relative flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden border-2 transition-colors disabled:cursor-wait',
                   uploading
                     ? 'border-sky-400 text-foreground'
-                    : 'border-foreground/35 text-muted-foreground hover:border-secondary hover:text-secondary disabled:opacity-60',
+                    : 'border-foreground/35 text-muted-foreground active:border-secondary active:text-secondary disabled:opacity-60 [@media(hover:hover)]:hover:border-secondary [@media(hover:hover)]:hover:text-secondary',
                 )}
               >
                 {uploading ? (
