@@ -307,8 +307,10 @@ const Header = ({ onProfile }: HeaderProps) => {
               {degreeWord(temp)}
             </a>
           )}
-          {themeButton()}
-          {paletteButton()}
+          <div className="relative">
+            {themeButton()}
+            <div className="absolute left-full top-0 ml-3">{paletteButton()}</div>
+          </div>
         </div>
 
         <nav className={cn('hidden items-center md:flex', user ? 'ml-auto gap-2 lg:ml-0 xl:gap-7' : 'gap-7')}>
@@ -324,8 +326,8 @@ const Header = ({ onProfile }: HeaderProps) => {
           ))}
           {user ? (
             <>
-              {themeButton('lg:hidden')}
               {paletteButton('lg:hidden')}
+              {themeButton('lg:hidden')}
               {mailButton()}
               {tickerButton()}
               {soundButton()}
