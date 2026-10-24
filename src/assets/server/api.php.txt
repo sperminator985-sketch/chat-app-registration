@@ -442,6 +442,70 @@ function hasPrivateTables(): bool
     return $ok;
 }
 
+function hasPrivateFileColumns(): bool
+{
+    static $ok = null;
+    if ($ok !== null) {
+        return $ok;
+    }
+    try {
+        $found = (int) scalar(
+            "SELECT COUNT(*) FROM information_schema.COLUMNS
+             WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'private_messages'
+               AND COLUMN_NAME IN ('file_url', 'file_name', 'file_type', 'file_size')"
+        );
+        if ($found < 4) {
+            try {
+                db()->exec("ALTER TABLE private_messages
+                    ADD COLUMN file_url VARCHAR(255) NULL,
+                    ADD COLUMN file_name VARCHAR(160) NULL,
+                    ADD COLUMN file_type VARCHAR(16) NULL,
+                    ADD COLUMN file_size INT NULL");
+                $found = 4;
+            } catch (Throwable $e) {
+                // нет прав на ALTER — без файлов
+            }
+        }
+        $ok = $found >= 4;
+    } catch (Throwable $e) {
+        $ok = false;
+    }
+    return $ok;
+}
+
+const PRIVATE_FILE_MAX = 5 * 1024 * 1024;
+const PRIVATE_FILE_EXT = [
+    'jpg' => 'image', 'jpeg' => 'image', 'png' => 'image', 'gif' => 'image', 'webp' => 'image',
+    'mp4' => 'video', 'webm' => 'video', 'mov' => 'video',
+    'mp3' => 'audio', 'ogg' => 'audio', 'wav' => 'audio', 'm4a' => 'audio',
+    'pdf' => 'file', 'txt' => 'file', 'zip' => 'file', 'rar' => 'file',
+    'doc' => 'file', 'docx' => 'file', 'xls' => 'file', 'xlsx' => 'file', 'ppt' => 'file', 'pptx' => 'file',
+];
+
+function dropPrivateFiles(int $roomId): void
+{
+    if (!hasPrivateFileColumns()) {
+        return;
+    }
+    try {
+        $rows = q(
+            'SELECT file_url FROM private_messages WHERE room_id = ? AND file_url IS NOT NULL',
+            [$roomId]
+        )->fetchAll();
+        foreach ($rows as $r) {
+            $name = basename(parse_url((string) $r['file_url'], PHP_URL_PATH) ?: '');
+            if ($name !== '' && preg_match('/^priv-\d+-[a-f0-9]+\.[a-z0-9]+$/', $name)) {
+                $path = __DIR__ . '/uploads/' . $name;
+                if (is_file($path)) {
+                    @unlink($path);
+                }
+            }
+        }
+    } catch (Throwable $e) {
+        // молча
+    }
+}
+
 function privateExpire(): void
 {
     if (!hasPrivateTables()) {
@@ -927,6 +991,12 @@ function shapeMessage(array $r): array
         'time' => fmtTime($r['created_at']),
         'avatar' => (int) (array_key_exists('avatar', $r) ? $r['avatar'] : ($r['sender_avatar'] ?? 1)),
         'avatarUrl' => array_key_exists('avatar_url', $r) ? $r['avatar_url'] : ($r['sender_avatar_url'] ?? null),
+        'file' => empty($r['file_url']) ? null : [
+            'url' => (string) $r['file_url'],
+            'name' => (string) ($r['file_name'] ?? 'файл'),
+            'type' => (string) ($r['file_type'] ?? 'file'),
+            'size' => (int) ($r['file_size'] ?? 0),
+        ],
     ];
 }
 
@@ -2075,23 +2145,71 @@ try {
         }
         $cipher = (string) param('cipher', '');
         $text = mb_substr(trim((string) param('text', '')), 0, 500);
+        $file = null;
+        if ($fileData = param('file')) {
+            if (!hasPrivateFileColumns()) {
+                fail(500, 'Отправка файлов на сервере недоступна');
+            }
+            $origName = mb_substr(trim(basename((string) param('fileName', 'файл'))), 0, 160);
+            $ext = strtolower(pathinfo($origName, PATHINFO_EXTENSION));
+            if (!isset(PRIVATE_FILE_EXT[$ext])) {
+                fail(400, 'Такой тип файла отправить нельзя');
+            }
+            [$head, $payload] = array_pad(explode(',', (string) $fileData, 2), 2, null);
+            $raw = base64_decode($payload ?? $head, true);
+            if ($raw === false || $raw === '') {
+                fail(400, 'Не получилось прочитать файл');
+            }
+            if (strlen($raw) > PRIVATE_FILE_MAX) {
+                fail(400, 'Файл тяжелее 5 МБ');
+            }
+            $dir = __DIR__ . '/uploads';
+            if (!is_dir($dir)) {
+                @mkdir($dir, 0755, true);
+            }
+            $name = 'priv-' . (int) $room['id'] . '-' . bin2hex(random_bytes(8)) . '.' . $ext;
+            if (@file_put_contents($dir . '/' . $name, $raw) === false) {
+                fail(500, 'Папка uploads недоступна для записи');
+            }
+            $file = [
+                'url' => rtrim(cfg()['base_url'], '/') . '/uploads/' . $name,
+                'name' => $origName !== '' ? $origName : $name,
+                'type' => PRIVATE_FILE_EXT[$ext],
+                'size' => strlen($raw),
+            ];
+            $cipher = '';
+        }
         if ($cipher !== '') {
             if (mb_strlen($cipher) > 20000) {
                 fail(400, 'Сообщение слишком длинное');
             }
             $text = '';
-        } elseif ($text === '') {
+        } elseif ($text === '' && !$file) {
             fail(400, 'Пустое сообщение');
         }
-        q(
-            'INSERT INTO private_messages
-             (room_id, sender_id, sender_nick, sender_color, text, cipher, sender_avatar, sender_avatar_url, created_at)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, UTC_TIMESTAMP())',
-            [
-                (int) $room['id'], $user['id'], $user['nick'], $user['color'],
-                $text, $cipher !== '' ? $cipher : null, $user['avatar'], $user['avatarUrl'],
-            ]
-        );
+        if ($file) {
+            q(
+                'INSERT INTO private_messages
+                 (room_id, sender_id, sender_nick, sender_color, text, cipher, sender_avatar, sender_avatar_url,
+                  file_url, file_name, file_type, file_size, created_at)
+                 VALUES (?, ?, ?, ?, ?, NULL, ?, ?, ?, ?, ?, ?, UTC_TIMESTAMP())',
+                [
+                    (int) $room['id'], $user['id'], $user['nick'], $user['color'],
+                    $text, $user['avatar'], $user['avatarUrl'],
+                    $file['url'], $file['name'], $file['type'], $file['size'],
+                ]
+            );
+        } else {
+            q(
+                'INSERT INTO private_messages
+                 (room_id, sender_id, sender_nick, sender_color, text, cipher, sender_avatar, sender_avatar_url, created_at)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, UTC_TIMESTAMP())',
+                [
+                    (int) $room['id'], $user['id'], $user['nick'], $user['color'],
+                    $text, $cipher !== '' ? $cipher : null, $user['avatar'], $user['avatarUrl'],
+                ]
+            );
+        }
         $id = (int) db()->lastInsertId();
         privateTouch($room, $user['id']);
         if (hasTypingColumns()) {
@@ -2107,6 +2225,7 @@ try {
             'time' => fmtTime(),
             'avatar' => $user['avatar'],
             'avatarUrl' => $user['avatarUrl'],
+            'file' => $file,
         ]]);
     }
 
@@ -2122,6 +2241,7 @@ try {
                 "UPDATE private_rooms SET status = 'closed', closed_at = UTC_TIMESTAMP() WHERE id = ?",
                 [(int) $room['id']]
             );
+            dropPrivateFiles((int) $room['id']);
             q('DELETE FROM private_messages WHERE room_id = ?', [(int) $room['id']]);
         } else {
             q(

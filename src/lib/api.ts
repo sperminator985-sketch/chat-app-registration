@@ -122,6 +122,14 @@ export type ApiMessage = {
   time: string;
   avatar?: number;
   avatarUrl?: string | null;
+  file?: ApiFile | null;
+};
+
+export type ApiFile = {
+  url: string;
+  name: string;
+  type: 'image' | 'video' | 'audio' | 'file';
+  size: number;
 };
 
 export type KeyBundleDto = {
@@ -463,7 +471,7 @@ export const api = {
     request<{ ok: boolean }>('support_mail', { method: 'POST', body }),
   privateState: () => request<PrivateState>('private_state'),
   privateTyping: () => request<{ ok: boolean }>('private_typing', { method: 'POST' }),
-  privateSend: (body: { text?: string; cipher?: string }) =>
+  privateSend: (body: { text?: string; cipher?: string; file?: string; fileName?: string }) =>
     request<{ message: ApiMessage }>('private_send', { method: 'POST', body }),
   privateLeave: () => request<{ ok: boolean }>('private_leave', { method: 'POST' }),
 };

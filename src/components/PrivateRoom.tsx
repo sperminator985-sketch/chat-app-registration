@@ -8,7 +8,20 @@ import { nickColorClass, staffNickClass, isStaffNick } from '@/data/chat';
 import { usePrivate } from '@/hooks/use-private';
 import { useCrypto } from '@/hooks/use-crypto';
 import EmojiPicker from '@/components/EmojiPicker';
+import PrivateFile from '@/components/PrivateFile';
 import { playKnock } from '@/lib/notify-sound';
+
+const FILE_MAX = 5 * 1024 * 1024;
+const FILE_ACCEPT =
+  'image/jpeg,image/png,image/gif,image/webp,video/mp4,video/webm,video/quicktime,audio/*,.pdf,.txt,.zip,.rar,.doc,.docx,.xls,.xlsx,.ppt,.pptx';
+
+const readAsDataUrl = (file: File) =>
+  new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result));
+    reader.onerror = () => reject(new Error('Не получилось прочитать файл'));
+    reader.readAsDataURL(file);
+  });
 
 const PrivateRoom = () => {
   const { user } = useAuth();
@@ -19,6 +32,8 @@ const PrivateRoom = () => {
   const [plain, setPlain] = useState<Record<number, string>>({});
   const feedRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
   const lastIncoming = useRef<number | null>(null);
   const typingSentAt = useRef(0);
 
@@ -84,6 +99,29 @@ const PrivateRoom = () => {
     }
   };
 
+  const sendFile = async (file: File) => {
+    if (!peer || uploading) return;
+    if (file.size > FILE_MAX) {
+      toast({ title: 'Файл слишком большой', description: 'Можно отправить файл до 5 МБ', variant: 'destructive' });
+      return;
+    }
+    setUploading(true);
+    try {
+      const data = await readAsDataUrl(file);
+      const res = await api.privateSend({ file: data, fileName: file.name });
+      pushMessage(res.message);
+    } catch (err) {
+      toast({
+        title: 'Файл не ушёл',
+        description: err instanceof Error ? err.message : 'Попробуй ещё раз',
+        variant: 'destructive',
+      });
+    } finally {
+      setUploading(false);
+      if (fileRef.current) fileRef.current.value = '';
+    }
+  };
+
   if (!active || !peer) return null;
 
   return (
@@ -128,8 +166,11 @@ const PrivateRoom = () => {
                   >
                     &lt;{m.nick}&gt;
                   </span>
-                  <span className="text-[0.95rem] leading-[1.35] text-foreground sm:text-[0.94rem]">{textOf(m)}</span>
+                  {!m.file && (
+                    <span className="text-[0.95rem] leading-[1.35] text-foreground sm:text-[0.94rem]">{textOf(m)}</span>
+                  )}
                 </p>
+                {m.file && <PrivateFile file={m.file} />}
               </div>
             ))}
           </div>
@@ -162,6 +203,26 @@ const PrivateRoom = () => {
               />
             </div>
             <div className="flex shrink-0 items-center gap-2 sm:gap-2.5">
+              <input
+                ref={fileRef}
+                type="file"
+                accept={FILE_ACCEPT}
+                className="hidden"
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  if (f) sendFile(f);
+                }}
+              />
+              <button
+                type="button"
+                onClick={() => fileRef.current?.click()}
+                disabled={uploading || !user}
+                title="Отправить фото или файл (до 5 МБ)"
+                aria-label="Прикрепить файл"
+                className="flex h-9 w-9 shrink-0 items-center justify-center border-2 border-foreground/35 text-muted-foreground transition-colors hover:border-secondary hover:text-secondary disabled:opacity-60"
+              >
+                <Icon name={uploading ? 'Loader2' : 'Paperclip'} size={18} className={uploading ? 'animate-spin' : undefined} />
+              </button>
               <EmojiPicker onPick={(em) => setDraft((prev) => (prev + em).slice(0, 480))} />
               <button
                 type="submit"
