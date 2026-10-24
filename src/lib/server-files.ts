@@ -7,6 +7,7 @@ import dbPhp from '@/assets/server/db.php.txt?raw';
 import configPhp from '@/assets/server/config.php.txt?raw';
 import dropSecretPhp from '@/assets/server/drop_secret.php.txt?raw';
 import installMd from '@/assets/server/УСТАНОВКА.md.txt?raw';
+import userIni from '@/assets/server/user.ini.txt?raw';
 
 const saveBlob = (blob: Blob, name: string) => {
   const href = URL.createObjectURL(blob);
@@ -40,6 +41,7 @@ export const downloadFullZip = () => {
       'config.php': configPhp,
       'drop_secret.php': dropSecretPhp,
       'УСТАНОВКА.md': installMd,
+      '.user.ini': userIni,
     }),
     'chat-server.zip',
   );

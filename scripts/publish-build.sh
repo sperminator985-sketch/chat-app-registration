@@ -9,6 +9,7 @@ rm -rf "$OUT" /tmp/chat-site.zip
 NODE_OPTIONS=--max-old-space-size=4096 npx vite build --minify false --outDir "$OUT" --emptyOutDir >/tmp/site-build.log 2>&1 || { tail -30 /tmp/site-build.log; exit 1; }
 mkdir -p "$OUT/chat"
 cp src/assets/server/api.php.txt "$OUT/chat/api.php"
+cp src/assets/server/user.ini.txt "$OUT/chat/.user.ini"
 ( cd "$OUT" && python3 -c "
 import os,zipfile
 z=zipfile.ZipFile('/tmp/chat-site.zip','w',zipfile.ZIP_DEFLATED)

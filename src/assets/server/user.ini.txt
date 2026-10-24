@@ -1,0 +1,8 @@
+; Настройки PHP для чата «Общага»: файлы в привате до 100 МБ.
+; Положите этот файл в папку chat под именем .user.ini
+; Хостинг подхватит его в течение 5 минут.
+upload_max_filesize = 110M
+post_max_size = 120M
+max_execution_time = 300
+max_input_time = 300
+memory_limit = 256M
