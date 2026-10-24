@@ -9,6 +9,7 @@ import { TickerProvider, useTicker } from '@/hooks/use-ticker';
 import CallWindow from '@/components/CallWindow';
 import PrivateRoom from '@/components/PrivateRoom';
 import PrivateInvite from '@/components/PrivateInvite';
+import PrivatePending from '@/components/PrivatePending';
 import Header from '@/components/Header';
 import ServerDownBanner from '@/components/ServerDownBanner';
 import BannedDialog from '@/components/BannedDialog';
@@ -161,6 +162,7 @@ const PageBody = () => {
       <ProfileDialog open={profileOpen} onOpenChange={setProfileOpen} />
       <TickerDialog open={tickerOpen} onOpenChange={(v) => !v && closeTicker()} />
       <PrivateInvite />
+      <PrivatePending />
       <PrivateRoom />
       <CallWindow />
     </div>

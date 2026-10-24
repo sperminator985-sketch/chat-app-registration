@@ -17,6 +17,7 @@ type PrivateState = {
   invitePeer: (nick: string) => Promise<void>;
   answer: (accept: boolean) => Promise<void>;
   leave: () => Promise<void>;
+  cancelInvite: () => Promise<void>;
   pushMessage: (m: ApiMessage) => void;
   refresh: () => void;
 };
@@ -62,7 +63,11 @@ export const PrivateProvider = ({ children }: { children: ReactNode }) => {
           description: `${data.ended.nick} вышел из привата`,
         });
       }
-      if (!wasActive.current && !nowActive && data.ended && fresh && data.ended.status !== 'closed' && !iAnswered) {
+      if (!wasActive.current && !nowActive && data.ended && fresh && data.ended.status === 'cancelled') {
+        if (iWasGuest) {
+          toast({ title: 'Приглашение отозвано', description: `${data.ended.nick} передумал звать в приват` });
+        }
+      } else if (!wasActive.current && !nowActive && data.ended && fresh && data.ended.status !== 'closed' && !iAnswered) {
         toast(
           iWasGuest
             ? {
@@ -148,6 +153,22 @@ export const PrivateProvider = ({ children }: { children: ReactNode }) => {
     load();
   }, [load]);
 
+  const cancelInvite = useCallback(async () => {
+    const nick = pendingNick;
+    setPendingNick(null);
+    try {
+      await api.privateCancel();
+      toast({ title: 'Приглашение отменено', description: nick ? `${nick} больше не ждёт ответа` : undefined });
+    } catch (err) {
+      toast({
+        title: 'Не вышло отменить',
+        description: err instanceof Error ? err.message : 'Попробуй ещё раз',
+        variant: 'destructive',
+      });
+    }
+    load();
+  }, [pendingNick, load]);
+
   const pushMessage = useCallback((m: ApiMessage) => {
     setMessages((prev) => (prev.some((x) => x.id === m.id) ? prev : [...prev, m]));
   }, []);
@@ -163,10 +184,11 @@ export const PrivateProvider = ({ children }: { children: ReactNode }) => {
       invitePeer,
       answer,
       leave,
+      cancelInvite,
       pushMessage,
       refresh: load,
     }),
-    [peer, peerTyping, messages, invite, pendingNick, invitePeer, answer, leave, pushMessage, load],
+    [peer, peerTyping, messages, invite, pendingNick, invitePeer, answer, leave, cancelInvite, pushMessage, load],
   );
 
   return <PrivateContext.Provider value={value}>{children}</PrivateContext.Provider>;
