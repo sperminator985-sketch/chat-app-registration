@@ -174,11 +174,11 @@ const SupportDialog = () => {
                 </span>
               </label>
 
-              <div className="border-t-2 border-foreground/20 pt-4">
+              <div className="flex justify-center border-t-2 border-foreground/20 pt-4">
                 <button
                   type="submit"
                   disabled={sending}
-                  className="btn-brut w-full justify-center !py-2.5 !text-xs disabled:opacity-60"
+                  className="btn-brut w-auto justify-center !py-2.5 !text-xs disabled:opacity-60"
                 >
                   <Icon name="Send" size={14} />
                   {sending ? 'Отправляем…' : 'Отправить письмо'}
