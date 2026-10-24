@@ -32,6 +32,8 @@ export const PrivateProvider = ({ children }: { children: ReactNode }) => {
   const [pendingNick, setPendingNick] = useState<string | null>(null);
   const wasActive = useRef(false);
   const shownEnded = useRef<Set<string>>(new Set());
+  const invitedMe = useRef<Set<number>>(new Set());
+  const answeredByMe = useRef<Set<number>>(new Set());
 
   const load = useCallback(async () => {
     if (!user) return;
@@ -41,6 +43,7 @@ export const PrivateProvider = ({ children }: { children: ReactNode }) => {
       setPeerTyping(Boolean(data.typing));
       setMessages(data.messages ?? []);
       setInvite(data.invite);
+      if (data.invite) invitedMe.current.add(data.invite.roomId);
       setPendingNick(data.pending?.nick ?? null);
 
       const nowActive = Boolean(data.room);
@@ -49,25 +52,31 @@ export const PrivateProvider = ({ children }: { children: ReactNode }) => {
       const fresh = Boolean(data.ended) && !shownEnded.current.has(endedKey);
       if (fresh) shownEnded.current.add(endedKey);
       if (!data.ended) shownEnded.current.clear();
+      const endedId = data.ended?.id ?? -1;
+      const iWasGuest =
+        data.ended?.invitedByMe !== undefined ? !data.ended.invitedByMe : invitedMe.current.has(endedId);
+      const iAnswered = answeredByMe.current.has(endedId);
       if (wasActive.current && !nowActive && data.ended && fresh) {
         toast({
           title: 'Приват закрыт',
-          description:
-            data.ended.status === 'declined'
-              ? `${data.ended.nick} отказался от привата`
-              : data.ended.status === 'missed'
-                ? `${data.ended.nick} не ответил`
-                : `${data.ended.nick} вышел из привата`,
+          description: `${data.ended.nick} вышел из привата`,
         });
       }
-      if (!wasActive.current && !nowActive && data.ended && fresh && data.ended.status !== 'closed') {
-        toast({
-          title: 'Приват не состоялся',
-          description:
-            data.ended.status === 'declined'
-              ? `${data.ended.nick} отказался`
-              : `${data.ended.nick} не ответил`,
-        });
+      if (!wasActive.current && !nowActive && data.ended && fresh && data.ended.status !== 'closed' && !iAnswered) {
+        toast(
+          iWasGuest
+            ? {
+                title: 'Приглашение пропущено',
+                description: `Ты не ответил на приглашение от ${data.ended.nick}`,
+              }
+            : {
+                title: 'Приват не состоялся',
+                description:
+                  data.ended.status === 'declined'
+                    ? `${data.ended.nick} отказался`
+                    : `${data.ended.nick} не ответил`,
+              },
+        );
       }
       wasActive.current = nowActive;
     } catch {
@@ -109,6 +118,7 @@ export const PrivateProvider = ({ children }: { children: ReactNode }) => {
     async (accept: boolean) => {
       if (!invite) return;
       const id = invite.roomId;
+      answeredByMe.current.add(id);
       setInvite(null);
       try {
         await api.privateAnswer(id, accept);
