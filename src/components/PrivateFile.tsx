@@ -24,7 +24,7 @@ const DownloadCard = ({ file, note }: { file: ApiFile; note?: string }) => (
 
 const PrivateVideo = ({ file, localUrl }: { file: ApiFile; localUrl?: string }) => {
   const [failed, setFailed] = useState(false);
-  const [ready, setReady] = useState(false);
+  const [waiting, setWaiting] = useState(false);
 
   if (failed) {
     return <DownloadCard file={file} note="Браузер не умеет показывать этот формат видео — скачайте файл" />;
@@ -37,12 +37,15 @@ const PrivateVideo = ({ file, localUrl }: { file: ApiFile; localUrl?: string }) 
         controls
         playsInline
         preload="metadata"
-        onLoadedMetadata={() => setReady(true)}
+        onWaiting={() => setWaiting(true)}
+        onPlaying={() => setWaiting(false)}
+        onPause={() => setWaiting(false)}
+        onCanPlay={() => setWaiting(false)}
         onError={() => setFailed(true)}
         className="max-h-72 max-w-[min(100%,360px)] border-2 border-sky-400/60 bg-black"
       />
       <div className="mt-0.5 flex items-center gap-2 font-mono text-[0.66rem] text-muted-foreground">
-        {!ready && <span className="animate-pulse">видео подгружается…</span>}
+        {waiting && <span className="animate-pulse">видео подгружается…</span>}
         <a href={file.url} target="_blank" rel="noreferrer" download={file.name} className="underline hover:text-sky-300">
           скачать · {sizeText(file.size)}
         </a>
