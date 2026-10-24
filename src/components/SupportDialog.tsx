@@ -90,12 +90,22 @@ const SupportDialog = () => {
       >
         <DialogContent className="max-h-[92vh] max-w-[540px] overflow-y-auto border-2 border-foreground/40 bg-card p-0 text-card-foreground [&>button]:hidden">
           <div className="flex items-stretch border-b-2 border-foreground/35 bg-secondary text-secondary-foreground">
+            <div className="w-12 shrink-0" aria-hidden />
             <div className="flex flex-1 items-center justify-center gap-2.5 px-5 py-3.5">
               <Icon name="Mail" size={18} className="shrink-0" />
               <DialogTitle className="font-display text-[0.95rem] font-extrabold uppercase tracking-[0.06em]">
                 Письмо в поддержку
               </DialogTitle>
             </div>
+            <button
+              type="button"
+              onClick={() => setOpen(false)}
+              aria-label="Закрыть"
+              title="Закрыть"
+              className="flex w-12 shrink-0 items-center justify-center border-l-2 border-foreground/35 transition-colors hover:bg-foreground/15"
+            >
+              <Icon name="X" size={20} />
+            </button>
           </div>
 
           {sent ? (
@@ -164,21 +174,14 @@ const SupportDialog = () => {
                 </span>
               </label>
 
-              <div className="flex flex-col gap-2 border-t-2 border-foreground/20 pt-4 sm:flex-row sm:items-center">
+              <div className="border-t-2 border-foreground/20 pt-4">
                 <button
                   type="submit"
                   disabled={sending}
-                  className="btn-brut flex-1 justify-center !py-2.5 !text-xs disabled:opacity-60"
+                  className="btn-brut w-full justify-center !py-2.5 !text-xs disabled:opacity-60"
                 >
                   <Icon name="Send" size={14} />
                   {sending ? 'Отправляем…' : 'Отправить письмо'}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setOpen(false)}
-                  className="btn-cancel-brut justify-center px-6 py-2.5 text-xs"
-                >
-                  Отмена
                 </button>
               </div>
             </form>
