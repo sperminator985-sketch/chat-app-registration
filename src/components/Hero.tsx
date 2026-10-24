@@ -69,7 +69,7 @@ const Hero = () => {
                 <img
                   src={theme === 'day' ? '/sun.png' : '/moon.png'}
                   alt=""
-                  className="mx-[0.03em] inline-block h-[0.74em] w-[0.74em] select-none rounded-full object-contain"
+                  className="mx-[0.04em] inline-block h-[0.9em] w-[0.9em] select-none rounded-full object-contain"
                   style={{ animation: `${theme === 'day' ? 'sun-glow' : 'moon-glow'} 7s ease-in-out infinite` }}
                 />
                 МСК НА СВЯЗИ
