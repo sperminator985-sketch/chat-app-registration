@@ -124,10 +124,6 @@ const SupportDialog = () => {
             </div>
           ) : (
             <form onSubmit={submit} className="space-y-4 px-5 py-5 sm:px-6">
-              <p className="border-l-2 border-secondary bg-muted/50 px-3 py-2 font-mono text-[0.74rem] normal-case leading-[1.5] tracking-normal text-muted-foreground">
-                Комендант общаги на связи. Опиши вопрос — ответим на указанную почту.
-              </p>
-
               <div className="grid gap-4 sm:grid-cols-2">
                 <label className="block">
                   {step('01', 'Имя')}
