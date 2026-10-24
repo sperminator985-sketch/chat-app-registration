@@ -29,6 +29,22 @@ const PrivateRoom = () => {
   const [progress, setProgress] = useState(0);
   const lastIncoming = useRef<number | null>(null);
   const typingSentAt = useRef(0);
+  const [localUrls, setLocalUrls] = useState<Record<number, string>>({});
+  const localUrlsRef = useRef(localUrls);
+  localUrlsRef.current = localUrls;
+
+  useEffect(() => {
+    if (active) return;
+    Object.values(localUrlsRef.current).forEach((u) => URL.revokeObjectURL(u));
+    setLocalUrls({});
+  }, [active]);
+
+  useEffect(
+    () => () => {
+      Object.values(localUrlsRef.current).forEach((u) => URL.revokeObjectURL(u));
+    },
+    [],
+  );
 
   useEffect(() => {
     let alive = true;
@@ -131,6 +147,11 @@ const PrivateRoom = () => {
     setProgress(0);
     try {
       const res = await uploadPrivateFile(file, setProgress);
+      const kind = res.message.file?.type;
+      if (kind === 'video' || kind === 'audio' || kind === 'image') {
+        const url = URL.createObjectURL(file);
+        setLocalUrls((prev) => ({ ...prev, [res.message.id]: url }));
+      }
       pushMessage(res.message);
     } catch (err) {
       toast({
@@ -193,7 +214,7 @@ const PrivateRoom = () => {
                     <span className="text-[0.95rem] leading-[1.35] text-foreground sm:text-[0.94rem]">{textOf(m)}</span>
                   )}
                 </p>
-                {m.file && <PrivateFile file={m.file} />}
+                {m.file && <PrivateFile file={m.file} localUrl={localUrls[m.id]} />}
               </div>
             ))}
           </div>
