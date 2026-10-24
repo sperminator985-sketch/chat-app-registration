@@ -307,7 +307,7 @@ const Header = ({ onProfile }: HeaderProps) => {
               {degreeWord(temp)}
             </a>
           )}
-          <div className="relative">
+          <div className="relative mr-[52px] lg:mr-0">
             {themeButton()}
             <div className="absolute left-full top-0 ml-3">{paletteButton()}</div>
           </div>
