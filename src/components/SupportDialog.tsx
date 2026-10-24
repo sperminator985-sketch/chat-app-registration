@@ -90,7 +90,7 @@ const SupportDialog = () => {
       >
         <DialogContent className="max-h-[92vh] max-w-[540px] overflow-y-auto border-2 border-foreground/40 bg-card p-0 text-card-foreground [&>button]:hidden">
           <div className="flex items-stretch border-b-2 border-foreground/35 bg-secondary text-secondary-foreground">
-            <div className="w-12 shrink-0" aria-hidden />
+            <div className="m-2 w-9 shrink-0" aria-hidden />
             <div className="flex flex-1 items-center justify-center gap-2.5 px-5 py-3.5">
               <Icon name="Mail" size={18} className="shrink-0" />
               <DialogTitle className="font-display text-[0.95rem] font-extrabold uppercase tracking-[0.06em]">
@@ -102,7 +102,7 @@ const SupportDialog = () => {
               onClick={() => setOpen(false)}
               aria-label="Закрыть"
               title="Закрыть"
-              className="flex w-12 shrink-0 items-center justify-center border-l-2 border-foreground/35 transition-colors hover:bg-foreground/15"
+              className="m-2 flex w-9 shrink-0 items-center justify-center border-2 border-[#2F6BFF] transition-colors hover:bg-[#2F6BFF] hover:text-white"
             >
               <Icon name="X" size={20} />
             </button>
