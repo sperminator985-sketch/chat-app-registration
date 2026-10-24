@@ -216,6 +216,16 @@
     display: none;
   }
 
+  @keyframes sun-glow {
+    0%,
+    100% {
+      filter: drop-shadow(0 0 10px rgb(255 190 60 / 0.55));
+    }
+    50% {
+      filter: drop-shadow(0 0 22px rgb(255 170 30 / 0.8));
+    }
+  }
+
   @keyframes moon-glow {
     0%,
     100% {

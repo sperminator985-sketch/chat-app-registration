@@ -1,11 +1,13 @@
 import Facade from '@/components/Facade';
 import { useLiveStats } from '@/hooks/use-live-stats';
 import { rooms } from '@/data/chat';
+import { useTheme } from '@/hooks/use-theme';
 
 const windows = [1, 0, 1, 1, 1, 1, 0, 0, 1];
 
 const Hero = () => {
   const live = useLiveStats();
+  const { theme } = useTheme();
   const floorCounts = rooms.map((r) => live?.roomCounts?.[r.id] ?? 0);
 
   return (
@@ -65,10 +67,10 @@ const Hero = () => {
               <span aria-hidden className="inline-flex items-center">
                 Т
                 <img
-                  src="/moon.png"
+                  src={theme === 'day' ? '/sun.png' : '/moon.png'}
                   alt=""
                   className="mx-[0.03em] inline-block h-[0.74em] w-[0.74em] select-none rounded-full object-contain"
-                  style={{ animation: 'moon-glow 7s ease-in-out infinite' }}
+                  style={{ animation: `${theme === 'day' ? 'sun-glow' : 'moon-glow'} 7s ease-in-out infinite` }}
                 />
                 МСК НА СВЯЗИ
               </span>
