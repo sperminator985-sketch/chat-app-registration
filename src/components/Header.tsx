@@ -27,7 +27,7 @@ const Header = ({ onProfile }: HeaderProps) => {
   const [scrolled, setScrolled] = useState(false);
   const [active, setActive] = useState('');
   const { user, openAuth, signOut } = useAuth();
-  const { unread, openList, soundOn, toggleSound } = useDm();
+  const { soundOn, toggleSound } = useDm();
   const temp = useWeather();
   const { theme, toggle, palette, setPalette } = useTheme();
   const { openTicker, pending } = useTicker();
@@ -88,29 +88,6 @@ const Header = ({ onProfile }: HeaderProps) => {
       </Popover>
     ) : null;
 
-  const mailButton = (extra?: string) => (
-    <button
-      onClick={() => {
-        setOpen(false);
-        openList();
-      }}
-      aria-label="Личные сообщения"
-      title="Личные сообщения"
-      className={cn(
-        'relative flex h-10 w-10 items-center justify-center border-2 text-foreground transition-colors hover:border-secondary hover:text-secondary',
-        unread > 0 ? 'border-primary text-primary' : 'border-foreground/40',
-        extra,
-      )}
-    >
-      <Icon name="Mail" size={18} />
-      {unread > 0 && (
-        <span className="absolute -right-2 -top-2 min-w-[20px] animate-pulse border-2 border-foreground/40 bg-primary px-1 font-mono text-[0.68rem] font-bold leading-[16px] text-primary-foreground">
-          {unread > 99 ? '99+' : unread}
-        </span>
-      )}
-    </button>
-  );
-
   const tickerButton = (extra?: string) => {
     if (!user || (!user.isAdmin && !user.uni)) return null;
     const alert = Boolean(user.isAdmin) && pending > 0;
@@ -159,11 +136,6 @@ const Header = ({ onProfile }: HeaderProps) => {
       <Icon name={soundOn ? 'Volume2' : 'VolumeX'} size={18} />
     </button>
   );
-
-  useEffect(() => {
-    const base = 'ЧАТ-ОБЩАГА';
-    document.title = unread > 0 ? `(${unread}) ${base}` : base;
-  }, [unread]);
 
   useEffect(() => {
     if (user) {
@@ -328,7 +300,6 @@ const Header = ({ onProfile }: HeaderProps) => {
             <>
               {paletteButton('lg:hidden')}
               {themeButton('lg:hidden')}
-              {mailButton()}
               {tickerButton()}
               {soundButton()}
               {user.isAdmin && (
@@ -384,7 +355,7 @@ const Header = ({ onProfile }: HeaderProps) => {
         )}
 
         <div className="flex shrink-0 items-center gap-1.5 md:hidden">
-          {user && mailButton()}
+          
           {user && soundButton()}
           <button
             className={cn(

@@ -13,11 +13,10 @@ type Props = {
   open: boolean;
   onOpenChange: (v: boolean) => void;
   onCard: (p: CardPerson) => void;
-  onWrite: (nick: string) => void;
   myNick?: string;
 };
 
-const ResidentsDialog = ({ open, onOpenChange, onCard, onWrite, myNick }: Props) => {
+const ResidentsDialog = ({ open, onOpenChange, onCard, myNick }: Props) => {
   const [list, setList] = useState<Resident[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -247,18 +246,6 @@ const ResidentsDialog = ({ open, onOpenChange, onCard, onWrite, myNick }: Props)
                     </button>
                     {!isMe && (
                       <>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            onWrite(r.nick);
-                            onOpenChange(false);
-                          }}
-                          title={`Написать лично: ${r.nick}`}
-                          aria-label={`Написать лично: ${r.nick}`}
-                          className="flex h-7 w-7 items-center justify-center border-2 border-foreground/30 text-muted-foreground transition-colors hover:border-sky-400 hover:text-sky-300"
-                        >
-                          <Icon name="Mail" size={13} />
-                        </button>
                         <button
                           type="button"
                           onClick={() => invitePeer(r.nick)}

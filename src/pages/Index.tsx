@@ -22,8 +22,6 @@ import Rules from '@/components/Rules';
 import Footer from '@/components/Footer';
 import AuthDialog from '@/components/AuthDialog';
 import WelcomeDialog from '@/components/WelcomeDialog';
-import DialogsList from '@/components/DialogsList';
-import DirectMessages from '@/components/DirectMessages';
 import ProfileDialog from '@/components/ProfileDialog';
 import TickerDialog from '@/components/TickerDialog';
 import { rooms, canEnterRoom, roomUni } from '@/data/chat';
@@ -160,8 +158,6 @@ const PageBody = () => {
       <AuthDialog />
       <BannedDialog />
       <WelcomeDialog />
-      <DialogsList />
-      <DirectMessages />
       <ProfileDialog open={profileOpen} onOpenChange={setProfileOpen} />
       <TickerDialog open={tickerOpen} onOpenChange={(v) => !v && closeTicker()} />
       <PrivateInvite />

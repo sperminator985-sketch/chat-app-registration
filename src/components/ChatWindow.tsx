@@ -6,7 +6,6 @@ import { useAuth } from '@/hooks/use-auth';
 import { getToken, api, ApiMessage } from '@/lib/api';
 import { toast } from '@/hooks/use-toast';
 import { nickColorClass, rooms, canEnterRoom, isStaffNick, staffNickClass } from '@/data/chat';
-import { useCrypto } from '@/hooks/use-crypto';
 import { usePrivate } from '@/hooks/use-private';
 import { useCall } from '@/hooks/use-call';
 import EmojiPicker from '@/components/EmojiPicker';
@@ -47,12 +46,7 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
   const [cardPerson, setCardPerson] = useState<CardPerson | null>(null);
 
   const [clearedAt, setClearedAt] = useState(0);
-  const [clearedDm, setClearedDm] = useState(0);
   const [typingUsers, setTypingUsers] = useState<{ nick: string; color: number }[]>([]);
-  const [privateTo, setPrivateTo] = useState<string | null>(null);
-  const [onlyPrivate, setOnlyPrivate] = useState(false);
-  const [privateMsgs, setPrivateMsgs] = useState<(ApiMessage & { peer: string; outgoing: boolean })[]>([]);
-  const [dmPlain, setDmPlain] = useState<Record<number, string>>({});
   const typingSentAt = useRef(0);
   const { invitePeer, pendingNick } = usePrivate();
   const { startCall } = useCall();
@@ -67,8 +61,6 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
       setOnline(data.online);
       setTypingUsers(data.typing ?? []);
       setTickerPending(data.tickerPending ?? 0);
-      const dm = await api.dmAll();
-      setPrivateMsgs(dm.messages);
     } catch {
       /* тихо: следующий опрос попробует снова */
     } finally {
@@ -80,35 +72,13 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
     setLoaded(false);
     const saved = Number(localStorage.getItem(`chat-cleared-${room.id}`) || 0);
     setClearedAt(saved);
-    setClearedDm(Number(localStorage.getItem('chat-cleared-dm') || 0));
   }, [room.id]);
 
   const clearFeed = useCallback(() => {
     const lastId = messages.length ? messages[messages.length - 1].id : 0;
     localStorage.setItem(`chat-cleared-${room.id}`, String(lastId));
     setClearedAt(lastId);
-
-    const lastDm = privateMsgs.reduce((max, m) => (m.id > max ? m.id : max), 0);
-    localStorage.setItem('chat-cleared-dm', String(lastDm));
-    setClearedDm(lastDm);
-  }, [messages, privateMsgs, room.id]);
-
-  const { reveal } = useCrypto();
-
-  useEffect(() => {
-    let alive = true;
-    const run = async () => {
-      const next: Record<number, string> = {};
-      for (const m of privateMsgs) {
-        if (m.cipher) next[m.id] = await reveal(m.cipher);
-      }
-      if (alive) setDmPlain((prev) => ({ ...prev, ...next }));
-    };
-    if (privateMsgs.some((m) => m.cipher)) run();
-    return () => {
-      alive = false;
-    };
-  }, [privateMsgs, reveal]);
+  }, [messages, room.id]);
 
   usePolling(load, 5000);
 
@@ -148,12 +118,6 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
     };
     setSending(true);
     try {
-      if (privateTo) {
-        const res = await api.dmSend({ nick: privateTo, text });
-        setPrivateMsgs((prev) => [...prev, { ...res.message, peer: privateTo, outgoing: true }]);
-        afterSend();
-        return;
-      }
       const res = await api.send({ text, room: room.id });
       setMessages((prev) => [...prev, res.message]);
       afterSend();
@@ -168,28 +132,10 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
     }
   };
 
-  const visibleMessages = useMemo(() => {
-    const openList = messages
-      .filter((m) => m.id > clearedAt)
-      .map((m) => ({ ...m, key: `p-${m.id}`, private: false, peer: '', outgoing: false }));
-    const privList = privateMsgs
-      .filter((m) => m.id > clearedDm)
-      .map((m) => ({
-        ...m,
-        text: m.cipher ? (dmPlain[m.id] ?? '🔒 расшифровываем…') : m.text,
-        key: `d-${m.id}`,
-        private: true,
-      }));
-    const rank = (t: string) => {
-      const match = /(\d{2}):(\d{2})$/.exec(t || '');
-      if (!match) return 0;
-      const day = t.includes('вчера') ? -1 : 0;
-      return day * 10000 + Number(match[1]) * 60 + Number(match[2]);
-    };
-    const all = onlyPrivate ? privList : [...openList, ...privList];
-    return all.sort((a, b) => rank(a.time) - rank(b.time));
-  }, [messages, clearedAt, privateMsgs, clearedDm, onlyPrivate, dmPlain]);
-  const isEmpty = loaded && visibleMessages.length === 0;
+  const visibleMessages = useMemo(
+    () => messages.filter((m) => m.id > clearedAt).map((m) => ({ ...m, key: `p-${m.id}` })),
+    [messages, clearedAt],
+  );
   const othersTyping = useMemo(
     () => typingUsers.filter((t) => !user || t.nick !== user.nick),
     [typingUsers, user],
@@ -282,19 +228,6 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
                   <span className="hidden sm:inline md:hidden xl:inline">Жильцы</span>
                 </button>
                 <button
-                  onClick={() => setOnlyPrivate((v) => !v)}
-                  title="Показывать только личные сообщения"
-                  className={cn(
-                    'flex items-center gap-1.5 border-2 h-7 px-2.5 py-0 leading-none text-[0.72rem] font-semibold uppercase tracking-[0.1em] transition-colors',
-                    onlyPrivate
-                      ? 'border-sky-400 bg-sky-400 text-background'
-                      : 'border-foreground/35 text-muted-foreground [@media(hover:hover)]:hover:border-sky-400 [@media(hover:hover)]:hover:text-sky-300',
-                  )}
-                >
-                  <Icon name="Lock" size={14} />
-                  <span className="hidden sm:inline md:hidden xl:inline">Личные</span>
-                </button>
-                <button
                   onClick={clearFeed}
                   onTouchStart={() => {}}
                   title="Очистить поле сообщений"
@@ -322,51 +255,26 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
                 <p className="font-mono text-[0.85rem] text-muted-foreground">соединяемся с этажом…</p>
               )}
 
-              {isEmpty && onlyPrivate && (
-                <p className="whitespace-nowrap border-l-2 border-secondary bg-muted/60 px-3 py-1.5 font-mono text-[0.66rem] uppercase tracking-[0.04em] text-muted-foreground sm:text-[0.82rem] sm:tracking-[0.08em]">
-                  личных сообщений пока нет
-                </p>
-              )}
-
               {visibleMessages.map((m) => (
                 <div
                   key={m.key}
-                  className={cn(
-                    'animate-fade-in leading-[1.3]',
-                    m.private &&
-                      'border-l-4 border-sky-400 bg-sky-400/25 px-2 py-1 [.day_&]:border-sky-600 [.day_&]:bg-sky-500/20',
-                  )}
+                  className="animate-fade-in leading-[1.3]"
                 >
                   <p className="chat-font break-words [overflow-wrap:anywhere]">
-                    {m.private && (
-                      <button
-                        type="button"
-                        onClick={() => setPrivateTo(m.peer)}
-                        className="mr-1.5 inline font-mono text-[0.62rem] font-bold uppercase tracking-[0.1em] text-sky-200 hover:underline sm:text-[0.7rem] [.day_&]:text-sky-800"
-                      >
-                        {m.outgoing ? `лично → ${m.peer}` : `лично от ${m.peer}`}
-                      </button>
-                    )}
                     <span className="mr-1.5 font-mono text-[0.66rem] text-muted-foreground sm:text-[0.78rem]">[{m.time}]</span>
-                    <button
-                      type="button"
-                      onClick={() => user && m.nick !== user.nick && !busyNicks.has(m.nick) && setPrivateTo(m.nick)}
-                      disabled={busyNicks.has(m.nick)}
-                      title={busyNicks.has(m.nick) ? `${m.nick} сейчас в привате` : `Написать лично: ${m.nick}`}
+                    <span
                       className={cn(
-                        'mr-1.5 inline text-[0.82rem] font-normal hover:underline sm:text-[0.92rem]',
+                        'mr-1.5 inline text-[0.82rem] font-normal sm:text-[0.92rem]',
                         isStaffNick(m.nick) ? 'font-bold text-red-500 [.day_&]:text-red-600' : nickColorClass[m.color],
-                        busyNicks.has(m.nick) && 'opacity-40 hover:no-underline',
+                        busyNicks.has(m.nick) && 'opacity-40',
                       )}
                     >
                       &lt;{m.nick}&gt;
-                    </button>
+                    </span>
                     <span
                       className={cn(
                         'text-[0.95rem] leading-[1.35] sm:text-[0.94rem]',
-                        m.private
-                          ? 'font-medium text-foreground'
-                          : user && m.nick === user.nick
+                        user && m.nick === user.nick
                             ? 'text-foreground'
                             : 'text-foreground/90',
                       )}
@@ -377,24 +285,6 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
                 </div>
               ))}
             </div>
-
-            {privateTo && (
-              <div className="flex items-center gap-2 border-t-2 border-sky-400 bg-sky-400/15 px-3 py-1.5 text-[0.7rem] font-semibold uppercase tracking-[0.08em] text-sky-200 sm:px-5 sm:text-[0.78rem]">
-                <Icon name="Lock" size={13} className="shrink-0" />
-                <span className="min-w-0 flex-1 truncate">
-                  <span className="hidden sm:inline">Личное сообщение для </span>
-                  <span className="sm:hidden">Лично: </span>
-                  {privateTo}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => setPrivateTo(null)}
-                  className="btn-cancel-brut ml-auto shrink-0 px-2 py-0.5 text-[0.66rem]"
-                >
-                  Отмена
-                </button>
-              </div>
-            )}
 
             {othersTyping.length > 0 && (
               <div className="border-t-2 border-foreground/20 px-4 py-1.5 font-mono text-[0.66rem] uppercase tracking-[0.06em] text-secondary sm:px-5 sm:text-[0.72rem]">
@@ -422,9 +312,7 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
                   placeholder={
                     !user
                       ? 'Займи ник, чтобы писать'
-                      : privateTo
-                        ? `Лично для ${privateTo}…`
-                        : 'Напиши что-нибудь…'
+                      : 'Напиши что-нибудь…'
                   }
                   className="chat-font w-full min-w-0 bg-transparent text-[0.95rem] text-foreground outline-none placeholder:text-muted-foreground/70 sm:text-[0.94rem]"
                 />
@@ -486,12 +374,8 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
                   >
                     <button
                       type="button"
-                      onClick={() => {
-                        setWhoOpen(false);
-                        setPrivateTo(u.nick);
-                      }}
-                      disabled={isMe || busy}
-                      title={isMe ? undefined : busy ? `${u.nick} сейчас в привате` : `Написать: ${u.nick}`}
+                      onClick={() => setCardPerson(u as CardPerson)}
+                      title={isMe ? 'Моя анкета' : `Анкета: ${u.nick}`}
                       className="flex min-w-0 flex-1 items-center gap-2 py-3 pl-2 text-left disabled:cursor-default sm:pl-4"
                     >
                       <span className="flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded-full border border-foreground/25 bg-muted">
@@ -565,7 +449,6 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
         open={residentsOpen}
         onOpenChange={setResidentsOpen}
         onCard={setCardPerson}
-        onWrite={(nick) => setPrivateTo(nick)}
         myNick={user?.nick}
       />
 

@@ -181,10 +181,8 @@ export const CallProvider = ({ children }: { children: ReactNode }) => {
     peerRef.current = peerNick;
   }, [peerNick]);
 
-  const logCall = useCallback((nick: string, text: string) => {
-    if (loggedRef.current) return;
+  const logCall = useCallback((_nick: string, _text: string) => {
     loggedRef.current = true;
-    api.dmSend({ nick, text }).catch(() => undefined);
   }, []);
 
   const cleanup = useCallback(() => {
