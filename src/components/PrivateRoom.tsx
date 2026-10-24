@@ -45,10 +45,34 @@ const PrivateRoom = () => {
     };
   }, [messages, reveal]);
 
+  const stickBottom = useRef(true);
+  const lastSeenId = useRef(0);
+
+  const onFeedScroll = () => {
+    const el = feedRef.current;
+    if (el) stickBottom.current = el.scrollHeight - el.scrollTop - el.clientHeight < 80;
+  };
+
   useEffect(() => {
     const el = feedRef.current;
-    if (el) el.scrollTop = el.scrollHeight;
-  }, [messages]);
+    if (!el) return;
+    const last = messages.length ? messages[messages.length - 1] : null;
+    const lastId = last?.id ?? 0;
+    const fresh = lastId !== lastSeenId.current;
+    const mine = fresh && last?.nick === user?.nick;
+    lastSeenId.current = lastId;
+    if (stickBottom.current || mine) {
+      el.scrollTop = el.scrollHeight;
+      stickBottom.current = true;
+    }
+  }, [messages, plain, user?.nick]);
+
+  useEffect(() => {
+    if (!active) {
+      stickBottom.current = true;
+      lastSeenId.current = 0;
+    }
+  }, [active]);
 
   useEffect(() => {
     if (!active) lastIncoming.current = null;
@@ -150,6 +174,7 @@ const PrivateRoom = () => {
 
           <div
             ref={feedRef}
+            onScroll={onFeedScroll}
             className="scrollbar-brut min-h-0 flex-1 space-y-1 overflow-y-auto overscroll-contain px-4 py-3 sm:px-5"
           >
             {messages.map((m) => (
