@@ -426,6 +426,22 @@
     }
   }
 
+  .support-close {
+    @apply border-2 border-[#2F6BFF] transition-colors;
+  }
+
+  .support-close:hover {
+    @apply bg-[#2F6BFF] text-white;
+  }
+
+  .day .support-close {
+    @apply border-white;
+  }
+
+  .day .support-close:hover {
+    @apply bg-white text-secondary;
+  }
+
   .nav-link {
     @apply relative border-b-2 border-transparent pb-0.5 text-[0.82rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground transition-colors duration-200;
   }
