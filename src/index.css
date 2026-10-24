@@ -109,6 +109,84 @@
     --nick-6: 105 60% 25%;
     --nick-7: 22 88% 38%;
     --nick-8: 228 70% 40%;
+
+    --sky-top: 197 90% 78%;
+    --sky-bottom: 203 80% 90%;
+  }
+
+  .day.day-sunset {
+    --background: 22 85% 86%;
+    --foreground: 15 60% 18%;
+    --card: 24 75% 91%;
+    --card-foreground: 15 60% 18%;
+    --popover: 24 75% 92%;
+    --popover-foreground: 15 60% 18%;
+    --primary: 350 72% 45%;
+    --primary-foreground: 30 90% 97%;
+    --secondary: 268 45% 30%;
+    --secondary-foreground: 28 90% 93%;
+    --muted: 22 60% 82%;
+    --muted-foreground: 15 40% 30%;
+    --accent: 268 45% 30%;
+    --accent-foreground: 28 90% 93%;
+    --destructive: 350 72% 45%;
+    --destructive-foreground: 30 90% 97%;
+    --border: 15 40% 50%;
+    --input: 25 70% 95%;
+    --ring: 350 72% 45%;
+    --window-off: 22 40% 78%;
+    --sky-top: 15 85% 80%;
+    --sky-bottom: 40 90% 89%;
+  }
+
+  .day.day-mint {
+    --background: 150 45% 82%;
+    --foreground: 165 60% 14%;
+    --card: 150 40% 89%;
+    --card-foreground: 165 60% 14%;
+    --popover: 150 40% 90%;
+    --popover-foreground: 165 60% 14%;
+    --primary: 8 80% 47%;
+    --primary-foreground: 150 60% 97%;
+    --secondary: 170 70% 20%;
+    --secondary-foreground: 150 60% 92%;
+    --muted: 150 30% 80%;
+    --muted-foreground: 165 35% 26%;
+    --accent: 170 70% 20%;
+    --accent-foreground: 150 60% 92%;
+    --destructive: 8 80% 47%;
+    --destructive-foreground: 150 60% 97%;
+    --border: 160 35% 40%;
+    --input: 150 40% 95%;
+    --ring: 8 80% 47%;
+    --window-off: 150 25% 76%;
+    --sky-top: 160 50% 76%;
+    --sky-bottom: 120 45% 90%;
+  }
+
+  .day.day-sand {
+    --background: 42 70% 83%;
+    --foreground: 25 55% 16%;
+    --card: 42 65% 89%;
+    --card-foreground: 25 55% 16%;
+    --popover: 42 65% 90%;
+    --popover-foreground: 25 55% 16%;
+    --primary: 8 80% 46%;
+    --primary-foreground: 40 80% 97%;
+    --secondary: 210 70% 25%;
+    --secondary-foreground: 42 85% 92%;
+    --muted: 40 45% 80%;
+    --muted-foreground: 28 35% 28%;
+    --accent: 210 70% 25%;
+    --accent-foreground: 42 85% 92%;
+    --destructive: 8 80% 46%;
+    --destructive-foreground: 40 80% 97%;
+    --border: 30 35% 45%;
+    --input: 42 60% 95%;
+    --ring: 8 80% 46%;
+    --window-off: 38 30% 74%;
+    --sky-top: 38 70% 78%;
+    --sky-bottom: 48 80% 90%;
   }
 
   .dark {
@@ -174,9 +252,9 @@
     opacity: 0;
     background-image: linear-gradient(
       170deg,
-      hsl(197 90% 78%) 0%,
-      hsl(200 85% 84%) 48%,
-      hsl(203 80% 90%) 100%
+      hsl(var(--sky-top, 197 90% 78%)) 0%,
+      hsl(var(--background)) 48%,
+      hsl(var(--sky-bottom, 203 80% 90%)) 100%
     );
     transition: opacity 0.45s ease;
   }

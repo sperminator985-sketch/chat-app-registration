@@ -8,7 +8,8 @@ import { useAuth } from '@/hooks/use-auth';
 import { nickColorClass, staffNickClass } from '@/data/chat';
 import { useDm } from '@/hooks/use-dm';
 import { useWeather, formatTemp, degreeWord, weatherIcon } from '@/hooks/use-weather';
-import { useTheme } from '@/hooks/use-theme';
+import { useTheme, PALETTES } from '@/hooks/use-theme';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useTicker } from '@/hooks/use-ticker';
 
 const guestLinks = [
@@ -28,7 +29,7 @@ const Header = ({ onProfile }: HeaderProps) => {
   const { user, openAuth, signOut } = useAuth();
   const { unread, openList, soundOn, toggleSound } = useDm();
   const temp = useWeather();
-  const { theme, toggle } = useTheme();
+  const { theme, toggle, palette, setPalette } = useTheme();
   const { openTicker, pending } = useTicker();
   const navigate = useNavigate();
   const links = user ? [] : guestLinks;
@@ -48,6 +49,44 @@ const Header = ({ onProfile }: HeaderProps) => {
       <Icon name={theme === 'day' ? 'Moon' : 'Sun'} size={18} />
     </button>
   );
+
+  const paletteButton = (extra?: string) =>
+    theme === 'day' ? (
+      <Popover>
+        <PopoverTrigger asChild>
+          <button
+            aria-label="Цвет дневной темы"
+            title="Цвет дневной темы"
+            className={cn(
+              'flex h-10 w-10 items-center justify-center border-2 border-foreground/40 text-foreground transition-colors hover:border-secondary hover:text-secondary',
+              extra,
+            )}
+          >
+            <Icon name="Palette" size={18} />
+          </button>
+        </PopoverTrigger>
+        <PopoverContent align="end" className="w-auto rounded-none border-2 border-foreground/40 p-3">
+          <p className="mb-2 text-[0.7rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+            Дневная тема
+          </p>
+          <div className="grid grid-cols-2 gap-2">
+            {PALETTES.map((p) => (
+              <button
+                key={p.id}
+                onClick={() => setPalette(p.id)}
+                className={cn(
+                  'flex items-center gap-2 border-2 px-3 py-2 text-[0.75rem] font-semibold uppercase tracking-[0.08em] transition-colors',
+                  palette === p.id ? 'border-primary text-primary' : 'border-foreground/25 hover:border-secondary',
+                )}
+              >
+                <span className="h-4 w-4 shrink-0 border border-foreground/40" style={{ background: p.swatch }} />
+                {p.label}
+              </button>
+            ))}
+          </div>
+        </PopoverContent>
+      </Popover>
+    ) : null;
 
   const mailButton = (extra?: string) => (
     <button
@@ -269,6 +308,7 @@ const Header = ({ onProfile }: HeaderProps) => {
             </a>
           )}
           {themeButton()}
+          {paletteButton()}
         </div>
 
         <nav className={cn('hidden items-center md:flex', user ? 'ml-auto gap-2 lg:ml-0 xl:gap-7' : 'gap-7')}>
@@ -285,6 +325,7 @@ const Header = ({ onProfile }: HeaderProps) => {
           {user ? (
             <>
               {themeButton('lg:hidden')}
+              {paletteButton('lg:hidden')}
               {mailButton()}
               {tickerButton()}
               {soundButton()}
@@ -373,6 +414,24 @@ const Header = ({ onProfile }: HeaderProps) => {
               <Icon name={theme === 'day' ? 'Moon' : 'Sun'} size={16} />
               {themeLabel}
             </button>
+            {theme === 'day' && (
+              <div className="grid grid-cols-4 gap-2">
+                {PALETTES.map((p) => (
+                  <button
+                    key={p.id}
+                    onClick={() => setPalette(p.id)}
+                    aria-label={p.label}
+                    className={cn(
+                      'flex flex-col items-center gap-1 border-2 py-2 text-[0.62rem] font-semibold uppercase tracking-[0.06em]',
+                      palette === p.id ? 'border-primary text-primary' : 'border-foreground/25 text-foreground',
+                    )}
+                  >
+                    <span className="h-5 w-5 border border-foreground/40" style={{ background: p.swatch }} />
+                    {p.label}
+                  </button>
+                ))}
+              </div>
+            )}
 
             {links.filter((l) => l.href !== '#top').map((l) => (
               <a
