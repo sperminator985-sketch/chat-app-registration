@@ -5,18 +5,10 @@ import { api } from '@/lib/api';
 import { toast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
-const TOPICS = [
-  { id: 'Вопрос', icon: 'MessageCircleQuestion' },
-  { id: 'Проблема в чате', icon: 'TriangleAlert' },
-  { id: 'Жалоба', icon: 'Gavel' },
-  { id: 'Другое', icon: 'Sparkles' },
-] as const;
-
 const SupportDialog = () => {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
-  const [topic, setTopic] = useState<string>(TOPICS[0].id);
   const [message, setMessage] = useState('');
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
@@ -24,7 +16,6 @@ const SupportDialog = () => {
   const reset = () => {
     setName('');
     setEmail('');
-    setTopic(TOPICS[0].id);
     setMessage('');
     setSent(false);
   };
@@ -50,7 +41,7 @@ const SupportDialog = () => {
       await api.supportMail({
         name: name.trim(),
         email: email.trim(),
-        topic,
+        topic: 'Обращение',
         message: message.trim(),
       });
       setSent(true);
@@ -162,30 +153,8 @@ const SupportDialog = () => {
                 </label>
               </div>
 
-              <div>
-                {step('03', 'Тема обращения')}
-                <div className="flex flex-wrap gap-1.5">
-                  {TOPICS.map((t) => (
-                    <button
-                      key={t.id}
-                      type="button"
-                      onClick={() => setTopic(t.id)}
-                      className={cn(
-                        'flex items-center gap-1.5 border-2 px-2.5 py-1.5 text-[0.68rem] font-semibold uppercase tracking-[0.06em] transition-colors',
-                        topic === t.id
-                          ? 'border-secondary bg-secondary text-secondary-foreground'
-                          : 'border-foreground/35 text-muted-foreground hover:border-secondary hover:text-secondary',
-                      )}
-                    >
-                      <Icon name={t.icon} size={13} />
-                      {t.id}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
               <label className="block">
-                {step('04', 'Сообщение')}
+                {step('03', 'Сообщение')}
                 <textarea
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
