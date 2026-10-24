@@ -4,6 +4,7 @@ import { cn } from '@/lib/utils';
 import { toast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/use-auth';
 import { api, ApiMessage, PRIVATE_FILE_MAX, uploadPrivateFile } from '@/lib/api';
+import { makeFastStart } from '@/lib/faststart';
 import { nickColorClass, staffNickClass, isStaffNick } from '@/data/chat';
 import { usePrivate } from '@/hooks/use-private';
 import { useCrypto } from '@/hooks/use-crypto';
@@ -146,7 +147,8 @@ const PrivateRoom = () => {
     setUploading(true);
     setProgress(0);
     try {
-      const res = await uploadPrivateFile(file, setProgress);
+      const ready = await makeFastStart(file);
+      const res = await uploadPrivateFile(ready, setProgress);
       const kind = res.message.file?.type;
       if (kind === 'video' || kind === 'audio' || kind === 'image') {
         const url = URL.createObjectURL(file);
