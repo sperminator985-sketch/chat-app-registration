@@ -22,8 +22,8 @@ const PrivatePending = () => {
   if (!pendingNick || active) return null;
 
   return (
-    <div className="fixed inset-x-0 bottom-3 z-[55] flex justify-center px-3 pb-[env(safe-area-inset-bottom)]">
-      <div className="flex w-full max-w-[420px] items-center gap-3 border-2 border-sky-400 bg-background px-4 py-3 shadow-[6px_6px_0_0_hsl(var(--foreground)/0.2)]">
+    <div className="pointer-events-none fixed inset-0 z-[55] flex items-center justify-center px-3">
+      <div className="pointer-events-auto flex w-full max-w-[420px] items-center gap-3 border-2 border-sky-400 bg-background px-4 py-3 shadow-[6px_6px_0_0_hsl(var(--foreground)/0.2)]">
         <Icon name="Hourglass" size={18} className="shrink-0 animate-pulse text-sky-300" />
         <div className="min-w-0 flex-1">
           <p className="truncate text-[0.88rem] text-foreground">
