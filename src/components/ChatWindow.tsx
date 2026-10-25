@@ -241,13 +241,17 @@ const ChatWindow = ({ activeRoom }: ChatWindowProps) => {
               <button
                 type="button"
                 onClick={() => setWhoOpen(false)}
-                title="Закрыть список"
-                aria-label="Закрыть список"
-                className="absolute right-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center gap-2 border-2 border-destructive text-destructive outline-none transition-colors duration-150 md:w-auto md:px-3 md:text-[0.76rem] md:font-semibold md:uppercase md:tracking-[0.1em] md:hover:bg-destructive md:hover:text-destructive-foreground lg:hidden"
+                title="Закрыть"
+                aria-label="Закрыть"
+                className="absolute right-3 top-1/2 flex -translate-y-1/2 items-center outline-none lg:hidden"
               >
-                <Icon name="X" size={18} className="md:hidden" />
-                <Icon name="LogOut" size={16} className="hidden md:block" />
-                <span className="hidden md:inline">Выйти</span>
+                <span className="flex h-10 w-10 items-center justify-center border-2 border-destructive text-destructive md:hidden">
+                  <Icon name="X" size={18} />
+                </span>
+                <span className="hidden h-8 shrink-0 items-center gap-1.5 border-2 border-foreground/35 px-2.5 text-[0.72rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground transition-colors hover:border-primary hover:text-primary md:flex">
+                  <Icon name="LogOut" size={14} />
+                  Выйти
+                </span>
               </button>
             </div>
             <ul className="scrollbar-brut min-h-0 flex-1 divide-y divide-foreground/15 overflow-y-auto overscroll-contain">
