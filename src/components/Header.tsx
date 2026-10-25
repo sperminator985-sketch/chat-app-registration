@@ -256,6 +256,27 @@ const Header = ({ onProfile, room, onPickRoom }: HeaderProps) => {
           </>
         )}
 
+        {user && room && (
+          <div className="hidden shrink-0 items-center gap-2 lg:flex">
+            {temp !== null && (
+              <a
+                href="https://yandex.ru/pogoda/ru/tomsk"
+                target="_blank"
+                rel="noopener noreferrer"
+                title="Погода в Томске"
+                className="flex h-10 items-center gap-1.5 whitespace-nowrap border-2 border-foreground/30 px-2.5 text-[0.72rem] font-semibold uppercase tracking-[0.08em] text-muted-foreground transition-colors hover:border-secondary hover:text-foreground"
+              >
+                <Icon name={weatherIcon(temp)} size={14} className={temp < 0 ? 'text-primary' : 'text-secondary'} />
+                <span className="hidden xl:inline">Томск</span>
+                <span className={cn('text-[0.95rem] font-bold', temp < 0 ? 'text-primary' : 'text-secondary')}>
+                  {formatTemp(temp)}°
+                </span>
+              </a>
+            )}
+            {paletteButton()}
+          </div>
+        )}
+
         {user && room && onPickRoom && (
           <FloorSwitcher
             activeRoom={room.id}
@@ -337,7 +358,7 @@ const Header = ({ onProfile, room, onPickRoom }: HeaderProps) => {
           ))}
           {user ? (
             <>
-              {paletteButton()}
+              {paletteButton('lg:hidden')}
               <button
                 onClick={signOut}
                 title="Выйти из общаги"
