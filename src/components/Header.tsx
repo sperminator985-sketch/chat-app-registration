@@ -19,9 +19,10 @@ const guestLinks = [
 
 type HeaderProps = {
   onProfile: () => void;
+  room?: { floor: string | number; title: string; icon: string };
 };
 
-const Header = ({ onProfile }: HeaderProps) => {
+const Header = ({ onProfile, room }: HeaderProps) => {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [active, setActive] = useState('');
@@ -227,7 +228,14 @@ const Header = ({ onProfile }: HeaderProps) => {
           user ? 'rule-bottom md:border-b-0' : 'rule-bottom',
         )}
       >
-        {user ? (
+        {user && room ? (
+          <div className="flex min-w-0 shrink items-center gap-2">
+            <Icon name={room.icon} size={20} className="shrink-0 text-secondary" />
+            <span className="truncate font-display text-[0.95rem] font-extrabold uppercase leading-tight tracking-[-0.03em] md:text-lg">
+              Этаж {room.floor} · {room.title}
+            </span>
+          </div>
+        ) : user ? (
           <>
             <Logo size="xs" iconAsLetter className="min-w-0 shrink overflow-hidden md:hidden" />
             <Logo size="sm" iconAsLetter className="hidden md:flex" />

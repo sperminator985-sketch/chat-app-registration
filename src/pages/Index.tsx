@@ -124,7 +124,10 @@ const PageBody = () => {
     <div className="page-shell min-h-screen bg-background text-foreground">
       <div ref={topRef} id="topbar" className="sticky top-0 z-50">
         <ServerDownBanner />
-        <Header onProfile={() => setProfileOpen(true)} />
+        <Header
+          onProfile={() => setProfileOpen(true)}
+          room={user ? rooms.find((r) => r.id === activeRoom) ?? rooms[0] : undefined}
+        />
       </div>
       <main>
         {loading ? (
