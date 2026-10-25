@@ -26,6 +26,7 @@ type OnlineItem = {
   avatarUrl?: string | null;
   seenAgo?: number | null;
   inPrivate?: boolean;
+  away?: boolean;
   firstName?: string | null;
   lastName?: string | null;
   birthDate?: string | null;
@@ -102,6 +103,7 @@ const ChatWindow = ({ activeRoom }: ChatWindowProps) => {
     };
     const onVisible = () => {
       if (document.visibilityState === 'visible') load();
+      else onLeave();
     };
     document.addEventListener('visibilitychange', onVisible);
     window.addEventListener('pagehide', onLeave);
@@ -287,6 +289,11 @@ const ChatWindow = ({ activeRoom }: ChatWindowProps) => {
                         <span className="flex shrink-0 items-center gap-1 whitespace-nowrap font-mono text-[0.66rem] uppercase text-sky-300/70">
                           <Icon name="Lock" size={11} />
                           приват
+                        </span>
+                      ) : u.away ? (
+                        <span className="flex shrink-0 items-center gap-1 whitespace-nowrap font-mono text-[0.66rem] uppercase text-destructive">
+                          <Icon name="Moon" size={11} />
+                          отошёл
                         </span>
                       ) : null}
                     </button>

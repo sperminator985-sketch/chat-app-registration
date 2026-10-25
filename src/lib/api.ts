@@ -8,7 +8,7 @@ const API_URL = 'https://chat-tom.ru/chat/api.php';
 // Версия api.php, которую ожидает этот сайт. Должна совпадать с той,
 // что залита на хостинг — иначе в комендантской загорится красная метка.
 // Нумерация: 1.0.0 → 1.0.1 → 1.0.2 и так далее.
-export const API_VERSION = '1.0.13';
+export const API_VERSION = '1.0.14';
 const TOKEN_KEY = 'obshaga_token';
 
 export type ApiUser = {
@@ -156,7 +156,7 @@ export type VaultMessage = {
 export type FeedResponse = {
   messages: ApiMessage[];
   typing?: { nick: string; color: NickColor }[];
-  online: { nick: string; color: NickColor; status: string; avatar?: number; avatarUrl?: string | null; isAdmin?: boolean; inPrivate?: boolean; firstName?: string | null; lastName?: string | null; birthDate?: string | null; since?: string | null; uni?: string | null; gender?: 'm' | 'f' | null }[];
+  online: { nick: string; color: NickColor; status: string; avatar?: number; avatarUrl?: string | null; isAdmin?: boolean; inPrivate?: boolean; away?: boolean; firstName?: string | null; lastName?: string | null; birthDate?: string | null; since?: string | null; uni?: string | null; gender?: 'm' | 'f' | null }[];
   onlineTotal?: number;
   adminOnline?: boolean;
   tickerPending?: number;

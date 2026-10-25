@@ -2,8 +2,8 @@
 // Версия серверной части. При каждом изменении api.php поднимайте
 // последнюю цифру: 1.0.0 → 1.0.1 → 1.0.2 и так далее.
 // Проверить, что залито на хостинг: https://ваш-домен.ru/chat/api.php?action=version
-const API_VERSION = '1.0.13';
-const API_VERSION_NOTE = 'Отмена приглашения в приват';
+const API_VERSION = '1.0.14';
+const API_VERSION_NOTE = 'Статус «отошёл» в списке «Кто в чате»';
 
 ini_set('display_errors', '0');
 error_reporting(E_ALL & ~E_WARNING & ~E_NOTICE & ~E_DEPRECATED);
@@ -85,6 +85,7 @@ function fmtTime(?string $utc = null): string
 
 const ROOMS = ['kuhnya', 'kurilka', 'baraholka', 'ucheba', 'tomsk', 'znakomstva', 'flirt', 'sex', 'noch'];
 const ONLINE_SEC = 75;
+const AWAY_SEC = 900;
 const OWNER_NICK = 'админ';
 const OWNER_NICKS = ['админ', 'комендант'];
 const UNI_LIST = ['ТГУ', 'ТУСУР', 'СибГМУ', 'ТПУ', 'ТГАСУ', 'ТГПУ'];
@@ -1126,6 +1127,7 @@ try {
                 'avatarUrl' => $r['avatar_url'],
                 'isAdmin' => (bool) $r['is_admin'],
                 'inPrivate' => in_array((int) $r['id'], $busyIds, true),
+                'away' => !empty($r['away_ago']) && (int) $r['away_ago'] >= ONLINE_SEC,
                 'firstName' => $r['first_name'] ?? null,
                 'lastName' => $r['last_name'] ?? null,
                 'birthDate' => $r['birth_date'] ?? null,
@@ -1134,11 +1136,12 @@ try {
                 'gender' => $r['gender'] ?? null,
             ];
         }, q(
-            'SELECT ' . (ensureProfileColumns() ? '*' : 'id, nick, color, status, avatar, avatar_url, is_admin, created_at') . ' FROM users
+            'SELECT ' . (ensureProfileColumns() ? '*' : 'id, nick, color, status, avatar, avatar_url, is_admin, created_at') . ',
+                    TIMESTAMPDIFF(SECOND, last_seen, UTC_TIMESTAMP()) AS away_ago FROM users
              WHERE last_seen > UTC_TIMESTAMP() - INTERVAL ? SECOND AND room = ? AND is_admin = 0'
              . verifiedCond() . '
              ORDER BY last_seen DESC LIMIT 40',
-            [ONLINE_SEC, $room]
+            [AWAY_SEC, $room]
         )->fetchAll());
 
         $typing = [];
@@ -1471,7 +1474,10 @@ try {
     if ($method === 'POST' && $action === 'away') {
         $user = currentUser();
         if ($user) {
-            q('UPDATE users SET last_seen = UTC_TIMESTAMP() - INTERVAL 1 HOUR WHERE id = ?', [$user['id']]);
+            q(
+                'UPDATE users SET last_seen = LEAST(last_seen, UTC_TIMESTAMP() - INTERVAL ? SECOND) WHERE id = ?',
+                [ONLINE_SEC, $user['id']]
+            );
         }
         out(200, ['ok' => true]);
     }
