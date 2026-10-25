@@ -273,6 +273,7 @@ const Header = ({ onProfile, room, onPickRoom }: HeaderProps) => {
                 </span>
               </a>
             )}
+            {themeButton()}
             {paletteButton()}
           </div>
         )}
