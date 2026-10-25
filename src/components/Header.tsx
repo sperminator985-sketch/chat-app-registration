@@ -259,7 +259,7 @@ const Header = ({ onProfile, room, onPickRoom }: HeaderProps) => {
         )}
 
         {user && (
-          <div className="hidden items-center gap-1.5 md:flex lg:ml-2 lg:gap-2">
+          <div className="hidden items-center gap-1.5 md:ml-auto md:flex lg:ml-2 lg:gap-2">
             <button
               onClick={() => window.dispatchEvent(new Event('chat:residents'))}
               title="Кто зарегистрирован"
@@ -320,7 +320,7 @@ const Header = ({ onProfile, room, onPickRoom }: HeaderProps) => {
         </div>
         )}
 
-        <nav className={cn('hidden items-center md:flex', user ? 'ml-auto gap-2 xl:gap-7' : 'gap-7')}>
+        <nav className={cn('hidden items-center md:flex', user ? 'gap-1.5 lg:ml-auto lg:gap-2 xl:gap-7' : 'gap-7')}>
           {links.map((l) => (
             <a
               key={l.href}
