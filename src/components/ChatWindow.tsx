@@ -273,13 +273,13 @@ const ChatWindow = ({ activeRoom }: ChatWindowProps) => {
                       title={isMe ? 'Моя анкета' : `Анкета: ${u.nick}`}
                       className="flex min-w-0 flex-1 items-center gap-2 py-3 pl-2 text-left disabled:cursor-default sm:pl-4"
                     >
-                      <span className="flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded-full border border-foreground/25 bg-muted">
+                      <span className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full border border-foreground/25 bg-muted">
                         {!isMe && !busy && u.away ? (
                           <span className="h-full w-full bg-destructive" title="Отошёл" />
                         ) : u.avatarUrl ? (
                           <img src={u.avatarUrl} alt="" className="h-full w-full object-cover" />
                         ) : (
-                          <Icon name="User" size={14} className="text-muted-foreground" />
+                          <Icon name="User" size={18} className="text-muted-foreground" />
                         )}
                       </span>
                       <span className="flex min-w-0 flex-1 flex-col">
