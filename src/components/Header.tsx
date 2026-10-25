@@ -235,7 +235,7 @@ const Header = ({ onProfile, room, onPickRoom }: HeaderProps) => {
             <div className="flex min-w-0 flex-1 md:hidden">
               <FloorMenu room={room} onPick={onPickRoom} />
             </div>
-            <div className="hidden min-w-0 shrink items-center gap-2 md:flex md:flex-initial" title={`Этаж ${room.floor} · ${room.title}`}>
+            <div className="hidden min-w-0 shrink-0 items-center gap-2 md:flex md:w-[150px] lg:w-[220px] xl:w-[300px]" title={`Этаж ${room.floor} · ${room.title}`}>
             <Icon name={room.icon} size={20} className="shrink-0 text-secondary" />
             <span className="truncate font-display text-[0.95rem] font-extrabold uppercase leading-tight tracking-[-0.03em] md:text-[0.9rem] xl:text-lg">
               Этаж {room.floor} · {room.title}
@@ -265,24 +265,22 @@ const Header = ({ onProfile, room, onPickRoom }: HeaderProps) => {
         )}
 
         {user && (
-          <div className="hidden items-center gap-1.5 md:ml-auto md:flex lg:ml-2 lg:gap-2">
+          <div className="hidden items-center gap-1.5 md:ml-auto md:flex lg:gap-2">
             <button
               onClick={() => window.dispatchEvent(new Event('chat:residents'))}
               title="Кто зарегистрирован"
               aria-label="Жильцы"
-              className="flex h-10 w-10 items-center justify-center gap-2 border-2 border-foreground/40 text-[0.76rem] lg:w-auto lg:px-3 font-semibold uppercase tracking-[0.1em] text-foreground transition-colors hover:border-secondary hover:text-secondary"
+              className="flex h-10 w-10 items-center justify-center gap-2 border-2 border-foreground/40 text-foreground transition-colors hover:border-secondary hover:text-secondary"
             >
               <Icon name="BookUser" size={16} />
-              <span className="hidden lg:inline">Жильцы</span>
             </button>
             <button
               onClick={() => window.dispatchEvent(new Event('chat:clear'))}
               title="Очистить поле сообщений"
               aria-label="Очистить"
-              className="flex h-10 w-10 items-center justify-center gap-2 border-2 border-foreground/40 text-[0.76rem] lg:w-auto lg:px-3 font-semibold uppercase tracking-[0.1em] text-foreground transition-colors hover:border-secondary hover:text-secondary"
+              className="flex h-10 w-10 items-center justify-center gap-2 border-2 border-foreground/40 text-foreground transition-colors hover:border-secondary hover:text-secondary"
             >
               <Icon name="Eraser" size={16} />
-              <span className="hidden lg:inline">Очистить</span>
             </button>
             {tickerButton()}
             {user.isAdmin && (
@@ -326,7 +324,7 @@ const Header = ({ onProfile, room, onPickRoom }: HeaderProps) => {
         </div>
         )}
 
-        <nav className={cn('hidden items-center md:flex', user ? 'gap-1.5 lg:ml-auto lg:gap-2 xl:gap-7' : 'gap-7')}>
+        <nav className={cn('hidden items-center md:flex', user ? 'gap-1.5 lg:gap-2' : 'gap-7')}>
           {links.map((l) => (
             <a
               key={l.href}
@@ -344,10 +342,9 @@ const Header = ({ onProfile, room, onPickRoom }: HeaderProps) => {
                 onClick={signOut}
                 title="Выйти из общаги"
                 aria-label="Выйти"
-                className="flex h-10 w-10 items-center justify-center gap-2 border-2 border-foreground/40 text-[0.76rem] lg:w-auto lg:px-3 font-semibold uppercase tracking-[0.1em] text-foreground transition-colors hover:border-primary hover:text-primary"
+                className="flex h-10 w-10 items-center justify-center gap-2 border-2 border-foreground/40 text-foreground transition-colors hover:border-primary hover:text-primary"
               >
                 <Icon name="LogOut" size={16} />
-                <span className="hidden lg:inline">Выйти</span>
               </button>
             </>
           ) : (
