@@ -279,6 +279,7 @@ const Header = ({ onProfile, room, onPickRoom }: HeaderProps) => {
               Очистить
             </button>
             {tickerButton()}
+            {themeButton()}
           </div>
         )}
 
@@ -325,7 +326,6 @@ const Header = ({ onProfile, room, onPickRoom }: HeaderProps) => {
           {user ? (
             <>
               {paletteButton()}
-              {themeButton()}
               {user.isAdmin && (
                 <Link
                   to="/admin"
