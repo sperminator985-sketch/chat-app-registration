@@ -74,7 +74,7 @@ const ResidentsDialog = ({ open, onOpenChange, onCard, myNick }: Props) => {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="flex h-svh max-h-svh w-screen !max-w-none flex-col overflow-hidden border-0 bg-background p-0 sm:h-auto sm:max-h-[85dvh] sm:w-[calc(100%-1.5rem)] sm:!max-w-[520px] sm:border-2 sm:border-foreground/40 [&>button]:hidden">
+      <DialogContent className="flex h-svh max-h-svh w-screen !max-w-none flex-col overflow-hidden rounded-none border-0 bg-background p-0 lg:h-auto lg:max-h-[85dvh] lg:w-[calc(100%-1.5rem)] lg:!max-w-[520px] lg:border-2 lg:border-foreground/40 [&>button]:hidden">
         <div className="flex shrink-0 items-center gap-1.5 border-b-2 border-foreground/35 px-2.5 py-3.5 sm:gap-3 sm:px-5 sm:py-4">
           <Icon name="BookUser" size={16} className="shrink-0 text-secondary sm:h-[18px] sm:w-[18px]" />
           <p className="min-w-0 flex-1 font-display text-[0.78rem] font-extrabold uppercase leading-none tracking-[-0.03em] sm:text-lg sm:tracking-[-0.02em]">
