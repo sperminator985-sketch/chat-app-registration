@@ -225,14 +225,14 @@ const Header = ({ onProfile, room, onPickRoom }: HeaderProps) => {
     >
       <div
         className={cn(
-          'mx-auto flex max-w-[1400px] flex-wrap items-center justify-between gap-x-2 gap-y-3 py-4 pl-2.5 pr-5 md:gap-x-4 md:px-10 lg:flex-nowrap',
+          'mx-auto flex max-w-[1400px] flex-wrap items-center justify-between gap-x-2 gap-y-3 py-4 pl-2.5 pr-5 md:flex-nowrap md:gap-x-3 md:px-6 lg:gap-x-4 lg:px-10',
           user ? 'rule-bottom md:border-b-0' : 'rule-bottom',
         )}
       >
         {user && room ? (
-          <div className="flex min-w-0 flex-1 shrink items-center gap-2 lg:flex-none">
+          <div className="flex min-w-0 flex-1 shrink items-center gap-2 md:flex-initial" title={`Этаж ${room.floor} · ${room.title}`}>
             <Icon name={room.icon} size={20} className="shrink-0 text-secondary" />
-            <span className="truncate font-display text-[0.95rem] font-extrabold uppercase leading-tight tracking-[-0.03em] md:text-lg">
+            <span className="truncate font-display text-[0.95rem] font-extrabold uppercase leading-tight tracking-[-0.03em] md:text-[0.9rem] xl:text-lg">
               Этаж {room.floor} · {room.title}
             </span>
           </div>
@@ -254,12 +254,12 @@ const Header = ({ onProfile, room, onPickRoom }: HeaderProps) => {
           <FloorSwitcher
             activeRoom={room.id}
             onPick={onPickRoom}
-            className="order-last w-full justify-start lg:order-none lg:ml-2 lg:w-auto"
+            className="order-last w-full justify-start md:order-none md:ml-2 md:w-auto"
           />
         )}
 
         {user && (
-          <div className="hidden items-center gap-2 md:flex lg:ml-2">
+          <div className="hidden items-center gap-1.5 md:flex lg:ml-2 lg:gap-2">
             <button
               onClick={() => window.dispatchEvent(new Event('chat:residents'))}
               title="Кто зарегистрирован"

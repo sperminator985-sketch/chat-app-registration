@@ -11,7 +11,7 @@ type FloorSwitcherProps = {
 const FloorSwitcher = ({ activeRoom, onPick, className }: FloorSwitcherProps) => {
   const { user } = useAuth();
   return (
-    <div className={cn('flex items-center justify-center gap-1.5 md:gap-2', className)}>
+    <div className={cn('flex items-center justify-center gap-1.5 lg:gap-2', className)}>
       {rooms.map((r) => {
         const locked = Boolean(user) && !canEnterRoom(r.id, user?.uni, user?.isAdmin);
         return (
@@ -28,7 +28,7 @@ const FloorSwitcher = ({ activeRoom, onPick, className }: FloorSwitcherProps) =>
                 : r.title
             }
             className={cn(
-              'h-7 w-7 shrink-0 border-2 font-mono text-[0.7rem] font-semibold transition-colors md:h-8 md:w-8 md:text-[0.76rem]',
+              'h-7 w-7 shrink-0 border-2 font-mono text-[0.7rem] font-semibold transition-colors lg:h-8 lg:w-8 lg:text-[0.76rem]',
               r.id === activeRoom
                 ? 'border-secondary bg-secondary text-secondary-foreground'
                 : locked
