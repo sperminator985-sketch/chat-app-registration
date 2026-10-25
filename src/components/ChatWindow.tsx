@@ -280,8 +280,15 @@ const ChatWindow = ({ activeRoom }: ChatWindowProps) => {
                           <Icon name="User" size={14} className="text-muted-foreground" />
                         )}
                       </span>
-                      <span className={cn('min-w-0 flex-1 break-all font-normal leading-tight', staffNickClass(u.nick, nickColorClass[u.color as 1]))}>
-                        {u.nick}
+                      <span className="flex min-w-0 flex-1 flex-col">
+                        <span className={cn('break-all font-normal leading-tight', staffNickClass(u.nick, nickColorClass[u.color as 1]))}>
+                          {u.nick}
+                        </span>
+                        {!isMe && !busy && u.away && (
+                          <span className="mt-0.5 whitespace-nowrap font-mono text-[0.62rem] uppercase leading-none text-destructive">
+                            отошёл
+                          </span>
+                        )}
                       </span>
                       {isMe ? (
                         <span className="shrink-0 whitespace-nowrap font-mono text-[0.7rem] uppercase text-secondary">это ты</span>
@@ -289,10 +296,6 @@ const ChatWindow = ({ activeRoom }: ChatWindowProps) => {
                         <span className="flex shrink-0 items-center gap-1 whitespace-nowrap font-mono text-[0.66rem] uppercase text-sky-300/70">
                           <Icon name="Lock" size={11} />
                           приват
-                        </span>
-                      ) : u.away ? (
-                        <span className="flex shrink-0 items-center gap-1 whitespace-nowrap font-mono text-[0.66rem] uppercase text-destructive">
-                          отошёл
                         </span>
                       ) : null}
                     </button>
