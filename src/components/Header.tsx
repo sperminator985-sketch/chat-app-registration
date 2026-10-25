@@ -289,6 +289,14 @@ const Header = ({ onProfile, room, onPickRoom }: HeaderProps) => {
         {user && (
           <div className="hidden items-center gap-1.5 md:ml-3 md:flex lg:ml-0 lg:gap-2">
             <button
+              onClick={() => window.dispatchEvent(new Event('chat:who'))}
+              title="Кто в чате"
+              aria-label="Кто в чате"
+              className="flex h-10 w-10 items-center justify-center border-2 border-foreground/40 text-foreground transition-colors hover:border-secondary hover:text-secondary lg:hidden"
+            >
+              <Icon name="Users" size={16} />
+            </button>
+            <button
               onClick={() => window.dispatchEvent(new Event('chat:residents'))}
               title="Кто зарегистрирован"
               aria-label="Жильцы"

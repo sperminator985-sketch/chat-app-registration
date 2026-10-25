@@ -182,7 +182,7 @@ const ChatWindow = ({ activeRoom }: ChatWindowProps) => {
       className="flex min-h-0 flex-col overflow-hidden bg-card"
     >
       <div className="flex w-full min-h-0 flex-1 flex-col px-0 pb-0 pt-0 md:px-0 md:py-0">
-        <div className="relative grid min-h-0 w-full flex-1 gap-[2px] overflow-hidden border-b-2 border-foreground/35 bg-foreground/35 md:border-2 md:grid-cols-[1fr_220px] lg:grid-cols-[1fr_280px]">
+        <div className="relative grid min-h-0 w-full flex-1 gap-[2px] overflow-hidden border-b-2 border-foreground/35 bg-foreground/35 md:border-2 lg:grid-cols-[1fr_280px]">
           <div className="flex min-h-0 min-w-0 flex-col bg-background">
             <div
               ref={feedRef}
@@ -230,7 +230,7 @@ const ChatWindow = ({ activeRoom }: ChatWindowProps) => {
 
           <aside
             className={cn(
-              'min-h-0 flex-col overflow-hidden bg-background md:static md:z-auto md:flex',
+              'min-h-0 flex-col overflow-hidden bg-background lg:static lg:z-auto lg:flex',
               whoOpen ? 'absolute inset-0 z-30 flex' : 'hidden',
             )}
           >
@@ -243,7 +243,7 @@ const ChatWindow = ({ activeRoom }: ChatWindowProps) => {
                 onClick={() => setWhoOpen(false)}
                 title="Закрыть"
                 aria-label="Закрыть"
-                className="absolute right-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center border-2 border-destructive text-destructive outline-none transition-colors duration-150 md:hidden"
+                className="absolute right-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center border-2 border-destructive text-destructive outline-none transition-colors duration-150 lg:hidden"
               >
                 <Icon name="X" size={18} />
               </button>
