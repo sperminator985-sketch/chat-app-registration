@@ -325,6 +325,7 @@ const Header = ({ onProfile, room, onPickRoom }: HeaderProps) => {
           {user ? (
             <>
               {paletteButton()}
+              {themeButton()}
               {user.isAdmin && (
                 <Link
                   to="/admin"
@@ -427,12 +428,10 @@ const Header = ({ onProfile, room, onPickRoom }: HeaderProps) => {
                 Главная
               </a>
             )}
-            {!user && (
-              <button onClick={toggle} className="btn-ghost-brut flex items-center justify-center gap-2">
-                <Icon name={theme === 'day' ? 'Moon' : 'Sun'} size={16} />
-                {themeLabel}
-              </button>
-            )}
+            <button onClick={toggle} className="btn-ghost-brut flex items-center justify-center gap-2">
+              <Icon name={theme === 'day' ? 'Moon' : 'Sun'} size={16} />
+              {themeLabel}
+            </button>
             {theme === 'day' && (
               <div className="grid grid-cols-3 gap-2">
                 {PALETTES.map((p) => (
