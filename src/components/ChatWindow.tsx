@@ -241,11 +241,13 @@ const ChatWindow = ({ activeRoom }: ChatWindowProps) => {
               <button
                 type="button"
                 onClick={() => setWhoOpen(false)}
-                title="Закрыть"
-                aria-label="Закрыть"
-                className="absolute right-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center border-2 border-destructive text-destructive outline-none transition-colors duration-150 lg:hidden"
+                title="Закрыть список"
+                aria-label="Закрыть список"
+                className="absolute right-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center gap-2 border-2 border-destructive text-destructive outline-none transition-colors duration-150 md:w-auto md:px-3 md:text-[0.76rem] md:font-semibold md:uppercase md:tracking-[0.1em] md:hover:bg-destructive md:hover:text-destructive-foreground lg:hidden"
               >
-                <Icon name="X" size={18} />
+                <Icon name="X" size={18} className="md:hidden" />
+                <Icon name="LogOut" size={16} className="hidden md:block" />
+                <span className="hidden md:inline">Выйти</span>
               </button>
             </div>
             <ul className="scrollbar-brut min-h-0 flex-1 divide-y divide-foreground/15 overflow-y-auto overscroll-contain">
