@@ -264,19 +264,19 @@ const Header = ({ onProfile, room, onPickRoom }: HeaderProps) => {
               onClick={() => window.dispatchEvent(new Event('chat:residents'))}
               title="Кто зарегистрирован"
               aria-label="Жильцы"
-              className="flex h-10 items-center gap-2 border-2 border-foreground/40 px-3 text-[0.76rem] font-semibold uppercase tracking-[0.1em] text-foreground transition-colors hover:border-secondary hover:text-secondary"
+              className="flex h-10 w-10 items-center justify-center gap-2 border-2 border-foreground/40 text-[0.76rem] lg:w-auto lg:px-3 font-semibold uppercase tracking-[0.1em] text-foreground transition-colors hover:border-secondary hover:text-secondary"
             >
               <Icon name="BookUser" size={16} />
-              Жильцы
+              <span className="hidden lg:inline">Жильцы</span>
             </button>
             <button
               onClick={() => window.dispatchEvent(new Event('chat:clear'))}
               title="Очистить поле сообщений"
               aria-label="Очистить"
-              className="flex h-10 items-center gap-2 border-2 border-foreground/40 px-3 text-[0.76rem] font-semibold uppercase tracking-[0.1em] text-foreground transition-colors hover:border-secondary hover:text-secondary"
+              className="flex h-10 w-10 items-center justify-center gap-2 border-2 border-foreground/40 text-[0.76rem] lg:w-auto lg:px-3 font-semibold uppercase tracking-[0.1em] text-foreground transition-colors hover:border-secondary hover:text-secondary"
             >
               <Icon name="Eraser" size={16} />
-              Очистить
+              <span className="hidden lg:inline">Очистить</span>
             </button>
             {tickerButton()}
             {user.isAdmin && (
@@ -338,10 +338,10 @@ const Header = ({ onProfile, room, onPickRoom }: HeaderProps) => {
                 onClick={signOut}
                 title="Выйти из общаги"
                 aria-label="Выйти"
-                className="flex h-10 items-center gap-2 border-2 border-foreground/40 px-3 text-[0.76rem] font-semibold uppercase tracking-[0.1em] text-foreground transition-colors hover:border-primary hover:text-primary"
+                className="flex h-10 w-10 items-center justify-center gap-2 border-2 border-foreground/40 text-[0.76rem] lg:w-auto lg:px-3 font-semibold uppercase tracking-[0.1em] text-foreground transition-colors hover:border-primary hover:text-primary"
               >
                 <Icon name="LogOut" size={16} />
-                Выйти
+                <span className="hidden lg:inline">Выйти</span>
               </button>
             </>
           ) : (
