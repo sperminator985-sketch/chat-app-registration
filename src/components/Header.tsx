@@ -4,6 +4,7 @@ import Icon from '@/components/ui/icon';
 import { press } from '@/lib/press';
 import Logo from '@/components/Logo';
 import FloorSwitcher from '@/components/FloorSwitcher';
+import FloorMenu from '@/components/FloorMenu';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/use-auth';
 import { useWeather, formatTemp, degreeWord, weatherIcon } from '@/hooks/use-weather';
@@ -229,13 +230,18 @@ const Header = ({ onProfile, room, onPickRoom }: HeaderProps) => {
           user ? 'rule-bottom md:border-b-0' : 'rule-bottom',
         )}
       >
-        {user && room ? (
-          <div className="flex min-w-0 flex-1 shrink items-center gap-2 md:flex-initial" title={`Этаж ${room.floor} · ${room.title}`}>
+        {user && room && onPickRoom ? (
+          <>
+            <div className="flex min-w-0 flex-1 md:hidden">
+              <FloorMenu room={room} onPick={onPickRoom} />
+            </div>
+            <div className="hidden min-w-0 shrink items-center gap-2 md:flex md:flex-initial" title={`Этаж ${room.floor} · ${room.title}`}>
             <Icon name={room.icon} size={20} className="shrink-0 text-secondary" />
             <span className="truncate font-display text-[0.95rem] font-extrabold uppercase leading-tight tracking-[-0.03em] md:text-[0.9rem] xl:text-lg">
               Этаж {room.floor} · {room.title}
             </span>
-          </div>
+            </div>
+          </>
         ) : user ? (
           <>
             <Logo size="xs" iconAsLetter className="min-w-0 shrink overflow-hidden md:hidden" />
@@ -254,7 +260,7 @@ const Header = ({ onProfile, room, onPickRoom }: HeaderProps) => {
           <FloorSwitcher
             activeRoom={room.id}
             onPick={onPickRoom}
-            className="order-last w-full justify-start md:order-none md:ml-2 md:w-auto"
+            className="hidden md:ml-2 md:flex md:w-auto"
           />
         )}
 
