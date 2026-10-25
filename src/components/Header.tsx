@@ -259,6 +259,35 @@ const Header = ({ onProfile, room, onPickRoom }: HeaderProps) => {
           />
         )}
 
+        {user && (
+          <div className="hidden items-center gap-2 md:flex lg:ml-2">
+            <button
+              onClick={() => window.dispatchEvent(new Event('chat:residents'))}
+              title="Кто зарегистрирован"
+              aria-label="Жильцы"
+              className="flex h-10 w-10 items-center justify-center border-2 border-foreground/40 text-foreground transition-colors hover:border-secondary hover:text-secondary"
+            >
+              <Icon name="BookUser" size={16} />
+            </button>
+            <button
+              onClick={() => window.dispatchEvent(new Event('chat:clear'))}
+              title="Очистить поле сообщений"
+              aria-label="Очистить"
+              className="flex h-10 w-10 items-center justify-center border-2 border-foreground/40 text-foreground transition-colors hover:border-secondary hover:text-secondary"
+            >
+              <Icon name="Eraser" size={16} />
+            </button>
+            <button
+              onClick={signOut}
+              title="Выйти из общаги"
+              aria-label="Выйти"
+              className="flex h-10 w-10 items-center justify-center border-2 border-foreground/40 text-foreground transition-colors hover:border-primary hover:text-primary"
+            >
+              <Icon name="LogOut" size={16} />
+            </button>
+          </div>
+        )}
+
         {!user && (
         <div className="mx-auto hidden items-center gap-3 md:flex">
           {temp !== null && (
@@ -303,22 +332,6 @@ const Header = ({ onProfile, room, onPickRoom }: HeaderProps) => {
             <>
               {paletteButton()}
               {tickerButton()}
-              <button
-                onClick={() => window.dispatchEvent(new Event('chat:residents'))}
-                title="Кто зарегистрирован"
-                aria-label="Жильцы"
-                className="flex h-10 w-10 items-center justify-center border-2 border-foreground/40 text-foreground transition-colors hover:border-secondary hover:text-secondary"
-              >
-                <Icon name="BookUser" size={16} />
-              </button>
-              <button
-                onClick={() => window.dispatchEvent(new Event('chat:clear'))}
-                title="Очистить поле сообщений"
-                aria-label="Очистить"
-                className="flex h-10 w-10 items-center justify-center border-2 border-foreground/40 text-foreground transition-colors hover:border-secondary hover:text-secondary"
-              >
-                <Icon name="Eraser" size={16} />
-              </button>
               {user.isAdmin && (
                 <Link
                   to="/admin"
@@ -333,14 +346,6 @@ const Header = ({ onProfile, room, onPickRoom }: HeaderProps) => {
                 className="flex items-center gap-2 border-2 border-foreground/40 px-4 py-2 text-[0.8rem] font-semibold uppercase tracking-[0.12em] transition-colors hover:border-secondary"
               >
                 <span className={staffNickClass(user.nick, nickColorClass[user.color])}>{user.nick}</span>
-              </button>
-              <button
-                onClick={signOut}
-                title="Выйти из общаги"
-                aria-label="Выйти"
-                className="flex h-10 w-10 items-center justify-center border-2 border-foreground/40 text-foreground transition-colors hover:border-primary hover:text-primary"
-              >
-                <Icon name="LogOut" size={16} />
               </button>
             </>
           ) : (
