@@ -249,7 +249,8 @@ const Header = ({ onProfile, room }: HeaderProps) => {
           </>
         )}
 
-        <div className={cn('mx-auto hidden items-center gap-3', user ? 'lg:flex' : 'md:flex')}>
+        {!user && (
+        <div className="mx-auto hidden items-center gap-3 md:flex">
           {temp !== null && (
             <a
               href="https://yandex.ru/pogoda/ru/tomsk"
@@ -275,6 +276,7 @@ const Header = ({ onProfile, room }: HeaderProps) => {
             <div className="absolute left-full top-0 ml-3">{paletteButton()}</div>
           </div>
         </div>
+        )}
 
         <nav className={cn('hidden items-center md:flex', user ? 'ml-auto gap-2 lg:ml-0 xl:gap-7' : 'gap-7')}>
           {links.map((l) => (
@@ -289,8 +291,7 @@ const Header = ({ onProfile, room }: HeaderProps) => {
           ))}
           {user ? (
             <>
-              {paletteButton('lg:hidden')}
-              {themeButton('lg:hidden')}
+              {paletteButton()}
               {tickerButton()}
               {user.isAdmin && (
                 <Link
@@ -371,10 +372,12 @@ const Header = ({ onProfile, room }: HeaderProps) => {
                 Главная
               </a>
             )}
-            <button onClick={toggle} className="btn-ghost-brut flex items-center justify-center gap-2">
-              <Icon name={theme === 'day' ? 'Moon' : 'Sun'} size={16} />
-              {themeLabel}
-            </button>
+            {!user && (
+              <button onClick={toggle} className="btn-ghost-brut flex items-center justify-center gap-2">
+                <Icon name={theme === 'day' ? 'Moon' : 'Sun'} size={16} />
+                {themeLabel}
+              </button>
+            )}
             {theme === 'day' && (
               <div className="grid grid-cols-3 gap-2">
                 {PALETTES.map((p) => (
