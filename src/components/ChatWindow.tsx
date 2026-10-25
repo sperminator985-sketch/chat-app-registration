@@ -182,7 +182,7 @@ const ChatWindow = ({ activeRoom }: ChatWindowProps) => {
       className="flex min-h-0 flex-col overflow-hidden bg-card"
     >
       <div className="flex w-full min-h-0 flex-1 flex-col px-0 pb-0 pt-0 md:px-0 md:py-0">
-        <div className="relative grid min-h-0 w-full flex-1 grid-rows-[minmax(0,1fr)_auto] gap-[2px] overflow-hidden bg-foreground/35 md:border-2 md:border-foreground/35 lg:mr-[278px]">
+        <div className="relative grid min-h-0 w-full flex-1 grid-rows-[minmax(0,1fr)_auto] gap-[2px] overflow-hidden bg-foreground/35 md:border-2 md:border-foreground/35 lg:w-[calc(100%-278px)]">
           <div className="flex min-h-0 min-w-0 flex-col bg-background lg:col-start-1 lg:row-start-1">
             <div
               ref={feedRef}
