@@ -182,8 +182,8 @@ const ChatWindow = ({ activeRoom }: ChatWindowProps) => {
       className="flex min-h-0 flex-col overflow-hidden bg-card"
     >
       <div className="flex w-full min-h-0 flex-1 flex-col px-0 pb-0 pt-0 md:px-0 md:py-0">
-        <div className="relative grid min-h-0 w-full flex-1 gap-[2px] overflow-hidden border-b-2 border-foreground/35 bg-foreground/35 md:border-2 lg:grid-cols-[1fr_280px]">
-          <div className="flex min-h-0 min-w-0 flex-col bg-background">
+        <div className="relative grid min-h-0 w-full flex-1 grid-rows-[minmax(0,1fr)_auto] gap-[2px] overflow-hidden bg-foreground/35 md:border-2 md:border-foreground/35 lg:grid-cols-[1fr_280px]">
+          <div className="flex min-h-0 min-w-0 flex-col bg-background lg:col-start-1 lg:row-start-1">
             <div
               ref={feedRef}
               onPointerDown={() => {
@@ -230,7 +230,7 @@ const ChatWindow = ({ activeRoom }: ChatWindowProps) => {
 
           <aside
             className={cn(
-              'min-h-0 flex-col overflow-hidden bg-background lg:static lg:z-auto lg:flex',
+              'min-h-0 flex-col overflow-hidden bg-background lg:static lg:z-auto lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:flex',
               whoOpen ? 'absolute inset-0 z-30 flex' : 'hidden',
             )}
           >
@@ -343,52 +343,52 @@ const ChatWindow = ({ activeRoom }: ChatWindowProps) => {
 
             </ul>
           </aside>
-        </div>
-        <div className="shrink-0 bg-background md:border-x-2 md:border-b-2 md:border-foreground/35">
-          {othersTyping.length > 0 && (
-            <div className="border-b-2 border-foreground/20 px-4 py-1.5 font-mono text-[0.66rem] uppercase tracking-[0.06em] text-secondary sm:px-5 sm:text-[0.72rem]">
-              <span className="animate-pulse">
-                {othersTyping.map((t) => t.nick).join(', ')}{' '}
-                {othersTyping.length > 1 ? 'печатают…' : 'печатает…'}
-              </span>
-            </div>
-          )}
+          <div className="min-w-0 shrink-0 bg-background lg:col-start-1 lg:row-start-2">
+            {othersTyping.length > 0 && (
+              <div className="border-b-2 border-foreground/20 px-4 py-1.5 font-mono text-[0.66rem] uppercase tracking-[0.06em] text-secondary sm:px-5 sm:text-[0.72rem]">
+                <span className="animate-pulse">
+                  {othersTyping.map((t) => t.nick).join(', ')}{' '}
+                  {othersTyping.length > 1 ? 'печатают…' : 'печатает…'}
+                </span>
+              </div>
+            )}
 
-          <form onSubmit={send} className="flex flex-row items-center gap-2 px-3 py-2 sm:gap-2.5 sm:px-5 sm:py-2.5">
-            <div className="flex flex-1 items-center gap-2 border-2 border-foreground/35 bg-input px-3 py-1.5 focus-within:border-secondary">
-              <input
-                ref={inputRef}
-                value={draft}
-                onChange={(e) => {
-                  setDraft(e.target.value);
-                  const now = Date.now();
-                  if (user && e.target.value && now - typingSentAt.current > 4000) {
-                    typingSentAt.current = now;
-                    api.typing(room.id).catch(() => undefined);
+            <form onSubmit={send} className="flex flex-row items-center gap-2 px-3 py-2 sm:gap-2.5 sm:px-5 sm:py-2.5">
+              <div className="flex flex-1 items-center gap-2 border-2 border-foreground/35 bg-input px-3 py-1.5 focus-within:border-secondary">
+                <input
+                  ref={inputRef}
+                  value={draft}
+                  onChange={(e) => {
+                    setDraft(e.target.value);
+                    const now = Date.now();
+                    if (user && e.target.value && now - typingSentAt.current > 4000) {
+                      typingSentAt.current = now;
+                      api.typing(room.id).catch(() => undefined);
+                    }
+                  }}
+                  maxLength={480}
+                  placeholder={
+                    !user
+                      ? 'Займи ник, чтобы писать'
+                      : 'Напиши что-нибудь…'
                   }
-                }}
-                maxLength={480}
-                placeholder={
-                  !user
-                    ? 'Займи ник, чтобы писать'
-                    : 'Напиши что-нибудь…'
-                }
-                className="chat-font w-full min-w-0 bg-transparent text-[0.95rem] text-foreground outline-none placeholder:text-muted-foreground/70 sm:text-[0.94rem]"
-              />
-            </div>
-            <div className="flex shrink-0 items-center gap-2 sm:gap-2.5">
-              <EmojiPicker onPick={(e) => setDraft((prev) => (prev + e).slice(0, 480))} />
-              <button
-                type="submit"
-                disabled={sending}
-                aria-label="Отправить"
-                className="btn-brut !gap-1.5 !px-2.5 !py-2 !text-xs disabled:opacity-60 sm:!px-3"
-              >
-                <Icon name="Send" size={14} />
-                <span className="hidden sm:inline">{sending ? 'Шлём…' : 'Отправить'}</span>
-              </button>
-            </div>
-          </form>
+                  className="chat-font w-full min-w-0 bg-transparent text-[0.95rem] text-foreground outline-none placeholder:text-muted-foreground/70 sm:text-[0.94rem]"
+                />
+              </div>
+              <div className="flex shrink-0 items-center gap-2 sm:gap-2.5">
+                <EmojiPicker onPick={(e) => setDraft((prev) => (prev + e).slice(0, 480))} />
+                <button
+                  type="submit"
+                  disabled={sending}
+                  aria-label="Отправить"
+                  className="btn-brut !gap-1.5 !px-2.5 !py-2 !text-xs disabled:opacity-60 sm:!px-3"
+                >
+                  <Icon name="Send" size={14} />
+                  <span className="hidden sm:inline">{sending ? 'Шлём…' : 'Отправить'}</span>
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       </div>
 
