@@ -276,14 +276,6 @@ const Header = ({ onProfile, room, onPickRoom }: HeaderProps) => {
             >
               <Icon name="Eraser" size={16} />
             </button>
-            <button
-              onClick={signOut}
-              title="Выйти из общаги"
-              aria-label="Выйти"
-              className="flex h-10 w-10 items-center justify-center border-2 border-foreground/40 text-foreground transition-colors hover:border-primary hover:text-primary"
-            >
-              <Icon name="LogOut" size={16} />
-            </button>
             {tickerButton()}
           </div>
         )}
@@ -340,6 +332,14 @@ const Header = ({ onProfile, room, onPickRoom }: HeaderProps) => {
                   <Icon name="Shield" size={18} />
                 </Link>
               )}
+              <button
+                onClick={signOut}
+                title="Выйти из общаги"
+                aria-label="Выйти"
+                className="flex h-10 w-10 items-center justify-center border-2 border-foreground/40 text-foreground transition-colors hover:border-primary hover:text-primary"
+              >
+                <Icon name="LogOut" size={16} />
+              </button>
             </>
           ) : (
             <>
