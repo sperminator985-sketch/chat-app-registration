@@ -6,7 +6,6 @@ import Logo from '@/components/Logo';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/use-auth';
 import { nickColorClass, staffNickClass } from '@/data/chat';
-import { useDm } from '@/hooks/use-dm';
 import { useWeather, formatTemp, degreeWord, weatherIcon } from '@/hooks/use-weather';
 import { useTheme, PALETTES } from '@/hooks/use-theme';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -27,7 +26,6 @@ const Header = ({ onProfile }: HeaderProps) => {
   const [scrolled, setScrolled] = useState(false);
   const [active, setActive] = useState('');
   const { user, openAuth, signOut } = useAuth();
-  const { soundOn, toggleSound } = useDm();
   const temp = useWeather();
   const { theme, toggle, palette, setPalette } = useTheme();
   const { openTicker, pending } = useTicker();
@@ -121,21 +119,6 @@ const Header = ({ onProfile }: HeaderProps) => {
       </button>
     );
   };
-
-  const soundButton = (extra?: string) => (
-    <button
-      onClick={toggleSound}
-      aria-label={soundOn ? 'Выключить звук' : 'Включить звук'}
-      title={soundOn ? 'Выключить звук уведомлений' : 'Включить звук уведомлений'}
-      className={cn(
-        'flex h-10 w-10 items-center justify-center border-2 transition-colors hover:border-secondary hover:text-secondary',
-        soundOn ? 'border-foreground/40 text-foreground' : 'border-foreground/25 text-muted-foreground',
-        extra,
-      )}
-    >
-      <Icon name={soundOn ? 'Volume2' : 'VolumeX'} size={18} />
-    </button>
-  );
 
   useEffect(() => {
     if (user) {
@@ -301,7 +284,6 @@ const Header = ({ onProfile }: HeaderProps) => {
               {paletteButton('lg:hidden')}
               {themeButton('lg:hidden')}
               {tickerButton()}
-              {soundButton()}
               {user.isAdmin && (
                 <Link
                   to="/admin"
@@ -355,8 +337,6 @@ const Header = ({ onProfile }: HeaderProps) => {
         )}
 
         <div className="flex shrink-0 items-center gap-1.5 md:hidden">
-          
-          {user && soundButton()}
           <button
             className={cn(
               'flex h-10 w-10 items-center justify-center border-2',
