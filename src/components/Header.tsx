@@ -6,7 +6,6 @@ import Logo from '@/components/Logo';
 import FloorSwitcher from '@/components/FloorSwitcher';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/use-auth';
-import { nickColorClass, staffNickClass } from '@/data/chat';
 import { useWeather, formatTemp, degreeWord, weatherIcon } from '@/hooks/use-weather';
 import { useTheme, PALETTES } from '@/hooks/use-theme';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -341,12 +340,6 @@ const Header = ({ onProfile, room, onPickRoom }: HeaderProps) => {
                   <Icon name="Shield" size={18} />
                 </Link>
               )}
-              <button
-                onClick={onProfile}
-                className="flex items-center gap-2 border-2 border-foreground/40 px-4 py-2 text-[0.8rem] font-semibold uppercase tracking-[0.12em] transition-colors hover:border-secondary"
-              >
-                <span className={staffNickClass(user.nick, nickColorClass[user.color])}>{user.nick}</span>
-              </button>
             </>
           ) : (
             <>
