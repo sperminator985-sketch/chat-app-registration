@@ -34,7 +34,7 @@ type OnlineItem = {
 };
 
 const ChatWindow = ({ activeRoom }: ChatWindowProps) => {
-  const { user, openAuth, signOut } = useAuth();
+  const { user, openAuth } = useAuth();
   const room = useMemo(() => rooms.find((r) => r.id === activeRoom) ?? rooms[0], [activeRoom]);
   const [messages, setMessages] = useState<ApiMessage[]>([]);
   const [online, setOnline] = useState<OnlineItem[]>([]);
@@ -81,6 +81,17 @@ const ChatWindow = ({ activeRoom }: ChatWindowProps) => {
   }, [messages, room.id]);
 
   usePolling(load, 5000);
+
+  useEffect(() => {
+    const onClear = () => clearFeed();
+    const onResidents = () => setResidentsOpen(true);
+    window.addEventListener('chat:clear', onClear);
+    window.addEventListener('chat:residents', onResidents);
+    return () => {
+      window.removeEventListener('chat:clear', onClear);
+      window.removeEventListener('chat:residents', onResidents);
+    };
+  }, [clearFeed]);
 
   useEffect(() => {
     const onLeave = () => {
@@ -168,7 +179,7 @@ const ChatWindow = ({ activeRoom }: ChatWindowProps) => {
       <div className="flex w-full min-h-0 flex-1 flex-col px-0 pb-0 pt-0 md:px-0 md:py-0">
         <div className="relative grid min-h-0 w-full flex-1 gap-[2px] overflow-hidden border-b-2 border-foreground/35 bg-foreground/35 md:border-2 lg:grid-cols-[1fr_280px]">
           <div className="flex min-h-0 min-w-0 flex-col bg-background">
-            <div className="relative flex flex-wrap items-center xl:flex-nowrap gap-x-3 gap-y-2 border-b-2 border-foreground/35 px-4 py-3 md:px-5 md:py-4 xl:h-[68px]">
+            <div className="relative flex flex-wrap items-center gap-x-3 gap-y-2 border-b-2 border-foreground/35 px-4 py-3 md:px-5 lg:hidden">
               <div className="ml-auto flex shrink-0 items-center gap-1 sm:gap-1.5 md:gap-2">
                 <button
                   onClick={() => setWhoOpen((v) => !v)}
@@ -182,31 +193,6 @@ const ChatWindow = ({ activeRoom }: ChatWindowProps) => {
                 >
                   <Icon name="Users" size={14} />
                   {onlineList.length}
-                </button>
-                <button
-                  onClick={() => setResidentsOpen(true)}
-                  title="Кто зарегистрирован"
-                  className="hidden items-center md:flex gap-1.5 border-2 border-foreground/35 h-7 px-2.5 py-0 leading-none text-[0.72rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground transition-colors [@media(hover:hover)]:hover:border-secondary [@media(hover:hover)]:hover:text-secondary"
-                >
-                  <Icon name="BookUser" size={14} />
-                  <span className="hidden sm:inline md:hidden xl:inline">Жильцы</span>
-                </button>
-                <button
-                  onClick={clearFeed}
-                  onTouchStart={() => {}}
-                  title="Очистить поле сообщений"
-                  className="flex active:border-secondary active:text-secondary [-webkit-tap-highlight-color:transparent] items-center gap-1.5 border-2 border-foreground/35 h-7 px-2.5 py-0 leading-none text-[0.72rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground transition-colors [@media(hover:hover)]:hover:border-secondary [@media(hover:hover)]:hover:text-secondary"
-                >
-                  <Icon name="Eraser" size={14} />
-                  <span className="hidden sm:inline md:hidden xl:inline">Очистить</span>
-                </button>
-                <button
-                  onClick={signOut}
-                  title="Выйти из общаги"
-                  className="hidden items-center gap-1.5 border-2 border-foreground/35 h-7 px-2.5 py-0 leading-none text-[0.72rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground transition-colors [@media(hover:hover)]:hover:border-primary [@media(hover:hover)]:hover:text-primary md:flex"
-                >
-                  <Icon name="LogOut" size={14} />
-                  <span className="hidden sm:inline md:hidden xl:inline">Выйти</span>
                 </button>
               </div>
             </div>

@@ -303,6 +303,22 @@ const Header = ({ onProfile, room, onPickRoom }: HeaderProps) => {
             <>
               {paletteButton()}
               {tickerButton()}
+              <button
+                onClick={() => window.dispatchEvent(new Event('chat:residents'))}
+                title="Кто зарегистрирован"
+                className="flex h-10 items-center gap-2 border-2 border-foreground/40 px-3 text-[0.76rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground transition-colors hover:border-secondary hover:text-secondary"
+              >
+                <Icon name="BookUser" size={16} />
+                <span className="hidden xl:inline">Жильцы</span>
+              </button>
+              <button
+                onClick={() => window.dispatchEvent(new Event('chat:clear'))}
+                title="Очистить поле сообщений"
+                className="flex h-10 items-center gap-2 border-2 border-foreground/40 px-3 text-[0.76rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground transition-colors hover:border-secondary hover:text-secondary"
+              >
+                <Icon name="Eraser" size={16} />
+                <span className="hidden xl:inline">Очистить</span>
+              </button>
               {user.isAdmin && (
                 <Link
                   to="/admin"
@@ -317,6 +333,14 @@ const Header = ({ onProfile, room, onPickRoom }: HeaderProps) => {
                 className="flex items-center gap-2 border-2 border-foreground/40 px-4 py-2 text-[0.8rem] font-semibold uppercase tracking-[0.12em] transition-colors hover:border-secondary"
               >
                 <span className={staffNickClass(user.nick, nickColorClass[user.color])}>{user.nick}</span>
+              </button>
+              <button
+                onClick={signOut}
+                title="Выйти из общаги"
+                className="flex h-10 items-center gap-2 border-2 border-foreground/40 px-3 text-[0.76rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground transition-colors hover:border-primary hover:text-primary"
+              >
+                <Icon name="LogOut" size={16} />
+                <span className="hidden xl:inline">Выйти</span>
               </button>
             </>
           ) : (
@@ -356,6 +380,26 @@ const Header = ({ onProfile, room, onPickRoom }: HeaderProps) => {
         )}
 
         <div className="flex shrink-0 items-center gap-1.5 md:hidden">
+          {user && (
+            <>
+              <button
+                onClick={() => window.dispatchEvent(new Event('chat:residents'))}
+                title="Кто зарегистрирован"
+                aria-label="Жильцы"
+                className="flex h-10 w-10 items-center justify-center border-2 border-foreground/40 text-foreground active:border-secondary active:text-secondary"
+              >
+                <Icon name="BookUser" size={18} />
+              </button>
+              <button
+                onClick={() => window.dispatchEvent(new Event('chat:clear'))}
+                title="Очистить поле сообщений"
+                aria-label="Очистить"
+                className="flex h-10 w-10 items-center justify-center border-2 border-foreground/40 text-foreground active:border-secondary active:text-secondary"
+              >
+                <Icon name="Eraser" size={18} />
+              </button>
+            </>
+          )}
           <button
             className={cn(
               'flex h-10 w-10 items-center justify-center border-2',
