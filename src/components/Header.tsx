@@ -255,7 +255,7 @@ const Header = ({ onProfile, room, onPickRoom }: HeaderProps) => {
           <FloorSwitcher
             activeRoom={room.id}
             onPick={onPickRoom}
-            className="order-last w-full lg:order-none lg:mx-auto lg:w-auto"
+            className="order-last w-full justify-start lg:order-none lg:ml-2 lg:w-auto"
           />
         )}
 
@@ -288,7 +288,7 @@ const Header = ({ onProfile, room, onPickRoom }: HeaderProps) => {
         </div>
         )}
 
-        <nav className={cn('hidden items-center md:flex', user ? 'ml-auto gap-2 lg:ml-0 xl:gap-7' : 'gap-7')}>
+        <nav className={cn('hidden items-center md:flex', user ? 'ml-auto gap-2 xl:gap-7' : 'gap-7')}>
           {links.map((l) => (
             <a
               key={l.href}
