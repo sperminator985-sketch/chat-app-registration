@@ -234,7 +234,7 @@ const ChatWindow = ({ activeRoom }: ChatWindowProps) => {
               whoOpen ? 'absolute inset-0 z-30 flex' : 'hidden',
             )}
           >
-            <div className="relative flex shrink-0 flex-col items-center justify-center border-b-2 border-foreground/35 px-2 py-4 text-center sm:px-4 md:py-3 lg:h-[var(--top-offset,68px)] lg:py-0">
+            <div className="relative flex shrink-0 flex-col items-center justify-center border-b-2 border-foreground/35 px-2 py-4 text-center sm:px-4 md:py-3 lg:h-[calc(var(--top-offset,68px)+2px)] lg:py-0">
               <h3 className="text-[0.8rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
                 Кто в чате · {onlineList.length}
               </h3>
