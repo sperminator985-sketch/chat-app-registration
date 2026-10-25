@@ -279,6 +279,15 @@ const Header = ({ onProfile, room, onPickRoom }: HeaderProps) => {
               Очистить
             </button>
             {tickerButton()}
+            {user.isAdmin && (
+              <Link
+                to="/admin"
+                title="Комендантская"
+                className="flex h-10 w-10 items-center justify-center border-2 border-secondary text-secondary transition-colors hover:bg-secondary hover:text-secondary-foreground"
+              >
+                <Icon name="Shield" size={18} />
+              </Link>
+            )}
           </div>
         )}
 
@@ -325,15 +334,6 @@ const Header = ({ onProfile, room, onPickRoom }: HeaderProps) => {
           {user ? (
             <>
               {paletteButton()}
-              {user.isAdmin && (
-                <Link
-                  to="/admin"
-                  title="Комендантская"
-                  className="flex h-10 w-10 items-center justify-center border-2 border-secondary text-secondary transition-colors hover:bg-secondary hover:text-secondary-foreground"
-                >
-                  <Icon name="Shield" size={18} />
-                </Link>
-              )}
               <button
                 onClick={signOut}
                 title="Выйти из общаги"
