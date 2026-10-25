@@ -260,12 +260,12 @@ const Header = ({ onProfile, room, onPickRoom }: HeaderProps) => {
           <FloorSwitcher
             activeRoom={room.id}
             onPick={onPickRoom}
-            className="hidden md:ml-2 md:flex md:w-auto"
+            className="hidden md:ml-2 md:flex md:w-auto lg:ml-auto"
           />
         )}
 
         {user && (
-          <div className="hidden items-center gap-1.5 md:ml-auto md:flex lg:gap-2">
+          <div className="hidden items-center gap-1.5 md:ml-auto md:flex lg:ml-4 lg:gap-2">
             <button
               onClick={() => window.dispatchEvent(new Event('chat:residents'))}
               title="Кто зарегистрирован"
