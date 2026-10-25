@@ -182,7 +182,7 @@ const ChatWindow = ({ activeRoom }: ChatWindowProps) => {
       className="flex min-h-0 flex-col overflow-hidden bg-card"
     >
       <div className="flex w-full min-h-0 flex-1 flex-col px-0 pb-0 pt-0 md:px-0 md:py-0">
-        <div className="relative grid min-h-0 w-full flex-1 grid-rows-[minmax(0,1fr)_auto] gap-[2px] overflow-hidden bg-foreground/35 md:border-2 md:border-foreground/35 lg:grid-cols-[1fr_280px]">
+        <div className="relative grid min-h-0 w-full flex-1 grid-rows-[minmax(0,1fr)_auto] gap-[2px] overflow-hidden bg-foreground/35 md:border-2 md:border-foreground/35 lg:mr-[278px]">
           <div className="flex min-h-0 min-w-0 flex-col bg-background lg:col-start-1 lg:row-start-1">
             <div
               ref={feedRef}
@@ -230,11 +230,11 @@ const ChatWindow = ({ activeRoom }: ChatWindowProps) => {
 
           <aside
             className={cn(
-              'min-h-0 flex-col overflow-hidden bg-background lg:static lg:z-auto lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:flex',
+              'min-h-0 flex-col overflow-hidden bg-background lg:fixed lg:inset-y-0 lg:left-auto lg:right-0 lg:z-40 lg:flex lg:w-[280px] lg:border-2 lg:border-foreground/35',
               whoOpen ? 'absolute inset-0 z-30 flex' : 'hidden',
             )}
           >
-            <div className="relative flex shrink-0 flex-col items-center justify-center border-b-2 border-foreground/35 px-2 py-4 text-center sm:px-4 md:py-3 lg:h-[68px]">
+            <div className="relative flex shrink-0 flex-col items-center justify-center border-b-2 border-foreground/35 px-2 py-4 text-center sm:px-4 md:py-3 lg:h-[var(--top-offset,68px)] lg:py-0">
               <h3 className="text-[0.8rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
                 Кто в чате · {onlineList.length}
               </h3>
