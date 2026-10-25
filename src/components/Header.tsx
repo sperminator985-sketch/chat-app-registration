@@ -235,8 +235,8 @@ const Header = ({ onProfile, room, onPickRoom }: HeaderProps) => {
             <div className="flex min-w-0 flex-1 md:hidden">
               <FloorMenu room={room} onPick={onPickRoom} />
             </div>
-            <div className="hidden shrink-0 items-center gap-2 md:flex lg:w-[220px] lg:min-w-0 xl:w-[300px]" title={`Этаж ${room.floor} · ${room.title}`}>
-              <Icon name={room.icon} size={20} className="hidden shrink-0 text-secondary lg:block" />
+            <div className="hidden shrink-0 items-center gap-1.5 md:flex lg:w-[220px] lg:gap-2 lg:min-w-0 xl:w-[300px]" title={`Этаж ${room.floor} · ${room.title}`}>
+              <Icon name={room.icon} size={20} className="h-4 w-4 shrink-0 text-secondary lg:h-5 lg:w-5" />
               <span className="whitespace-nowrap font-display text-[0.7rem] font-extrabold uppercase leading-tight tracking-[-0.03em] lg:truncate lg:text-[0.9rem] xl:text-lg">
                 Этаж {room.floor} · {room.title}
               </span>
