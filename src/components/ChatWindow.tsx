@@ -295,7 +295,6 @@ const ChatWindow = ({ activeRoom }: ChatWindowProps) => {
               <h3 className="text-[0.8rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
                 Кто в чате · {onlineList.length}
               </h3>
-              <p className="mt-1 text-[0.8rem] leading-tight text-muted-foreground/80">Кликни по нику — появятся действия</p>
               <button
                 type="button"
                 onClick={() => setWhoOpen(false)}
