@@ -292,7 +292,6 @@ const ChatWindow = ({ activeRoom }: ChatWindowProps) => {
                         </span>
                       ) : u.away ? (
                         <span className="flex shrink-0 items-center gap-1 whitespace-nowrap font-mono text-[0.66rem] uppercase text-destructive">
-                          <Icon name="Moon" size={11} />
                           отошёл
                         </span>
                       ) : null}
