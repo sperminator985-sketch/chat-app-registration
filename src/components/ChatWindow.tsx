@@ -230,7 +230,7 @@ const ChatWindow = ({ activeRoom }: ChatWindowProps) => {
 
           <aside
             className={cn(
-              'min-h-0 flex-col overflow-hidden bg-background lg:fixed lg:inset-y-0 lg:left-auto lg:right-0 lg:z-40 lg:flex lg:w-[280px] lg:border-2 lg:border-foreground/35',
+              'min-h-0 flex-col overflow-hidden bg-background lg:fixed lg:inset-y-0 lg:left-auto lg:right-0 lg:z-40 lg:flex lg:w-[280px] lg:border-2 lg:border-t-0 lg:border-foreground/35',
               whoOpen ? 'absolute inset-0 z-30 flex' : 'hidden',
             )}
           >
