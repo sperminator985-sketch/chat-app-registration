@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import Icon from '@/components/ui/icon';
 import { press } from '@/lib/press';
 import Logo from '@/components/Logo';
+import FloorSwitcher from '@/components/FloorSwitcher';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/use-auth';
 import { nickColorClass, staffNickClass } from '@/data/chat';
@@ -19,10 +20,11 @@ const guestLinks = [
 
 type HeaderProps = {
   onProfile: () => void;
-  room?: { floor: string | number; title: string; icon: string };
+  room?: { id: string; floor: string | number; title: string; icon: string };
+  onPickRoom?: (id: string) => void;
 };
 
-const Header = ({ onProfile, room }: HeaderProps) => {
+const Header = ({ onProfile, room, onPickRoom }: HeaderProps) => {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [active, setActive] = useState('');
@@ -224,12 +226,12 @@ const Header = ({ onProfile, room }: HeaderProps) => {
     >
       <div
         className={cn(
-          'mx-auto flex max-w-[1400px] items-center justify-between gap-2 py-4 pl-2.5 pr-5 md:gap-4 md:px-10',
+          'mx-auto flex max-w-[1400px] flex-wrap items-center justify-between gap-x-2 gap-y-3 py-4 pl-2.5 pr-5 md:gap-x-4 md:px-10 lg:flex-nowrap',
           user ? 'rule-bottom md:border-b-0' : 'rule-bottom',
         )}
       >
         {user && room ? (
-          <div className="flex min-w-0 shrink items-center gap-2">
+          <div className="flex min-w-0 flex-1 shrink items-center gap-2 lg:flex-none">
             <Icon name={room.icon} size={20} className="shrink-0 text-secondary" />
             <span className="truncate font-display text-[0.95rem] font-extrabold uppercase leading-tight tracking-[-0.03em] md:text-lg">
               Этаж {room.floor} · {room.title}
@@ -247,6 +249,14 @@ const Header = ({ onProfile, room }: HeaderProps) => {
             </a>
             <Logo size="sm" iconAsLetter className="hidden md:flex" />
           </>
+        )}
+
+        {user && room && onPickRoom && (
+          <FloorSwitcher
+            activeRoom={room.id}
+            onPick={onPickRoom}
+            className="order-last w-full lg:order-none lg:mx-auto lg:w-auto"
+          />
         )}
 
         {!user && (

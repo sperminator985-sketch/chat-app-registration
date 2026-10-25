@@ -127,13 +127,14 @@ const PageBody = () => {
         <Header
           onProfile={() => setProfileOpen(true)}
           room={user ? rooms.find((r) => r.id === activeRoom) ?? rooms[0] : undefined}
+          onPickRoom={pickRoom}
         />
       </div>
       <main>
         {loading ? (
           <div className="flex min-h-[calc(100svh-var(--top-offset,4.5rem))] items-center justify-center" />
         ) : user ? (
-          <ChatWindow activeRoom={activeRoom} onPick={pickRoom} />
+          <ChatWindow activeRoom={activeRoom} />
         ) : (
           <>
             <div className="relative flex min-h-[calc(100svh-var(--top-offset,4.5rem))] flex-col overflow-hidden md:min-h-[calc(100vh-var(--top-offset,4.5rem))] md:justify-between">

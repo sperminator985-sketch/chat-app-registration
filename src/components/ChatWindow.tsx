@@ -6,7 +6,7 @@ import { usePolling } from '@/hooks/use-polling';
 import { useAuth } from '@/hooks/use-auth';
 import { getToken, api, ApiMessage } from '@/lib/api';
 import { toast } from '@/hooks/use-toast';
-import { nickColorClass, rooms, canEnterRoom, isStaffNick, staffNickClass } from '@/data/chat';
+import { nickColorClass, rooms, isStaffNick, staffNickClass } from '@/data/chat';
 import { usePrivate } from '@/hooks/use-private';
 import { useCall } from '@/hooks/use-call';
 import EmojiPicker from '@/components/EmojiPicker';
@@ -16,7 +16,6 @@ import ResidentsDialog from '@/components/ResidentsDialog';
 
 type ChatWindowProps = {
   activeRoom: string;
-  onPick: (id: string) => void;
 };
 
 type OnlineItem = {
@@ -34,7 +33,7 @@ type OnlineItem = {
   since?: string | null;
 };
 
-const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
+const ChatWindow = ({ activeRoom }: ChatWindowProps) => {
   const { user, openAuth, signOut } = useAuth();
   const room = useMemo(() => rooms.find((r) => r.id === activeRoom) ?? rooms[0], [activeRoom]);
   const [messages, setMessages] = useState<ApiMessage[]>([]);
@@ -170,37 +169,7 @@ const ChatWindow = ({ activeRoom, onPick }: ChatWindowProps) => {
         <div className="relative grid min-h-0 w-full flex-1 gap-[2px] overflow-hidden border-b-2 border-foreground/35 bg-foreground/35 md:border-2 lg:grid-cols-[1fr_280px]">
           <div className="flex min-h-0 min-w-0 flex-col bg-background">
             <div className="relative flex flex-wrap items-center xl:flex-nowrap gap-x-3 gap-y-2 border-b-2 border-foreground/35 px-4 py-3 md:px-5 md:py-4 xl:h-[68px]">
-              <div className="order-last flex w-full items-center justify-center gap-1.5 md:order-none md:w-auto md:min-w-0 md:flex-1 md:gap-2">
-                {rooms.map((r) => {
-                  const locked = Boolean(user) && !canEnterRoom(r.id, user?.uni, user?.isAdmin);
-                  return (
-                    <button
-                      key={r.id}
-                      onClick={() => onPick(r.id)}
-                      disabled={locked}
-                      aria-disabled={locked}
-                      title={
-                        locked
-                          ? user?.uni
-                            ? `${r.title} — этаж другого вуза`
-                            : `${r.title} — только для студентов`
-                          : r.title
-                      }
-                      className={cn(
-                        'pointer-events-auto h-7 w-7 shrink-0 border-2 font-mono text-[0.7rem] font-semibold transition-colors',
-                        r.id === room.id
-                          ? 'border-secondary bg-secondary text-secondary-foreground'
-                          : locked
-                            ? 'cursor-not-allowed border-foreground/15 text-muted-foreground/35 opacity-50'
-                            : 'border-foreground/35 text-muted-foreground hover:border-secondary hover:text-foreground',
-                      )}
-                    >
-                      {r.floor}
-                    </button>
-                  );
-                })}
-              </div>
-              <div className="ml-auto flex shrink-0 md:ml-0 items-center gap-1 sm:gap-1.5 md:gap-2">
+              <div className="ml-auto flex shrink-0 items-center gap-1 sm:gap-1.5 md:gap-2">
                 <button
                   onClick={() => setWhoOpen((v) => !v)}
                   title="Кто в чате"
