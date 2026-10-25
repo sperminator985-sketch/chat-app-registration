@@ -285,6 +285,7 @@ const Header = ({ onProfile, room, onPickRoom }: HeaderProps) => {
             >
               <Icon name="LogOut" size={16} />
             </button>
+            {tickerButton()}
           </div>
         )}
 
@@ -331,7 +332,6 @@ const Header = ({ onProfile, room, onPickRoom }: HeaderProps) => {
           {user ? (
             <>
               {paletteButton()}
-              {tickerButton()}
               {user.isAdmin && (
                 <Link
                   to="/admin"
