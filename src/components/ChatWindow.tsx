@@ -85,11 +85,14 @@ const ChatWindow = ({ activeRoom }: ChatWindowProps) => {
   useEffect(() => {
     const onClear = () => clearFeed();
     const onResidents = () => setResidentsOpen(true);
+    const onWho = () => setWhoOpen(true);
     window.addEventListener('chat:clear', onClear);
     window.addEventListener('chat:residents', onResidents);
+    window.addEventListener('chat:who', onWho);
     return () => {
       window.removeEventListener('chat:clear', onClear);
       window.removeEventListener('chat:residents', onResidents);
+      window.removeEventListener('chat:who', onWho);
     };
   }, [clearFeed]);
 
@@ -179,24 +182,6 @@ const ChatWindow = ({ activeRoom }: ChatWindowProps) => {
       <div className="flex w-full min-h-0 flex-1 flex-col px-0 pb-0 pt-0 md:px-0 md:py-0">
         <div className="relative grid min-h-0 w-full flex-1 gap-[2px] overflow-hidden border-b-2 border-foreground/35 bg-foreground/35 md:border-2 md:grid-cols-[1fr_220px] lg:grid-cols-[1fr_280px]">
           <div className="flex min-h-0 min-w-0 flex-col bg-background">
-            <div className="relative flex flex-wrap items-center gap-x-3 gap-y-2 border-b-2 border-foreground/35 px-4 py-3 md:hidden">
-              <div className="ml-auto flex shrink-0 items-center gap-1 sm:gap-1.5 md:gap-2">
-                <button
-                  onClick={() => setWhoOpen((v) => !v)}
-                  title="Кто в чате"
-                  className={cn(
-                    'flex items-center gap-1.5 border-2 h-7 px-2.5 py-0 leading-none text-[0.72rem] font-semibold uppercase tracking-[0.1em] transition-colors lg:hidden',
-                    whoOpen
-                      ? 'border-secondary bg-secondary text-secondary-foreground'
-                      : 'border-foreground/35 text-muted-foreground [@media(hover:hover)]:hover:border-secondary',
-                  )}
-                >
-                  <Icon name="Users" size={14} />
-                  {onlineList.length}
-                </button>
-              </div>
-            </div>
-
             <div
               ref={feedRef}
               onPointerDown={() => {

@@ -387,26 +387,6 @@ const Header = ({ onProfile, room, onPickRoom }: HeaderProps) => {
         )}
 
         <div className="flex shrink-0 items-center gap-1.5 md:hidden">
-          {user && (
-            <>
-              <button
-                onClick={() => window.dispatchEvent(new Event('chat:residents'))}
-                title="Кто зарегистрирован"
-                aria-label="Жильцы"
-                className="flex h-10 w-10 items-center justify-center border-2 border-foreground/40 text-foreground active:border-secondary active:text-secondary"
-              >
-                <Icon name="BookUser" size={18} />
-              </button>
-              <button
-                onClick={() => window.dispatchEvent(new Event('chat:clear'))}
-                title="Очистить поле сообщений"
-                aria-label="Очистить"
-                className="flex h-10 w-10 items-center justify-center border-2 border-foreground/40 text-foreground active:border-secondary active:text-secondary"
-              >
-                <Icon name="Eraser" size={18} />
-              </button>
-            </>
-          )}
           <button
             className={cn(
               'flex h-10 w-10 items-center justify-center border-2',
@@ -471,6 +451,36 @@ const Header = ({ onProfile, room, onPickRoom }: HeaderProps) => {
             ))}
             {user ? (
               <>
+                <button
+                  onClick={() => {
+                    setOpen(false);
+                    window.dispatchEvent(new Event('chat:who'));
+                  }}
+                  className="btn-ghost-brut flex items-center justify-center gap-2"
+                >
+                  <Icon name="Users" size={16} />
+                  Кто в чате
+                </button>
+                <button
+                  onClick={() => {
+                    setOpen(false);
+                    window.dispatchEvent(new Event('chat:residents'));
+                  }}
+                  className="btn-ghost-brut flex items-center justify-center gap-2"
+                >
+                  <Icon name="BookUser" size={16} />
+                  Кто зарегистрирован
+                </button>
+                <button
+                  onClick={() => {
+                    setOpen(false);
+                    window.dispatchEvent(new Event('chat:clear'));
+                  }}
+                  className="btn-ghost-brut flex items-center justify-center gap-2"
+                >
+                  <Icon name="Eraser" size={16} />
+                  Очистить чат
+                </button>
                 {(user.isAdmin || user.uni) && (
                   <button
                     onClick={() => {
