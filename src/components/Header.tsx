@@ -279,7 +279,6 @@ const Header = ({ onProfile, room, onPickRoom }: HeaderProps) => {
               Очистить
             </button>
             {tickerButton()}
-            {themeButton()}
           </div>
         )}
 
@@ -428,10 +427,12 @@ const Header = ({ onProfile, room, onPickRoom }: HeaderProps) => {
                 Главная
               </a>
             )}
-            <button onClick={toggle} className="btn-ghost-brut flex items-center justify-center gap-2">
-              <Icon name={theme === 'day' ? 'Moon' : 'Sun'} size={16} />
-              {themeLabel}
-            </button>
+            {!user && (
+              <button onClick={toggle} className="btn-ghost-brut flex items-center justify-center gap-2">
+                <Icon name={theme === 'day' ? 'Moon' : 'Sun'} size={16} />
+                {themeLabel}
+              </button>
+            )}
             {theme === 'day' && (
               <div className="grid grid-cols-3 gap-2">
                 {PALETTES.map((p) => (
