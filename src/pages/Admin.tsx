@@ -536,7 +536,7 @@ const AdminPanel = () => {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <header className="sticky top-0 z-50 border-b-2 border-foreground/35 bg-background/95 backdrop-blur-sm">
+      <header className="sticky top-0 z-50 overflow-x-clip border-b-2 border-foreground/35 bg-background/95 backdrop-blur-sm">
         <div className="relative mx-auto flex max-w-[1200px] flex-col gap-2 px-4 py-3 md:flex-row md:flex-wrap md:items-center md:gap-3 md:px-8 md:py-4">
           <div className="relative -mx-4 flex items-center border-b-2 border-foreground/35 px-4 pb-2 md:order-3 md:mx-0 md:ml-auto md:border-b-0 md:px-0 md:pb-0 md:[&>button]:flex">
             <button
@@ -552,7 +552,7 @@ const AdminPanel = () => {
               Комендантская
             </span>
           </div>
-          <span className="pointer-events-none -mx-8 hidden basis-[calc(100%+4rem)] whitespace-nowrap border-b-2 border-foreground/35 px-8 pb-3 text-center font-display text-lg font-extrabold uppercase tracking-[0.04em] md:order-first md:block">
+          <span className="pointer-events-none relative hidden basis-full whitespace-nowrap pb-3 text-center after:absolute after:bottom-0 after:left-1/2 after:w-[200vw] after:-translate-x-1/2 after:border-b-2 after:border-foreground/35 after:content-[''] font-display text-lg font-extrabold uppercase tracking-[0.04em] md:order-first md:block">
             Комендантская
           </span>
           <div className="flex items-center justify-start gap-1 md:order-1 md:gap-2">
