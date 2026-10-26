@@ -492,16 +492,6 @@ const Header = ({ onProfile, room, onPickRoom }: HeaderProps) => {
                 <button
                   onClick={() => {
                     setOpen(false);
-                    window.dispatchEvent(new Event('chat:residents'));
-                  }}
-                  className="btn-ghost-brut flex items-center justify-center gap-2"
-                >
-                  <Icon name="BookUser" size={16} />
-                  Кто зарегистрирован
-                </button>
-                <button
-                  onClick={() => {
-                    setOpen(false);
                     window.dispatchEvent(new Event('chat:clear'));
                   }}
                   className="btn-ghost-brut flex items-center justify-center gap-2"
