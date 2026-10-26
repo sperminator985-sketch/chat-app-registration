@@ -13,6 +13,16 @@ import EmojiPicker from '@/components/EmojiPicker';
 import PrivateFile from '@/components/PrivateFile';
 import { playKnock } from '@/lib/notify-sound';
 import { usePrivateHistory } from '@/hooks/use-private-history';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 const FILE_ACCEPT =
   'image/jpeg,image/png,image/gif,image/webp,video/mp4,video/webm,video/quicktime,audio/*,.pdf,.txt,.zip,.rar,.doc,.docx,.xls,.xlsx,.ppt,.pptx';
@@ -31,6 +41,7 @@ const PrivateRoom = () => {
   const [progress, setProgress] = useState(0);
   const lastIncoming = useRef<number | null>(null);
   const typingSentAt = useRef(0);
+  const [askClear, setAskClear] = useState(false);
   const { items, saveOwn, clear, hasHistory } = usePrivateHistory({
     me: user?.nick,
     peer: peer?.nick,
@@ -155,11 +166,7 @@ const PrivateRoom = () => {
               {hasHistory && (
                 <button
                   type="button"
-                  onClick={async () => {
-                    if (!window.confirm(`Стереть всю переписку с ${peer.nick} на этом устройстве? Восстановить будет нельзя.`)) return;
-                    await clear();
-                    toast({ title: 'История очищена', description: 'Переписка удалена с этого устройства' });
-                  }}
+                  onClick={() => setAskClear(true)}
                   title="Очистить историю на этом устройстве"
                   className="flex items-center gap-1.5 border-2 border-foreground/35 px-2.5 py-1 text-[0.72rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground transition-colors hover:border-primary hover:text-primary"
                 >
@@ -291,6 +298,34 @@ const PrivateRoom = () => {
           </form>
         </div>
       </div>
+      <AlertDialog open={askClear} onOpenChange={setAskClear}>
+        <AlertDialogContent
+          overlayClassName="z-[70]"
+          className="z-[70] w-[calc(100vw-1.5rem)] max-w-[420px] rounded-none border-2 border-sky-400 bg-card sm:rounded-none"
+        >
+          <AlertDialogHeader>
+            <AlertDialogTitle className="font-display text-xl font-extrabold uppercase tracking-[-0.02em]">
+              Очистить переписку?
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Вся переписка с {peer.nick} будет стёрта с этого устройства. Восстановить её будет нельзя.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="gap-3 sm:gap-2">
+            <AlertDialogCancel className="btn-ghost-brut mt-0 rounded-none">Отмена</AlertDialogCancel>
+            <AlertDialogAction
+              className="btn-brut rounded-none"
+              onClick={async () => {
+                await clear();
+                toast({ title: 'История очищена', description: 'Переписка удалена с этого устройства' });
+              }}
+            >
+              <Icon name="Trash2" size={16} />
+              Очистить
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
