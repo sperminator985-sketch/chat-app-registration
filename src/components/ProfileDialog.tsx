@@ -56,6 +56,7 @@ const ProfileDialog = ({ open, onOpenChange }: ProfileDialogProps) => {
       <DialogContent
         className="max-w-[520px] border-2 border-foreground/40 bg-card p-0 text-card-foreground"
         closeClassName="!border-destructive !text-destructive"
+        onOpenAutoFocus={(e) => e.preventDefault()}
       >
         <div className="flex items-center gap-4 border-b-2 border-foreground/35 px-6 py-5">
           <div>
