@@ -1161,10 +1161,10 @@ const AdminPanel = () => {
               onClick={grabSite}
               disabled={sitePack !== null}
               title="Весь сайт и api.php одним архивом — распаковать в корень хостинга"
-              className="flex items-center gap-1.5 border-2 border-secondary px-2 py-1 font-bold text-secondary transition-colors hover:bg-secondary hover:text-secondary-foreground disabled:opacity-70"
+              className="flex items-center gap-1.5 border-2 border-secondary px-2 py-1 font-bold text-secondary transition-colors hover:bg-secondary hover:text-secondary-foreground disabled:cursor-wait"
             >
-              <Icon name={sitePack ? 'Loader2' : 'Package'} size={13} className={cn(sitePack && 'animate-spin')} />
-              {sitePack ? 'Готовлю…' : 'Сайт + api.php'}
+              <Icon name="Package" size={13} />
+              Сайт + api.php
             </button>
             <button
               onClick={() => grabFile('full')}
