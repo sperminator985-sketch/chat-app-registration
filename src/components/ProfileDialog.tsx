@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
-import Icon from '@/components/ui/icon';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/use-auth';
 import { AvatarId, NickColor, nickBgClass, nickColorClass, nickColors, rooms, staffNickClass } from '@/data/chat';
@@ -12,7 +11,7 @@ type ProfileDialogProps = {
 };
 
 const ProfileDialog = ({ open, onOpenChange }: ProfileDialogProps) => {
-  const { user, saveProfile, signOut } = useAuth();
+  const { user, saveProfile } = useAuth();
   const [status, setStatus] = useState('');
   const [color, setColor] = useState<NickColor>(1);
   const [busy, setBusy] = useState(false);
@@ -115,20 +114,9 @@ const ProfileDialog = ({ open, onOpenChange }: ProfileDialogProps) => {
             </div>
           </div>
 
-          <div className="flex flex-col gap-3 sm:flex-row">
-            <button onClick={save} disabled={busy} className="btn-brut flex-1 disabled:opacity-60">
+          <div className="flex justify-center">
+            <button onClick={save} disabled={busy} className="btn-brut w-full disabled:opacity-60 sm:w-auto sm:min-w-[200px]">
               {busy ? 'Сохраняем…' : 'Сохранить'}
-            </button>
-            <button
-              onClick={() => {
-                signOut();
-                onOpenChange(false);
-                toast({ title: 'Вышел из общаги', description: 'Свет на этаже мы не выключаем.' });
-              }}
-              className="btn-ghost-brut flex-1"
-            >
-              <Icon name="LogOut" size={16} />
-              Выйти
             </button>
           </div>
         </div>
