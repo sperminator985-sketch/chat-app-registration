@@ -371,13 +371,20 @@ const Header = ({ onProfile, room, onPickRoom }: HeaderProps) => {
             <>
               {paletteButton('lg:hidden')}
               <button
+                onClick={onProfile}
+                title={`Профиль — ${user.nick}`}
+                aria-label="Профиль"
+                className="hidden h-10 w-10 items-center justify-center border-2 border-foreground/40 text-foreground transition-colors hover:border-secondary hover:text-secondary lg:flex"
+              >
+                <Icon name="UserRound" size={16} />
+              </button>
+              <button
                 onClick={signOut}
                 title="Выйти из общаги"
                 aria-label="Выход"
-                className="flex h-10 w-10 items-center justify-center gap-2 border-2 border-foreground/40 text-foreground transition-colors hover:border-primary hover:text-primary md:w-auto md:px-3"
+                className="flex h-10 w-10 items-center justify-center border-2 border-foreground/40 text-foreground transition-colors hover:border-primary hover:text-primary"
               >
                 <Icon name="LogOut" size={16} />
-                <span className="hidden text-[0.76rem] font-semibold uppercase tracking-[0.1em] md:inline">Выход</span>
               </button>
             </>
           ) : (
