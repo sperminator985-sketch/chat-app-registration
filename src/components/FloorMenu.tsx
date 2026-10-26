@@ -8,9 +8,10 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 type FloorMenuProps = {
   room: { id: string; floor: string | number; title: string; icon: string };
   onPick: (id: string) => void;
+  className?: string;
 };
 
-const FloorMenu = ({ room, onPick }: FloorMenuProps) => {
+const FloorMenu = ({ room, onPick, className }: FloorMenuProps) => {
   const { user } = useAuth();
   const [open, setOpen] = useState(false);
 
@@ -20,7 +21,7 @@ const FloorMenu = ({ room, onPick }: FloorMenuProps) => {
         <button
           type="button"
           aria-label="Выбрать этаж"
-          className="flex min-w-0 flex-1 items-center gap-2 text-left [-webkit-tap-highlight-color:transparent]"
+          className={cn('flex min-w-0 flex-1 items-center gap-2 text-left [-webkit-tap-highlight-color:transparent]', className)}
         >
           <Icon name={room.icon} size={20} className="shrink-0 text-secondary" />
           <span className="truncate font-display text-[0.95rem] font-extrabold uppercase leading-tight tracking-[-0.03em]">
