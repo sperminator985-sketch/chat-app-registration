@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { PopoverAnchor } from '@radix-ui/react-popover';
 import { useIsMobile } from '@/hooks/use-mobile';
 import Icon from '@/components/ui/icon';
@@ -17,6 +17,15 @@ const FloorMenu = ({ room, onPick, className }: FloorMenuProps) => {
   const { user } = useAuth();
   const [open, setOpen] = useState(false);
   const isMobile = useIsMobile();
+  const [isTablet, setIsTablet] = useState(false);
+  useEffect(() => {
+    const mql = window.matchMedia('(min-width: 768px) and (max-width: 1023px)');
+    const sync = () => setIsTablet(mql.matches);
+    sync();
+    mql.addEventListener('change', sync);
+    return () => mql.removeEventListener('change', sync);
+  }, []);
+  const centered = isMobile || isTablet;
   const btnRef = useRef<HTMLButtonElement>(null);
   const barRef = useMemo(
     () => ({
@@ -32,7 +41,7 @@ const FloorMenu = ({ room, onPick, className }: FloorMenuProps) => {
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
-      {isMobile && <PopoverAnchor virtualRef={barRef} />}
+      {centered && <PopoverAnchor virtualRef={barRef} />}
       <PopoverTrigger asChild>
         <button
           ref={btnRef}
@@ -52,12 +61,12 @@ const FloorMenu = ({ room, onPick, className }: FloorMenuProps) => {
         </button>
       </PopoverTrigger>
       <PopoverContent
-        align={isMobile ? 'center' : 'start'}
-        sideOffset={isMobile ? -2 : 12}
-        avoidCollisions={!isMobile}
+        align={centered ? 'center' : 'start'}
+        sideOffset={isMobile ? -2 : isTablet ? 0 : 12}
+        avoidCollisions={!centered}
         className={cn(
           'w-[min(20rem,calc(100vw-1.25rem))] rounded-none border-2 border-foreground/40 bg-card p-1',
-          !isMobile && 'max-h-[70dvh] overflow-y-auto overscroll-contain',
+          !centered && 'max-h-[70dvh] overflow-y-auto overscroll-contain',
         )}
       >
         <ul className="flex flex-col">
