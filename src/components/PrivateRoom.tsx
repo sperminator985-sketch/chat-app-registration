@@ -13,6 +13,7 @@ import EmojiPicker from '@/components/EmojiPicker';
 import PrivateFile from '@/components/PrivateFile';
 import { playKnock } from '@/lib/notify-sound';
 import { usePrivateHistory } from '@/hooks/use-private-history';
+import { useVoiceRecorder, voiceSupported, formatVoiceTime } from '@/hooks/use-voice-recorder';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -146,6 +147,26 @@ const PrivateRoom = () => {
     }
   };
 
+  const voice = useVoiceRecorder((f) => sendFile(f));
+  const canVoice = voiceSupported();
+
+  const startVoice = async () => {
+    if (uploading || !user) return;
+    try {
+      await voice.start();
+    } catch (err) {
+      toast({
+        title: 'Микрофон недоступен',
+        description: err instanceof Error ? err.message : 'Попробуй ещё раз',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  useEffect(() => {
+    if (!active && voice.recording) voice.cancel();
+  }, [active, voice]);
+
   if (!active || !peer) return null;
 
   return (
@@ -231,6 +252,13 @@ const PrivateRoom = () => {
             onSubmit={send}
             className="flex flex-row items-center gap-2 border-t-2 border-sky-400 px-3 py-2 sm:gap-2.5 sm:px-5 sm:py-2.5"
           >
+            {voice.recording ? (
+              <div className="flex flex-1 items-center gap-2.5 border-2 border-primary bg-input px-3 py-1.5">
+                <span className="h-2.5 w-2.5 shrink-0 animate-pulse rounded-full bg-primary" />
+                <span className="font-mono text-[0.9rem] font-bold text-foreground">{formatVoiceTime(voice.seconds)}</span>
+                <span className="truncate text-[0.8rem] text-muted-foreground">Идёт запись…</span>
+              </div>
+            ) : (
             <div className="flex flex-1 items-center gap-2 border-2 border-foreground/35 bg-input px-3 py-1.5 focus-within:border-sky-400">
               <input
                 ref={inputRef}
@@ -248,6 +276,29 @@ const PrivateRoom = () => {
                 className="chat-font w-full min-w-0 bg-transparent text-[0.95rem] text-foreground outline-none placeholder:text-muted-foreground/70 sm:text-[0.94rem]"
               />
             </div>
+            )}
+            {voice.recording ? (
+              <div className="flex shrink-0 items-center gap-2 sm:gap-2.5">
+                <button
+                  type="button"
+                  onClick={voice.cancel}
+                  title="Отменить запись"
+                  aria-label="Отменить запись"
+                  className="flex h-9 w-9 items-center justify-center border-2 border-foreground/35 text-muted-foreground transition-colors hover:border-primary hover:text-primary"
+                >
+                  <Icon name="Trash2" size={16} />
+                </button>
+                <button
+                  type="button"
+                  onClick={voice.stop}
+                  aria-label="Отправить голосовое"
+                  className="btn-brut !gap-1.5 !px-2.5 !py-2 !text-xs sm:!px-3"
+                >
+                  <Icon name="Send" size={14} />
+                  <span className="hidden sm:inline">Отправить</span>
+                </button>
+              </div>
+            ) : (
             <div className="flex shrink-0 items-center gap-2 sm:gap-2.5">
               <input
                 ref={fileRef}
@@ -285,6 +336,19 @@ const PrivateRoom = () => {
                 )}
               </button>
               <EmojiPicker onPick={(em) => setDraft((prev) => (prev + em).slice(0, 480))} />
+              {canVoice && !draft.trim() ? (
+                <button
+                  type="button"
+                  onClick={startVoice}
+                  disabled={uploading || !user}
+                  title="Записать голосовое (до 5 минут)"
+                  aria-label="Записать голосовое"
+                  className="btn-brut !gap-1.5 !px-2.5 !py-2 !text-xs disabled:opacity-60 sm:!px-3"
+                >
+                  <Icon name="Mic" size={14} />
+                  <span className="hidden sm:inline">Голосовое</span>
+                </button>
+              ) : (
               <button
                 type="submit"
                 disabled={sending || !user}
@@ -294,7 +358,9 @@ const PrivateRoom = () => {
                 <Icon name="Send" size={14} />
                 <span className="hidden sm:inline">{sending ? 'Шлём…' : 'Отправить'}</span>
               </button>
+              )}
             </div>
+            )}
           </form>
         </div>
       </div>

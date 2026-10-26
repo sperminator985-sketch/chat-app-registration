@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import Icon from '@/components/ui/icon';
 import { ApiFile } from '@/lib/api';
+import VoiceMessage from '@/components/VoiceMessage';
+import { voiceDuration } from '@/hooks/use-voice-recorder';
 
 const sizeText = (n: number) =>
   n >= 1024 * 1024 ? `${(n / 1024 / 1024).toFixed(1)} МБ` : `${Math.max(1, Math.round(n / 1024))} КБ`;
@@ -95,6 +97,9 @@ const PrivateFile = ({ file, localUrl, gone, receiving }: Props) => {
   }
   if (file.type === 'video') {
     return <PrivateVideo file={file} localUrl={localUrl} />;
+  }
+  if (voiceDuration(file.name) !== null) {
+    return <VoiceMessage src={localUrl ?? file.url} duration={voiceDuration(file.name)} />;
   }
   if (file.type === 'audio') {
     return <audio src={localUrl ?? file.url} controls preload="metadata" className="mt-1 w-full max-w-[320px]" />;
