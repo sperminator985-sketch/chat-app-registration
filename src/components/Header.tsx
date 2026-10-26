@@ -233,8 +233,8 @@ const Header = ({ onProfile, room, onPickRoom }: HeaderProps) => {
     >
       <div
         className={cn(
-          'mx-auto flex max-w-[1400px] flex-nowrap items-center justify-between gap-x-2 py-4 pl-2.5 pr-5 md:gap-x-3 md:px-6 lg:gap-x-4 lg:px-10',
-          user ? 'rule-bottom md:border-b-0' : 'rule-bottom',
+          'mx-auto flex flex-nowrap items-center justify-between gap-x-2 py-4 pl-2.5 pr-5 md:gap-x-3 lg:gap-x-4',
+          user ? 'rule-bottom max-w-none md:border-b-0 md:px-4 lg:px-5' : 'rule-bottom max-w-[1400px] md:px-6 lg:px-10',
         )}
       >
         {user && room && onPickRoom ? (
