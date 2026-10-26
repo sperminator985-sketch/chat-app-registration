@@ -271,13 +271,14 @@ const Header = ({ onProfile, room, onPickRoom }: HeaderProps) => {
                 target="_blank"
                 rel="noopener noreferrer"
                 title="Погода в Томске"
-                className="flex h-10 items-center gap-1.5 whitespace-nowrap border-2 border-foreground/30 px-2.5 text-[0.72rem] font-semibold uppercase tracking-[0.08em] text-muted-foreground transition-colors hover:border-secondary hover:text-foreground"
+                className="flex h-10 items-center gap-2 whitespace-nowrap border-2 border-foreground/30 px-3 text-[0.76rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground transition-colors hover:border-secondary hover:text-foreground"
               >
                 <Icon name={weatherIcon(temp)} size={14} className={temp < 0 ? 'text-primary' : 'text-secondary'} />
-                <span className="hidden xl:inline">Томск</span>
-                <span className={cn('text-[0.95rem] font-bold', temp < 0 ? 'text-primary' : 'text-secondary')}>
-                  {formatTemp(temp)}°
-                </span>
+                Сейчас в Томске{' '}
+                <span className={cn('text-[1.05rem] font-bold', temp < 0 ? 'text-primary' : 'text-secondary')}>
+                  {formatTemp(temp)}
+                </span>{' '}
+                {degreeWord(temp)}
               </a>
             )}
             {themeButton()}
