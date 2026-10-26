@@ -306,6 +306,14 @@ const Header = ({ onProfile, room, onPickRoom }: HeaderProps) => {
             >
               <Icon name="Users" size={16} />
             </button>
+            <button
+              onClick={onProfile}
+              title={`Профиль — ${user.nick}`}
+              aria-label="Профиль"
+              className="flex h-10 w-10 items-center justify-center border-2 border-foreground/40 text-foreground transition-colors hover:border-secondary hover:text-secondary lg:hidden"
+            >
+              <Icon name="UserRound" size={16} />
+            </button>
             {tickerButton()}
             {user.isAdmin && (
               <Link
