@@ -10,7 +10,7 @@ type Invite = { roomId: number; nick: string; color: number };
 type PrivateState = {
   active: boolean;
   peer: PrivatePeer | null;
-  peerTyping: boolean;
+  peerTyping: false | 'text' | 'voice';
   messages: ApiMessage[];
   invite: Invite | null;
   pendingNick: string | null;
@@ -27,7 +27,7 @@ const PrivateContext = createContext<PrivateState | null>(null);
 export const PrivateProvider = ({ children }: { children: ReactNode }) => {
   const { user } = useAuth();
   const [peer, setPeer] = useState<PrivatePeer | null>(null);
-  const [peerTyping, setPeerTyping] = useState(false);
+  const [peerTyping, setPeerTyping] = useState<false | 'text' | 'voice'>(false);
   const [messages, setMessages] = useState<ApiMessage[]>([]);
   const [invite, setInvite] = useState<Invite | null>(null);
   const [pendingNick, setPendingNick] = useState<string | null>(null);
@@ -41,7 +41,7 @@ export const PrivateProvider = ({ children }: { children: ReactNode }) => {
     try {
       const data = await api.privateState();
       setPeer(data.room?.peer ?? null);
-      setPeerTyping(Boolean(data.typing));
+      setPeerTyping(data.typing ? (data.typingKind === 'voice' ? 'voice' : 'text') : false);
       setMessages(data.messages ?? []);
       setInvite(data.invite);
       if (data.invite) invitedMe.current.add(data.invite.roomId);

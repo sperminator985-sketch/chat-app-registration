@@ -2,8 +2,8 @@
 // Версия серверной части. При каждом изменении api.php поднимайте
 // последнюю цифру: 1.0.0 → 1.0.1 → 1.0.2 и так далее.
 // Проверить, что залито на хостинг: https://ваш-домен.ru/chat/api.php?action=version
-const API_VERSION = '1.0.14';
-const API_VERSION_NOTE = 'Статус «отошёл» в списке «Кто в чате»';
+const API_VERSION = '1.0.15';
+const API_VERSION_NOTE = 'Приват: «записывает голосовое…»';
 
 ini_set('display_errors', '0');
 error_reporting(E_ALL & ~E_WARNING & ~E_NOTICE & ~E_DEPRECATED);
@@ -2151,7 +2151,7 @@ try {
         );
 
         $room = privateRoomOf($me);
-        $payload = ['room' => null, 'messages' => [], 'typing' => false];
+        $payload = ['room' => null, 'messages' => [], 'typing' => false, 'typingKind' => null];
         if ($room) {
             privateTouch($room, $me);
             $peerId = ((int) $room['owner_id']) === $me ? (int) $room['guest_id'] : (int) $room['owner_id'];
@@ -2161,14 +2161,20 @@ try {
                 [(int) $room['id']]
             )->fetchAll();
             $peerTyping = false;
+            $typingKind = null;
             if (hasTypingColumns()) {
-                $peerTyping = (bool) one(
-                    'SELECT id FROM users WHERE id = ? AND typing_room = ?
+                $tr = one(
+                    'SELECT typing_room FROM users WHERE id = ? AND typing_room IN (?, ?)
                      AND typing_at > UTC_TIMESTAMP() - INTERVAL 6 SECOND',
-                    [$peerId, 'priv:' . (int) $room['id']]
+                    [$peerId, 'priv:' . (int) $room['id'], 'privv:' . (int) $room['id']]
                 );
+                if ($tr) {
+                    $peerTyping = true;
+                    $typingKind = strpos((string) $tr['typing_room'], 'privv:') === 0 ? 'voice' : 'text';
+                }
             }
             $payload['typing'] = $peerTyping;
+            $payload['typingKind'] = $typingKind;
             $payload['room'] = [
                 'id' => (int) $room['id'],
                 'peer' => $peer ? [
@@ -2202,11 +2208,14 @@ try {
             out(200, ['ok' => true]);
         }
         $room = privateRoomOf($user['id']);
-        if ($room) {
+        $kind = (string) param('kind', 'text');
+        if ($room && $kind === 'stop') {
+            q('UPDATE users SET typing_at = NULL, typing_room = NULL WHERE id = ?', [$user['id']]);
+        } elseif ($room) {
             q(
                 'UPDATE users SET typing_at = UTC_TIMESTAMP(), typing_room = ?, last_seen = UTC_TIMESTAMP()
                  WHERE id = ?',
-                ['priv:' . (int) $room['id'], $user['id']]
+                [($kind === 'voice' ? 'privv:' : 'priv:') . (int) $room['id'], $user['id']]
             );
         }
         out(200, ['ok' => true]);
@@ -2330,6 +2339,9 @@ try {
         );
         $id = (int) db()->lastInsertId();
         privateTouch($room, $user['id']);
+        if (hasTypingColumns()) {
+            q('UPDATE users SET typing_at = NULL, typing_room = NULL WHERE id = ?', [$user['id']]);
+        }
         touch_user($user['id']);
         out(200, ['message' => [
             'id' => $id,

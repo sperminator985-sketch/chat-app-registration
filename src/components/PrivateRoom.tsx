@@ -167,6 +167,16 @@ const PrivateRoom = () => {
     if (!active && voice.recording) voice.cancel();
   }, [active, voice]);
 
+  useEffect(() => {
+    if (!voice.recording) return;
+    api.privateTyping('voice').catch(() => undefined);
+    const t = window.setInterval(() => api.privateTyping('voice').catch(() => undefined), 4000);
+    return () => {
+      window.clearInterval(t);
+      api.privateTyping('stop').catch(() => undefined);
+    };
+  }, [voice.recording]);
+
   if (!active || !peer) return null;
 
   return (
@@ -244,7 +254,10 @@ const PrivateRoom = () => {
 
           {peerTyping && (
             <div className="border-t-2 border-foreground/20 px-4 py-1.5 font-mono text-[0.66rem] uppercase tracking-[0.06em] text-sky-300 sm:px-5 sm:text-[0.72rem]">
-              <span className="animate-pulse">{peer.nick} печатает…</span>
+              <span className="flex animate-pulse items-center gap-1.5">
+                <Icon name={peerTyping === 'voice' ? 'Mic' : 'Pencil'} size={12} />
+                {peer.nick} {peerTyping === 'voice' ? 'записывает голосовое…' : 'печатает…'}
+              </span>
             </div>
           )}
 
@@ -269,6 +282,10 @@ const PrivateRoom = () => {
                   if (e.target.value && now - typingSentAt.current > 4000) {
                     typingSentAt.current = now;
                     api.privateTyping().catch(() => undefined);
+                  }
+                  if (!e.target.value && typingSentAt.current) {
+                    typingSentAt.current = 0;
+                    api.privateTyping('stop').catch(() => undefined);
                   }
                 }}
                 maxLength={480}
