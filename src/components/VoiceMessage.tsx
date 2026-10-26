@@ -43,7 +43,7 @@ const VoiceMessage = ({ src, duration }: Props) => {
   const pct = total ? Math.min(100, (current / total) * 100) : 0;
 
   return (
-    <div className="mt-1 flex w-[260px] max-w-full items-center gap-2.5 border-2 border-sky-400/60 bg-sky-400/5 px-2 py-1.5">
+    <div className="mt-1 flex w-[260px] max-w-full items-center gap-2.5 py-1">
       <audio
         ref={audioRef}
         src={src}
