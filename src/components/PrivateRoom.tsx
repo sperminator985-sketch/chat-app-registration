@@ -252,15 +252,6 @@ const PrivateRoom = () => {
             ))}
           </div>
 
-          {peerTyping && (
-            <div className="border-t-2 border-foreground/20 px-4 py-1.5 font-mono text-[0.66rem] uppercase tracking-[0.06em] text-sky-300 sm:px-5 sm:text-[0.72rem]">
-              <span className="flex animate-pulse items-center gap-1.5">
-                <Icon name={peerTyping === 'voice' ? 'Mic' : 'Pencil'} size={12} />
-                {peer.nick} {peerTyping === 'voice' ? 'записывает голосовое…' : 'печатает…'}
-              </span>
-            </div>
-          )}
-
           <form
             onSubmit={send}
             className="flex flex-row items-center gap-2 border-t-2 border-sky-400 px-3 py-2 sm:gap-2.5 sm:px-5 sm:py-2.5"
@@ -289,9 +280,27 @@ const PrivateRoom = () => {
                   }
                 }}
                 maxLength={480}
-                placeholder={`В привате с ${peer.nick}…`}
-                className="chat-font w-full min-w-0 bg-transparent text-[0.95rem] text-foreground outline-none placeholder:text-muted-foreground/70 sm:text-[0.94rem]"
+                placeholder={
+                  peerTyping === 'voice'
+                    ? `${peer.nick} записывает голосовое…`
+                    : peerTyping
+                      ? `${peer.nick} печатает…`
+                      : `В привате с ${peer.nick}…`
+                }
+                className={cn(
+                  'chat-font w-full min-w-0 bg-transparent text-[0.95rem] text-foreground outline-none sm:text-[0.94rem]',
+                  peerTyping ? 'placeholder:text-sky-300' : 'placeholder:text-muted-foreground/70',
+                )}
               />
+              {peerTyping && draft && (
+                <span
+                  title={peerTyping === 'voice' ? `${peer.nick} записывает голосовое` : `${peer.nick} печатает`}
+                  className="flex shrink-0 animate-pulse items-center gap-1 font-mono text-[0.66rem] text-sky-300"
+                >
+                  <Icon name={peerTyping === 'voice' ? 'Mic' : 'Pencil'} size={12} />
+                  <span className="hidden sm:inline">{peerTyping === 'voice' ? 'записывает…' : 'печатает…'}</span>
+                </span>
+              )}
             </div>
             )}
             {voice.recording ? (
