@@ -26,6 +26,13 @@ type HeaderProps = {
 
 const Header = ({ onProfile, room, onPickRoom }: HeaderProps) => {
   const [open, setOpen] = useState(false);
+  const [whoOpen, setWhoOpen] = useState(false);
+
+  useEffect(() => {
+    const onState = (e: Event) => setWhoOpen(Boolean((e as CustomEvent<boolean>).detail));
+    window.addEventListener('chat:who-state', onState);
+    return () => window.removeEventListener('chat:who-state', onState);
+  }, []);
   const [scrolled, setScrolled] = useState(false);
   const [active, setActive] = useState('');
   const { user, openAuth, signOut } = useAuth();
@@ -419,10 +426,16 @@ const Header = ({ onProfile, room, onPickRoom }: HeaderProps) => {
               'flex h-10 w-10 items-center justify-center border-2',
               open ? 'border-destructive text-destructive' : 'border-foreground/40 text-foreground',
             )}
-            onClick={() => setOpen((v) => !v)}
-            aria-label={open ? 'Закрыть меню' : 'Меню'}
+            onClick={() => {
+              if (whoOpen && !open) {
+                window.dispatchEvent(new Event('chat:who-close'));
+                return;
+              }
+              setOpen((v) => !v);
+            }}
+            aria-label={whoOpen && !open ? 'Выйти из списка' : open ? 'Закрыть меню' : 'Меню'}
           >
-            <Icon name={open ? 'X' : 'Menu'} size={20} />
+            <Icon name={whoOpen && !open ? 'LogOut' : open ? 'X' : 'Menu'} size={20} />
           </button>
         </div>
       </div>

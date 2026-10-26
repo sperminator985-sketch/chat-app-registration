@@ -43,6 +43,10 @@ const ChatWindow = ({ activeRoom }: ChatWindowProps) => {
   const [sending, setSending] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const [whoOpen, setWhoOpen] = useState(false);
+
+  useEffect(() => {
+    window.dispatchEvent(new CustomEvent('chat:who-state', { detail: whoOpen }));
+  }, [whoOpen]);
   const [residentsOpen, setResidentsOpen] = useState(false);
   const [cardPerson, setCardPerson] = useState<CardPerson | null>(null);
 
@@ -87,6 +91,8 @@ const ChatWindow = ({ activeRoom }: ChatWindowProps) => {
     const onClear = () => clearFeed();
     const onResidents = () => setResidentsOpen(true);
     const onWho = () => setWhoOpen(true);
+    const onWhoClose = () => setWhoOpen(false);
+    window.addEventListener('chat:who-close', onWhoClose);
     window.addEventListener('chat:clear', onClear);
     window.addEventListener('chat:residents', onResidents);
     window.addEventListener('chat:who', onWho);
@@ -94,6 +100,7 @@ const ChatWindow = ({ activeRoom }: ChatWindowProps) => {
       window.removeEventListener('chat:clear', onClear);
       window.removeEventListener('chat:residents', onResidents);
       window.removeEventListener('chat:who', onWho);
+      window.removeEventListener('chat:who-close', onWhoClose);
     };
   }, [clearFeed]);
 
@@ -243,7 +250,7 @@ const ChatWindow = ({ activeRoom }: ChatWindowProps) => {
                 onClick={() => setWhoOpen(false)}
                 title="Закрыть"
                 aria-label="Закрыть"
-                className="absolute right-3 top-1/2 flex -translate-y-1/2 items-center outline-none lg:hidden"
+                className="absolute right-3 top-1/2 hidden -translate-y-1/2 items-center outline-none md:flex lg:hidden"
               >
                 <span className="flex h-8 shrink-0 items-center gap-1.5 border-2 border-foreground/35 px-2.5 text-[0.72rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground transition-colors hover:border-primary hover:text-primary">
                   <Icon name="LogOut" size={14} />
