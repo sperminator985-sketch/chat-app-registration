@@ -59,6 +59,9 @@ const asPromise = <T>(req: IDBRequest<T>) =>
     req.onerror = () => reject(req.error);
   });
 
+export const byTime = (a: { ts: number; id: number }, b: { ts: number; id: number }) =>
+  a.ts - b.ts || a.id - b.id;
+
 export const convoKey = (me: string, peer: string) => `${me.toLowerCase()}::${peer.toLowerCase()}`;
 export const msgKey = (convo: string, id: number) => `${convo}|${id}`;
 
@@ -74,7 +77,7 @@ export const loadHistory = async (convo: string): Promise<StoredMessage[]> => {
     const db = await openDb();
     const tx = db.transaction(MSG, 'readonly');
     const rows = await asPromise(tx.objectStore(MSG).index('convo').getAll(convo) as IDBRequest<StoredMessage[]>);
-    return rows.sort((a, b) => a.id - b.id);
+    return rows.sort(byTime);
   } catch {
     return [];
   }

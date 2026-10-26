@@ -14,6 +14,7 @@ import PrivateFile from '@/components/PrivateFile';
 import { playKnock } from '@/lib/notify-sound';
 import { usePrivateHistory } from '@/hooks/use-private-history';
 import { useVoiceRecorder, voiceSupported, formatVoiceTime } from '@/hooks/use-voice-recorder';
+import { useVoiceLink } from '@/hooks/use-voice-link';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -43,7 +44,7 @@ const PrivateRoom = () => {
   const lastIncoming = useRef<number | null>(null);
   const typingSentAt = useRef(0);
   const [askClear, setAskClear] = useState(false);
-  const { items, saveOwn, clear, hasHistory } = usePrivateHistory({
+  const { items, saveOwn, saveVoice, clear, hasHistory } = usePrivateHistory({
     me: user?.nick,
     peer: peer?.nick,
     serverMessages: messages,
@@ -147,7 +148,37 @@ const PrivateRoom = () => {
     }
   };
 
-  const voice = useVoiceRecorder((f) => sendFile(f));
+  const { sendVoice } = useVoiceLink({
+    peerNick: peer?.nick,
+    onReceived: async (from, blob, meta) => {
+      if (!peer || from.toLowerCase() !== peer.nick.toLowerCase()) throw new Error('not here');
+      const ok = await saveVoice({ nick: peer.nick, color: peer.color, blob, name: meta.name, ts: meta.ts });
+      if (!ok) throw new Error('no space');
+      playKnock();
+    },
+  });
+
+  const sendVoiceFile = async (file: File) => {
+    if (!peer || !user || uploading) return;
+    setUploading(true);
+    setProgress(0);
+    const ts = Date.now();
+    try {
+      await sendVoice(peer.nick, file, ts, setProgress);
+      await saveVoice({ nick: user.nick, color: user.color, blob: file, name: file.name, ts });
+    } catch (err) {
+      toast({
+        title: 'Голосовое не ушло',
+        description: err instanceof Error ? err.message : 'Попробуй ещё раз',
+        variant: 'destructive',
+      });
+    } finally {
+      setUploading(false);
+      setProgress(0);
+    }
+  };
+
+  const voice = useVoiceRecorder((f) => sendVoiceFile(f));
   const canVoice = voiceSupported();
 
   const startVoice = async () => {

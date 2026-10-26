@@ -4,6 +4,8 @@ import { useAuth } from '@/hooks/use-auth';
 import { toast } from '@/hooks/use-toast';
 import { startRinging } from '@/lib/notify-sound';
 import { isPageVisible } from '@/hooks/use-polling';
+import { loadIce } from '@/lib/ice';
+import { onCallSignal, routeSignals } from '@/lib/signal-bus';
 
 export type CallStatus = 'idle' | 'calling' | 'incoming' | 'active';
 export type CallMode = 'video' | 'audio';
@@ -59,30 +61,6 @@ type CallState = {
 };
 
 const CallContext = createContext<CallState | null>(null);
-
-const FALLBACK_ICE: RTCIceServer[] = [
-  { urls: 'stun:stun.l.google.com:19302' },
-  { urls: 'stun:stun1.l.google.com:19302' },
-];
-
-let iceCache: { at: number; servers: RTCIceServer[] } | null = null;
-
-const loadIce = async (): Promise<RTCIceServer[]> => {
-  if (iceCache && Date.now() - iceCache.at < 30 * 60 * 1000) return iceCache.servers;
-  try {
-    const res = await Promise.race([
-      api.callIce(),
-      new Promise<never>((_, rej) => setTimeout(() => rej(new Error('timeout')), 4000)),
-    ]);
-    if (res.iceServers?.length) {
-      iceCache = { at: Date.now(), servers: res.iceServers };
-      return res.iceServers;
-    }
-  } catch {
-    /* старый сервер без TURN — звоним напрямую */
-  }
-  return FALLBACK_ICE;
-};
 
 const isInstalledApp = () =>
   window.matchMedia?.('(display-mode: standalone)').matches ||
@@ -441,6 +419,8 @@ export const CallProvider = ({ children }: { children: ReactNode }) => {
     [cleanup, logCall],
   );
 
+  useEffect(() => onCallSignal(handleSignal), [handleSignal]);
+
   useEffect(() => {
     if (!user) return;
     let stop = false;
@@ -451,7 +431,7 @@ export const CallProvider = ({ children }: { children: ReactNode }) => {
         const m = !!res.maintenance;
         maintenanceRef.current = m;
         setMaintenance(m);
-        for (const s of res.signals) await handleSignal(s);
+        await routeSignals(res.signals);
       } catch {
         /* тихо */
       }

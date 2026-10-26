@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { api, ApiFile, ApiMessage } from '@/lib/api';
 import {
+  byTime,
   clearConvo,
   convoKey,
   formatStamp,
@@ -125,7 +126,7 @@ export const usePrivateHistory = ({ me, peer, serverMessages, reveal }: Options)
     setHistory((prev) => {
       const map = new Map(prev.map((r) => [r.key, r]));
       rows.forEach((r) => map.set(r.key, r));
-      return [...map.values()].sort((a, b) => a.id - b.id);
+      return [...map.values()].sort(byTime);
     });
   }, []);
 
@@ -153,6 +154,33 @@ export const usePrivateHistory = ({ me, peer, serverMessages, reveal }: Options)
         await putBlob(key, convo, blob);
       }
       await remember([toStored(m, convo, text)]);
+    },
+    [convo, remember, attachBlob],
+  );
+
+  const saveVoice = useCallback(
+    async (v: { nick: string; color: ApiMessage['color']; blob: Blob; name: string; ts: number }) => {
+      if (!convo) return false;
+      const id = -v.ts;
+      const key = msgKey(convo, id);
+      if (saved.current.has(key)) return true;
+      const ok = await putBlob(key, convo, v.blob);
+      if (!ok) return false;
+      if (convoRef.current === convo) attachBlob(key, v.blob);
+      await remember([
+        {
+          key,
+          convo,
+          id,
+          roomId: 0,
+          nick: v.nick,
+          color: v.color,
+          text: '',
+          ts: v.ts,
+          file: { name: v.name, type: 'audio', size: v.blob.size },
+        },
+      ]);
+      return true;
     },
     [convo, remember, attachBlob],
   );
@@ -251,7 +279,7 @@ export const usePrivateHistory = ({ me, peer, serverMessages, reveal }: Options)
 
   const items = useMemo<ViewMessage[]>(() => {
     if (!convo) return [];
-    const byId = new Map<number, ViewMessage>();
+    const byId = new Map<number, ViewMessage & { ts: number }>();
     history.forEach((r) => {
       const url = urls[r.key];
       const onServer = serverMessages.find((m) => m.id === r.id)?.file?.url;
@@ -261,6 +289,7 @@ export const usePrivateHistory = ({ me, peer, serverMessages, reveal }: Options)
         color: r.color,
         text: r.text,
         time: formatStamp(r.ts),
+        ts: r.ts,
         file: r.file ? { ...r.file, url: url ?? onServer ?? '' } : null,
         fileGone: Boolean(r.file) && !url && !onServer && Boolean(gone[r.key]),
         receiving: null,
@@ -275,15 +304,16 @@ export const usePrivateHistory = ({ me, peer, serverMessages, reveal }: Options)
         color: m.color,
         text: m.cipher ? '🔒 расшифровываем…' : m.text,
         time: m.ts ? formatStamp(m.ts) : m.time,
+        ts: m.ts ?? Date.now(),
         file: m.file ? { ...m.file, url: urls[key] ?? m.file.url } : null,
         fileGone: false,
         receiving: receiving[key] ?? null,
       });
     });
-    return [...byId.values()].sort((a, b) => a.id - b.id);
+    return [...byId.values()].sort(byTime).map(({ ts: _ts, ...v }) => v);
   }, [convo, history, serverMessages, urls, gone, receiving]);
 
-  return { items, saveOwn, clear, hasHistory: history.length > 0 };
+  return { items, saveOwn, saveVoice, clear, hasHistory: history.length > 0 };
 };
 
 export default usePrivateHistory;
