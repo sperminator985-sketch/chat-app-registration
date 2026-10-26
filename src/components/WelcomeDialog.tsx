@@ -22,8 +22,12 @@ const WelcomeDialog = () => {
   const room = rooms.find((r) => r.id === user.room) ?? rooms[0];
 
   return (
-    <Dialog open={welcomeOpen} onOpenChange={(open) => !open && closeWelcome()}>
-      <DialogContent className="top-[4vh] max-h-[92vh] max-w-[560px] translate-y-0 overflow-y-auto border-2 border-foreground/45 bg-card p-0 text-card-foreground shadow-[10px_10px_0_0_hsl(var(--foreground)/0.25)] [&>button]:hidden">
+    <Dialog open={welcomeOpen}>
+      <DialogContent
+        onPointerDownOutside={(e) => e.preventDefault()}
+        onInteractOutside={(e) => e.preventDefault()}
+        onEscapeKeyDown={(e) => e.preventDefault()}
+        className="top-[4vh] max-h-[92vh] max-w-[560px] translate-y-0 overflow-y-auto border-2 border-foreground/45 bg-card p-0 text-card-foreground shadow-[10px_10px_0_0_hsl(var(--foreground)/0.25)] [&>button]:hidden">
         <div className="relative overflow-hidden border-b-2 border-foreground/40 bg-secondary px-6 pb-6 pt-5 text-secondary-foreground">
           <div className="pointer-events-none absolute -right-4 -top-3 grid grid-cols-4 gap-[3px] opacity-30">
             {windows.map((on, i) => (
