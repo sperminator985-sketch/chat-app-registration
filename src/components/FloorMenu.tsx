@@ -1,4 +1,6 @@
-import { useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
+import { PopoverAnchor } from '@radix-ui/react-popover';
+import { useIsMobile } from '@/hooks/use-mobile';
 import Icon from '@/components/ui/icon';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/use-auth';
@@ -14,11 +16,26 @@ type FloorMenuProps = {
 const FloorMenu = ({ room, onPick, className }: FloorMenuProps) => {
   const { user } = useAuth();
   const [open, setOpen] = useState(false);
+  const isMobile = useIsMobile();
+  const btnRef = useRef<HTMLButtonElement>(null);
+  const barRef = useMemo(
+    () => ({
+      current: {
+        getBoundingClientRect: () => {
+          const bar = btnRef.current?.closest('.rule-bottom') ?? btnRef.current;
+          return bar ? bar.getBoundingClientRect() : new DOMRect();
+        },
+      },
+    }),
+    [],
+  );
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
+      {isMobile && <PopoverAnchor virtualRef={barRef} />}
       <PopoverTrigger asChild>
         <button
+          ref={btnRef}
           type="button"
           aria-label="Выбрать этаж"
           className={cn('flex min-w-0 flex-1 items-center gap-2 text-left [-webkit-tap-highlight-color:transparent]', className)}
@@ -35,9 +52,13 @@ const FloorMenu = ({ room, onPick, className }: FloorMenuProps) => {
         </button>
       </PopoverTrigger>
       <PopoverContent
-        align="start"
-        sideOffset={12}
-        className="max-h-[70dvh] w-[min(20rem,calc(100vw-1.25rem))] overflow-y-auto overscroll-contain rounded-none border-2 border-foreground/40 bg-card p-1"
+        align={isMobile ? 'center' : 'start'}
+        sideOffset={isMobile ? -2 : 12}
+        avoidCollisions={!isMobile}
+        className={cn(
+          'w-[min(20rem,calc(100vw-1.25rem))] rounded-none border-2 border-foreground/40 bg-card p-1',
+          !isMobile && 'max-h-[70dvh] overflow-y-auto overscroll-contain',
+        )}
       >
         <ul className="flex flex-col">
           {rooms.map((r) => {
@@ -53,7 +74,7 @@ const FloorMenu = ({ room, onPick, className }: FloorMenuProps) => {
                     setOpen(false);
                   }}
                   className={cn(
-                    'flex w-full items-center gap-3 px-3 py-2.5 text-left transition-colors',
+                    'flex w-full items-center gap-3 px-3 py-2 text-left transition-colors md:py-2.5',
                     current
                       ? 'bg-secondary text-secondary-foreground'
                       : locked
