@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import Icon from '@/components/ui/icon';
-import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/use-auth';
 import { rooms, rules } from '@/data/chat';
 import Avatar from '@/components/Avatar';
@@ -13,8 +12,6 @@ const points = [
   { icon: 'Mail', title: 'Личка', text: 'Кликни по нику соседа — откроется личка. Разборки решают там.' },
   { icon: 'TriangleAlert', title: 'Уважение', text: 'Без травли, чужих фото и личных данных.' },
 ];
-
-const windows = [1, 1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 0];
 
 const WelcomeDialog = () => {
   const { welcomeOpen, closeWelcome, user } = useAuth();
@@ -36,18 +33,6 @@ const WelcomeDialog = () => {
         onEscapeKeyDown={(e) => e.preventDefault()}
         className="max-h-[92dvh] max-w-[560px] overflow-y-auto border-2 border-foreground/45 bg-card p-0 text-card-foreground shadow-[10px_10px_0_0_hsl(var(--foreground)/0.25)] [&>button]:hidden">
         <div className="relative overflow-hidden border-b-2 border-foreground/40 bg-secondary px-6 pb-6 pt-5 text-secondary-foreground">
-          <div className="pointer-events-none absolute -right-4 -top-3 grid grid-cols-4 gap-[3px] opacity-30">
-            {windows.map((on, i) => (
-              <span
-                key={i}
-                style={{ animationDelay: `${i * 0.9}s` }}
-                className={cn(
-                  'h-5 w-5 border border-secondary-foreground/40',
-                  on ? 'animate-blink bg-secondary-foreground/70' : 'bg-secondary-foreground/15',
-                )}
-              />
-            ))}
-          </div>
 
           <p className="relative font-mono text-[0.7rem] font-bold uppercase tracking-[0.22em] opacity-70">
             Ордер на заселение №{String(user.id).padStart(4, '0')}
