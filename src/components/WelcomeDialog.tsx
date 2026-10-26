@@ -31,28 +31,28 @@ const WelcomeDialog = () => {
         onPointerDownOutside={(e) => e.preventDefault()}
         onInteractOutside={(e) => e.preventDefault()}
         onEscapeKeyDown={(e) => e.preventDefault()}
-        className="max-h-[92dvh] max-w-[560px] overflow-y-auto border-2 border-foreground/45 bg-card p-0 text-card-foreground shadow-[10px_10px_0_0_hsl(var(--foreground)/0.25)] [&>button]:hidden">
-        <div className="relative overflow-hidden border-b-2 border-foreground/40 bg-secondary px-6 pb-6 pt-5 text-secondary-foreground">
+        className="max-h-[92dvh] max-w-[560px] gap-0 overflow-y-auto border-2 border-foreground/45 bg-card p-0 text-card-foreground shadow-[10px_10px_0_0_hsl(var(--foreground)/0.25)] [&>button]:hidden">
+        <div className="relative overflow-hidden border-b-2 border-foreground/40 bg-secondary px-4 pb-4 pt-4 text-secondary-foreground sm:px-6 sm:pb-6 sm:pt-5">
 
           <p className="relative font-mono text-[0.7rem] font-bold uppercase tracking-[0.22em] opacity-70">
             Ордер на заселение №{String(user.id).padStart(4, '0')}
           </p>
 
-          <div className="relative mt-4 flex items-center gap-4">
+          <div className="relative mt-3 flex items-center gap-3 sm:mt-4 sm:gap-4">
             <span className="relative shrink-0 border-2 border-secondary-foreground/60 bg-secondary-foreground/10 p-1.5">
-              <Avatar avatar={user.avatar} avatarUrl={user.avatarUrl} color={user.color} size={54} />
+              <Avatar avatar={user.avatar} avatarUrl={user.avatarUrl} color={user.color} size={44} />
             </span>
             <div className="min-w-0">
               <p className="font-display text-[0.82rem] font-extrabold uppercase tracking-[0.16em] opacity-75">
                 Добро пожаловать
               </p>
-              <p className="mt-0.5 truncate font-display text-[2rem] font-extrabold leading-none tracking-[-0.04em] text-secondary-foreground">
+              <p className="mt-0.5 break-words font-display text-[clamp(1.25rem,6vw,2rem)] font-extrabold leading-none [overflow-wrap:anywhere] tracking-[-0.04em] text-secondary-foreground">
                 {user.nick}
               </p>
             </div>
           </div>
 
-          <div className="relative mt-5 flex flex-wrap items-stretch gap-2">
+          <div className="relative mt-3 flex flex-wrap items-stretch gap-2 sm:mt-5">
             <span className="flex items-center gap-2 border-2 border-secondary-foreground/50 bg-secondary-foreground/10 px-3 py-1.5">
               <Icon name="KeyRound" size={15} />
               <span className="font-mono text-[0.78rem] font-bold uppercase tracking-[0.12em]">
@@ -76,18 +76,18 @@ const WelcomeDialog = () => {
           </div>
         </div>
 
-        <div className="border-b-2 border-foreground/25 bg-muted px-6 py-2.5">
+        <div className="border-b-2 border-foreground/25 bg-muted px-4 py-2 sm:px-6 sm:py-2.5">
           <p className="font-mono text-[0.7rem] font-bold uppercase tracking-[0.2em] text-muted-foreground">
             {showRules ? `Правила общаги · ${rules.length} пунктов` : 'Памятка жильца · 5 пунктов'}
           </p>
         </div>
 
         {showRules ? (
-          <ol className="px-6 py-1">
+          <ol className="px-4 py-0.5 sm:px-6 sm:py-1">
             {rules.map((r, i) => (
               <li
                 key={r.q}
-                className="flex animate-fade-in items-start gap-3.5 border-b border-foreground/12 py-3 last:border-b-0"
+                className="flex animate-fade-in items-start gap-3 border-b border-foreground/12 py-2.5 last:border-b-0 sm:gap-3.5 sm:py-3"
               >
                 <span className="mt-0.5 shrink-0 font-mono text-sm font-bold text-secondary">
                   {String(i + 1).padStart(2, '0')}
@@ -104,12 +104,12 @@ const WelcomeDialog = () => {
             ))}
           </ol>
         ) : (
-        <ul className="px-6 py-1">
+        <ul className="px-4 py-0.5 sm:px-6 sm:py-1">
           {points.map((p, i) => (
             <li
               key={p.title}
               style={{ animationDelay: `${0.05 + i * 0.06}s` }}
-              className="flex animate-fade-in items-start gap-3.5 border-b border-foreground/12 py-3 last:border-b-0"
+              className="flex animate-fade-in items-start gap-3 border-b border-foreground/12 py-2.5 last:border-b-0 sm:gap-3.5 sm:py-3"
             >
               <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center border-2 border-foreground/30 bg-primary/15 text-primary">
                 <Icon name={p.icon} size={16} />
@@ -127,7 +127,7 @@ const WelcomeDialog = () => {
         </ul>
         )}
 
-        <div className="flex flex-col gap-2 border-t-2 border-foreground/40 bg-muted/60 px-6 py-4 sm:flex-row">
+        <div className="flex flex-col sticky bottom-0 gap-2 border-t-2 border-foreground/40 bg-muted px-4 py-3 sm:flex-row sm:px-6 sm:py-4">
           <button onClick={closeWelcome} className="btn-brut flex-1">
             <Icon name="DoorOpen" size={16} />
             Заселяюсь
