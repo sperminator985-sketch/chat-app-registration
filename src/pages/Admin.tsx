@@ -573,7 +573,7 @@ const AdminPanel = () => {
                   : 'border-foreground/35 text-muted-foreground hover:border-secondary',
               )}
             >
-              Сейф
+              Серверная
             </button>
             <button
               onClick={() => setTab('security')}
