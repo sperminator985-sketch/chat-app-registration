@@ -239,11 +239,11 @@ const Header = ({ onProfile, room, onPickRoom }: HeaderProps) => {
       >
         {user && room && onPickRoom ? (
           <>
-            <div className="flex min-w-0 flex-1 md:hidden">
+            <div className="flex min-w-0 flex-1 md:hidden lg:flex min-[1560px]:hidden">
               <FloorMenu room={room} onPick={onPickRoom} />
             </div>
-            <Logo size="sm" iconAsLetter className="hidden shrink-0 lg:flex" />
-            <div className="hidden shrink-0 items-center gap-1.5 md:flex lg:w-[220px] lg:gap-2 lg:min-w-0 xl:w-[300px]" title={`Этаж ${room.floor} · ${room.title}`}>
+            <Logo size="sm" iconAsLetter className="hidden shrink-0 min-[1200px]:flex" />
+            <div className="hidden shrink-0 items-center gap-1.5 md:flex lg:hidden min-[1560px]:flex lg:w-[220px] lg:gap-2 lg:min-w-0 xl:w-[300px]" title={`Этаж ${room.floor} · ${room.title}`}>
               <Icon name={room.icon} size={20} className="h-4 w-4 shrink-0 text-secondary lg:h-5 lg:w-5" />
               <span className="whitespace-nowrap font-display text-[0.7rem] font-extrabold uppercase leading-tight tracking-[-0.03em] lg:truncate lg:text-[0.9rem] xl:text-lg">
                 Этаж {room.floor} · {room.title}
@@ -275,11 +275,12 @@ const Header = ({ onProfile, room, onPickRoom }: HeaderProps) => {
                 className="flex h-10 items-center gap-2 whitespace-nowrap border-2 border-foreground/30 px-3 text-[0.76rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground transition-colors hover:border-secondary hover:text-foreground"
               >
                 <Icon name={weatherIcon(temp)} size={14} className={temp < 0 ? 'text-primary' : 'text-secondary'} />
-                Сейчас в Томске{' '}
+                <span className="hidden min-[1760px]:inline">Сейчас в Томске</span>
                 <span className={cn('text-[1.05rem] font-bold', temp < 0 ? 'text-primary' : 'text-secondary')}>
                   {formatTemp(temp)}
-                </span>{' '}
-                {degreeWord(temp)}
+                  <span className="min-[1760px]:hidden">°</span>
+                </span>
+                <span className="hidden min-[1760px]:inline">{degreeWord(temp)}</span>
               </a>
             )}
             {themeButton()}
@@ -291,7 +292,7 @@ const Header = ({ onProfile, room, onPickRoom }: HeaderProps) => {
           <FloorSwitcher
             activeRoom={room.id}
             onPick={onPickRoom}
-            className="hidden md:ml-auto md:flex md:w-auto lg:mx-auto"
+            className="hidden md:ml-auto md:flex md:w-auto lg:mx-auto lg:hidden min-[1560px]:flex"
           />
         )}
 
