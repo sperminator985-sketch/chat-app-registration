@@ -240,12 +240,12 @@ const Header = ({ onProfile, room, onPickRoom }: HeaderProps) => {
         {user && room && onPickRoom ? (
           <>
             <Logo size="sm" iconAsLetter className="hidden shrink-0 md:flex lg:hidden min-[1200px]:flex" />
-            <div className="flex min-w-0 flex-1 md:justify-center lg:justify-start min-[1560px]:hidden">
-              <FloorMenu room={room} onPick={onPickRoom} className="md:flex-none lg:flex-1" />
+            <div className="flex min-w-0 flex-1 md:justify-center min-[1560px]:hidden">
+              <FloorMenu room={room} onPick={onPickRoom} className="md:flex-none" />
             </div>
-            <div className="hidden shrink-0 items-center gap-1.5 min-[1560px]:flex lg:w-[220px] lg:gap-2 lg:min-w-0 xl:w-[300px]" title={`Этаж ${room.floor} · ${room.title}`}>
+            <div className="mx-auto hidden min-w-0 items-center gap-2 min-[1560px]:flex" title={`Этаж ${room.floor} · ${room.title}`}>
               <Icon name={room.icon} size={20} className="h-4 w-4 shrink-0 text-secondary lg:h-5 lg:w-5" />
-              <span className="whitespace-nowrap font-display text-[0.7rem] font-extrabold uppercase leading-tight tracking-[-0.03em] lg:truncate lg:text-[0.9rem] xl:text-lg">
+              <span className="whitespace-nowrap font-display text-[0.7rem] font-extrabold uppercase leading-tight tracking-[-0.03em] truncate text-lg">
                 Этаж {room.floor} · {room.title}
               </span>
             </div>
