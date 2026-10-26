@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Icon from '@/components/ui/icon';
-import Logo from '@/components/Logo';
 import { cn } from '@/lib/utils';
 import { AuthProvider, useAuth } from '@/hooks/use-auth';
 import { api, API_VERSION, type AdminMessage, type AdminTickerPost, type AdminUser, type SecurityEvent, type TickerMode } from '@/lib/api';
@@ -549,13 +548,11 @@ const AdminPanel = () => {
               <Icon name="LogOut" size={14} />
               <span>Выйти</span>
             </button>
-            <span className="pointer-events-none flex w-full items-center justify-center gap-2 whitespace-nowrap font-display text-[0.95rem] font-extrabold uppercase tracking-[0.04em] md:hidden">
-              <Logo size="xs" iconAsLetter className="shrink-0" />
+            <span className="pointer-events-none w-full whitespace-nowrap text-center font-display text-[0.95rem] font-extrabold uppercase tracking-[0.04em] md:hidden">
               Комендантская
             </span>
           </div>
-          <span className="pointer-events-none relative hidden basis-full whitespace-nowrap pb-3 text-center after:absolute after:bottom-0 after:left-1/2 after:w-[200vw] after:-translate-x-1/2 after:border-b-2 after:border-foreground/35 after:content-[''] font-display text-lg font-extrabold uppercase tracking-[0.04em] md:order-first md:flex md:items-center md:justify-center md:gap-3">
-            <Logo size="sm" iconAsLetter className="shrink-0" />
+          <span className="pointer-events-none relative hidden basis-full whitespace-nowrap pb-3 text-center after:absolute after:bottom-0 after:left-1/2 after:w-[200vw] after:-translate-x-1/2 after:border-b-2 after:border-foreground/35 after:content-[''] font-display text-lg font-extrabold uppercase tracking-[0.04em] md:order-first md:block">
             Комендантская
           </span>
           <div className="flex items-center justify-start gap-1 md:order-1 md:gap-2">
