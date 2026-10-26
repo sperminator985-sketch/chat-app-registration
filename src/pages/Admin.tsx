@@ -537,8 +537,8 @@ const AdminPanel = () => {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <header className="sticky top-0 z-50 border-b-2 border-foreground/35 bg-background/95 backdrop-blur-sm">
-        <div className="relative mx-auto flex max-w-[1200px] flex-col gap-2 px-4 py-3 md:flex-row md:items-center md:gap-3 md:px-8 md:py-4">
-          <div className="relative flex items-center md:order-3 md:[&>button]:flex">
+        <div className="relative mx-auto flex max-w-[1200px] flex-col gap-2 px-4 py-3 md:flex-row md:flex-wrap md:items-center md:gap-3 md:px-8 md:py-4">
+          <div className="relative flex items-center md:order-3 md:ml-auto md:[&>button]:flex">
             <button
               onClick={() => navigate('/')}
               title="Выход"
@@ -552,7 +552,7 @@ const AdminPanel = () => {
               Комендантская
             </span>
           </div>
-          <span className="pointer-events-none hidden flex-1 whitespace-nowrap px-2 text-center font-display text-lg font-extrabold uppercase tracking-[0.04em] md:order-2 md:block">
+          <span className="pointer-events-none hidden basis-full whitespace-nowrap px-2 text-center font-display text-lg font-extrabold uppercase tracking-[0.04em] md:order-first md:block">
             Комендантская
           </span>
           <div className="flex items-center justify-start gap-1 md:order-1 md:gap-2">
