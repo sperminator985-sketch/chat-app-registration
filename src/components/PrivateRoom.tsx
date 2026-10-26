@@ -14,7 +14,6 @@ import PrivateFile from '@/components/PrivateFile';
 import { playKnock } from '@/lib/notify-sound';
 import { usePrivateHistory } from '@/hooks/use-private-history';
 import { useVoiceRecorder, voiceSupported, formatVoiceTime } from '@/hooks/use-voice-recorder';
-import { useVoiceLink } from '@/hooks/use-voice-link';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -41,11 +40,10 @@ const PrivateRoom = () => {
   const fileRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
-  const [linking, setLinking] = useState(false);
   const lastIncoming = useRef<number | null>(null);
   const typingSentAt = useRef(0);
   const [askClear, setAskClear] = useState(false);
-  const { items, saveOwn, saveVoice, clear, hasHistory } = usePrivateHistory({
+  const { items, saveOwn, clear, hasHistory } = usePrivateHistory({
     me: user?.nick,
     peer: peer?.nick,
     serverMessages: messages,
@@ -149,39 +147,7 @@ const PrivateRoom = () => {
     }
   };
 
-  const { sendVoice } = useVoiceLink({
-    peerNick: peer?.nick,
-    onReceived: async (from, blob, meta) => {
-      if (!peer || from.toLowerCase() !== peer.nick.toLowerCase()) throw new Error('not here');
-      const ok = await saveVoice({ nick: peer.nick, color: peer.color, blob, name: meta.name, ts: meta.ts });
-      if (!ok) throw new Error('no space');
-      playKnock();
-    },
-  });
-
-  const sendVoiceFile = async (file: File) => {
-    if (!peer || !user || uploading) return;
-    setUploading(true);
-    setProgress(0);
-    const ts = Date.now();
-    try {
-      setLinking(true);
-      await sendVoice(peer.nick, file, ts, setProgress, (st) => setLinking(st === 'connecting'));
-      await saveVoice({ nick: user.nick, color: user.color, blob: file, name: file.name, ts });
-    } catch (err) {
-      toast({
-        title: 'Голосовое не ушло',
-        description: err instanceof Error ? err.message : 'Попробуй ещё раз',
-        variant: 'destructive',
-      });
-    } finally {
-      setLinking(false);
-      setUploading(false);
-      setProgress(0);
-    }
-  };
-
-  const voice = useVoiceRecorder((f) => sendVoiceFile(f));
+  const voice = useVoiceRecorder((f) => sendFile(f));
   const canVoice = voiceSupported();
 
   const startVoice = async () => {
@@ -348,7 +314,7 @@ const PrivateRoom = () => {
                 type="button"
                 onClick={() => fileRef.current?.click()}
                 disabled={uploading || !user}
-                title={linking ? 'Соединяемся с собеседником…' : uploading ? `Загрузка: ${progress}%` : 'Отправить фото или файл (до 100 МБ)'}
+                title={uploading ? `Загрузка: ${progress}%` : 'Отправить фото или файл (до 100 МБ)'}
                 aria-label={uploading ? `Загрузка ${progress}%` : 'Прикрепить файл'}
                 className={cn(
                   'relative flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden border-2 transition-colors disabled:cursor-wait',
@@ -363,11 +329,7 @@ const PrivateRoom = () => {
                       className="absolute inset-x-0 bottom-0 bg-sky-400/35 transition-[height] duration-200"
                       style={{ height: `${progress}%` }}
                     />
-                    {linking ? (
-                      <Icon name="Loader2" size={16} className="relative animate-spin text-sky-300" />
-                    ) : (
-                      <span className="relative font-mono text-[0.62rem] font-bold leading-none">{progress}%</span>
-                    )}
+                    <span className="relative font-mono text-[0.62rem] font-bold leading-none">{progress}%</span>
                   </>
                 ) : (
                   <Icon name="Paperclip" size={18} />
