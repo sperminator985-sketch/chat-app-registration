@@ -1,8 +1,9 @@
+import { useEffect, useState } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import Icon from '@/components/ui/icon';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/use-auth';
-import { rooms } from '@/data/chat';
+import { rooms, rules } from '@/data/chat';
 import Avatar from '@/components/Avatar';
 
 const points = [
@@ -17,6 +18,12 @@ const windows = [1, 1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 0];
 
 const WelcomeDialog = () => {
   const { welcomeOpen, closeWelcome, user } = useAuth();
+  const [showRules, setShowRules] = useState(false);
+
+  useEffect(() => {
+    if (welcomeOpen) setShowRules(false);
+  }, [welcomeOpen]);
+
   if (!user) return null;
 
   const room = rooms.find((r) => r.id === user.room) ?? rooms[0];
@@ -86,10 +93,32 @@ const WelcomeDialog = () => {
 
         <div className="border-b-2 border-foreground/25 bg-muted px-6 py-2.5">
           <p className="font-mono text-[0.7rem] font-bold uppercase tracking-[0.2em] text-muted-foreground">
-            Памятка жильца · 5 пунктов
+            {showRules ? `Правила общаги · ${rules.length} пунктов` : 'Памятка жильца · 5 пунктов'}
           </p>
         </div>
 
+        {showRules ? (
+          <ol className="px-6 py-1">
+            {rules.map((r, i) => (
+              <li
+                key={r.q}
+                className="flex animate-fade-in items-start gap-3.5 border-b border-foreground/12 py-3 last:border-b-0"
+              >
+                <span className="mt-0.5 shrink-0 font-mono text-sm font-bold text-secondary">
+                  {String(i + 1).padStart(2, '0')}
+                </span>
+                <span className="min-w-0">
+                  <span className="block font-display text-[0.86rem] font-extrabold uppercase tracking-[0.1em] text-foreground">
+                    {r.q}
+                  </span>
+                  <span className="mt-0.5 block text-[0.92rem] leading-[1.4] text-muted-foreground">
+                    {r.a}
+                  </span>
+                </span>
+              </li>
+            ))}
+          </ol>
+        ) : (
         <ul className="px-6 py-1">
           {points.map((p, i) => (
             <li
@@ -111,19 +140,20 @@ const WelcomeDialog = () => {
             </li>
           ))}
         </ul>
+        )}
 
         <div className="flex flex-col gap-2 border-t-2 border-foreground/40 bg-muted/60 px-6 py-4 sm:flex-row">
           <button onClick={closeWelcome} className="btn-brut flex-1">
             <Icon name="DoorOpen" size={16} />
             Заселяюсь
           </button>
-          <a
-            href="#pravila"
-            onClick={closeWelcome}
+          <button
+            type="button"
+            onClick={() => setShowRules((v) => !v)}
             className="btn-ghost-brut flex-1"
           >
-            Все правила
-          </a>
+            {showRules ? 'К памятке' : 'Все правила'}
+          </button>
         </div>
       </DialogContent>
     </Dialog>
