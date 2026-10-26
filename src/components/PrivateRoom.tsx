@@ -41,6 +41,7 @@ const PrivateRoom = () => {
   const fileRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [linking, setLinking] = useState(false);
   const lastIncoming = useRef<number | null>(null);
   const typingSentAt = useRef(0);
   const [askClear, setAskClear] = useState(false);
@@ -164,7 +165,8 @@ const PrivateRoom = () => {
     setProgress(0);
     const ts = Date.now();
     try {
-      await sendVoice(peer.nick, file, ts, setProgress);
+      setLinking(true);
+      await sendVoice(peer.nick, file, ts, setProgress, (st) => setLinking(st === 'connecting'));
       await saveVoice({ nick: user.nick, color: user.color, blob: file, name: file.name, ts });
     } catch (err) {
       toast({
@@ -173,6 +175,7 @@ const PrivateRoom = () => {
         variant: 'destructive',
       });
     } finally {
+      setLinking(false);
       setUploading(false);
       setProgress(0);
     }
@@ -345,7 +348,7 @@ const PrivateRoom = () => {
                 type="button"
                 onClick={() => fileRef.current?.click()}
                 disabled={uploading || !user}
-                title={uploading ? `Загрузка: ${progress}%` : 'Отправить фото или файл (до 100 МБ)'}
+                title={linking ? 'Соединяемся с собеседником…' : uploading ? `Загрузка: ${progress}%` : 'Отправить фото или файл (до 100 МБ)'}
                 aria-label={uploading ? `Загрузка ${progress}%` : 'Прикрепить файл'}
                 className={cn(
                   'relative flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden border-2 transition-colors disabled:cursor-wait',
@@ -360,7 +363,11 @@ const PrivateRoom = () => {
                       className="absolute inset-x-0 bottom-0 bg-sky-400/35 transition-[height] duration-200"
                       style={{ height: `${progress}%` }}
                     />
-                    <span className="relative font-mono text-[0.62rem] font-bold leading-none">{progress}%</span>
+                    {linking ? (
+                      <Icon name="Loader2" size={16} className="relative animate-spin text-sky-300" />
+                    ) : (
+                      <span className="relative font-mono text-[0.62rem] font-bold leading-none">{progress}%</span>
+                    )}
                   </>
                 ) : (
                   <Icon name="Paperclip" size={18} />
