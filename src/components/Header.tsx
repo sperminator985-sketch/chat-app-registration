@@ -306,22 +306,6 @@ const Header = ({ onProfile, room, onPickRoom }: HeaderProps) => {
             >
               <Icon name="Users" size={16} />
             </button>
-            <button
-              onClick={() => window.dispatchEvent(new Event('chat:residents'))}
-              title="Кто зарегистрирован"
-              aria-label="Жильцы"
-              className="flex h-10 w-10 items-center justify-center gap-2 border-2 lg:hidden border-foreground/40 text-foreground transition-colors hover:border-secondary hover:text-secondary"
-            >
-              <Icon name="BookUser" size={16} />
-            </button>
-            <button
-              onClick={() => window.dispatchEvent(new Event('chat:clear'))}
-              title="Очистить поле сообщений"
-              aria-label="Очистить"
-              className="flex h-10 w-10 items-center justify-center gap-2 border-2 lg:hidden border-foreground/40 text-foreground transition-colors hover:border-secondary hover:text-secondary"
-            >
-              <Icon name="Eraser" size={16} />
-            </button>
             {tickerButton()}
             {user.isAdmin && (
               <Link
