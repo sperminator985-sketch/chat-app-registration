@@ -83,6 +83,9 @@ const PrivateFile = ({ file, localUrl, gone, receiving }: Props) => {
     );
   }
   if (!file.url) return null;
+  if (voiceDuration(file.name) !== null) {
+    return <VoiceMessage src={localUrl ?? file.url} duration={voiceDuration(file.name)} />;
+  }
   if (file.type === 'image') {
     return (
       <a href={file.url} target="_blank" rel="noreferrer" className="mt-1 block w-fit">
@@ -97,9 +100,6 @@ const PrivateFile = ({ file, localUrl, gone, receiving }: Props) => {
   }
   if (file.type === 'video') {
     return <PrivateVideo file={file} localUrl={localUrl} />;
-  }
-  if (voiceDuration(file.name) !== null) {
-    return <VoiceMessage src={localUrl ?? file.url} duration={voiceDuration(file.name)} />;
   }
   if (file.type === 'audio') {
     return <audio src={localUrl ?? file.url} controls preload="metadata" className="mt-1 w-full max-w-[320px]" />;
