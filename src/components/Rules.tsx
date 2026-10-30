@@ -5,7 +5,6 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 import Facade from '@/components/Facade';
-import SupportDialog from '@/components/SupportDialog';
 import { rules } from '@/data/chat';
 
 const Rules = () => (
@@ -37,10 +36,6 @@ const Rules = () => (
             </AccordionItem>
           ))}
         </Accordion>
-
-        <div className="mt-8 flex justify-center text-[0.76rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground md:hidden">
-          <SupportDialog />
-        </div>
       </div>
 
       <div className="hidden flex-col justify-end gap-4 lg:flex">

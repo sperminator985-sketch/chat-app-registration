@@ -1,12 +1,19 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import Icon from '@/components/ui/icon';
 import { api } from '@/lib/api';
 import { toast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
-const SupportDialog = () => {
+const SupportDialog = ({ listen = false, noTrigger = false }: { listen?: boolean; noTrigger?: boolean }) => {
   const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    if (!listen) return;
+    const on = () => setOpen(true);
+    window.addEventListener('chat:support', on);
+    return () => window.removeEventListener('chat:support', on);
+  }, [listen]);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
@@ -72,6 +79,7 @@ const SupportDialog = () => {
 
   return (
     <>
+      {!noTrigger && (
       <button
         type="button"
         onClick={() => setOpen(true)}
@@ -80,6 +88,7 @@ const SupportDialog = () => {
         <Icon name="Mail" size={14} className="transition-transform group-hover:-rotate-12" />
         Письмо в поддержку
       </button>
+      )}
 
       <Dialog
         open={open}

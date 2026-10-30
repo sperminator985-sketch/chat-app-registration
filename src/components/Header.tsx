@@ -5,6 +5,7 @@ import { press } from '@/lib/press';
 import Logo from '@/components/Logo';
 import FloorSwitcher from '@/components/FloorSwitcher';
 import FloorMenu from '@/components/FloorMenu';
+import SupportDialog from '@/components/SupportDialog';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/use-auth';
 import { useWeather, formatTemp, degreeWord, weatherIcon } from '@/hooks/use-weather';
@@ -500,6 +501,16 @@ const Header = ({ onProfile, room, onPickRoom }: HeaderProps) => {
                 {l.label}
               </a>
             ))}
+            <button
+              onClick={() => {
+                setOpen(false);
+                window.dispatchEvent(new Event('chat:support'));
+              }}
+              className="btn-ghost-brut flex items-center justify-center gap-2"
+            >
+              <Icon name="Mail" size={16} />
+              Написать в поддержку
+            </button>
             {user ? (
               <>
                 <button
@@ -590,6 +601,7 @@ const Header = ({ onProfile, room, onPickRoom }: HeaderProps) => {
           </div>
         </div>
       )}
+      <SupportDialog listen noTrigger />
     </header>
   );
 };
