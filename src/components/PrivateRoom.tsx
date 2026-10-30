@@ -189,10 +189,6 @@ const PrivateRoom = () => {
               Приват ·{' '}
               <span className={cn(staffNickClass(peer.nick, nickColorClass[peer.color]))}>{peer.nick}</span>
             </span>
-            <span className="hidden items-center gap-1 font-mono text-[0.66rem] uppercase tracking-[0.08em] text-sky-300 sm:flex lg:hidden">
-              <Icon name="ShieldCheck" size={13} />
-              {cryptoOn ? 'зашифровано' : 'закрытая комната'}
-            </span>
             <div className="ml-auto flex items-center gap-2">
               {hasHistory && (
                 <button
