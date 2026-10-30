@@ -11,6 +11,9 @@ import { nickColorClass, staffNickClass, isStaffNick } from '@/data/chat';
 import { usePrivate } from '@/hooks/use-private';
 import { useCrypto } from '@/hooks/use-crypto';
 import EmojiPicker from '@/components/EmojiPicker';
+import Avatar from '@/components/Avatar';
+import UserCardDialog, { CardPerson } from '@/components/UserCardDialog';
+import { useCall } from '@/hooks/use-call';
 import PrivateFile from '@/components/PrivateFile';
 import { playKnock } from '@/lib/notify-sound';
 import { usePrivateHistory } from '@/hooks/use-private-history';
@@ -44,6 +47,20 @@ const PrivateRoom = () => {
   const lastIncoming = useRef<number | null>(null);
   const typingSentAt = useRef(0);
   const [askClear, setAskClear] = useState(false);
+  const [cardPerson, setCardPerson] = useState<CardPerson | null>(null);
+  const { startCall, status: callStatus } = useCall();
+
+  const openPeerCard = async () => {
+    if (!peer) return;
+    setCardPerson({ nick: peer.nick, color: peer.color, avatarUrl: peer.avatarUrl });
+    try {
+      const { residents } = await api.residents();
+      const r = residents.find((x) => x.nick === peer.nick);
+      if (r) setCardPerson((cur) => (cur && cur.nick === r.nick ? { ...cur, ...r } : cur));
+    } catch {
+      /* карточка остаётся с базовыми данными */
+    }
+  };
   const { items, saveOwn, clear, hasHistory } = usePrivateHistory({
     me: user?.nick,
     peer: peer?.nick,
@@ -188,12 +205,32 @@ const PrivateRoom = () => {
             <Logo size="sm" iconAsLetter className="hidden shrink-0 md:flex" />
             <div className="flex min-w-0 items-center gap-3 md:absolute md:left-1/2 md:top-1/2 md:max-w-[50%] md:-translate-x-1/2 md:-translate-y-1/2">
               <Icon name="Lock" size={16} className="shrink-0 text-sky-300 md:h-5 md:w-5" />
+              <button
+                type="button"
+                onClick={openPeerCard}
+                title={`Карточка: ${peer.nick}`}
+                aria-label={`Карточка: ${peer.nick}`}
+                className="shrink-0 transition-opacity hover:opacity-80"
+              >
+                <Avatar avatar={peer.avatar} avatarUrl={peer.avatarUrl} color={peer.color} size={30} />
+              </button>
               <span className="truncate font-display text-[0.7rem] font-extrabold uppercase tracking-[-0.03em] sm:text-base md:text-lg">
                 Приват ·{' '}
                 <span className={cn(staffNickClass(peer.nick, nickColorClass[peer.color]))}>{peer.nick}</span>
               </span>
             </div>
             <div className="ml-auto flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => startCall(peer.nick)}
+                disabled={callStatus !== 'idle'}
+                title={`Видеозвонок: ${peer.nick}`}
+                aria-label={`Видеозвонок: ${peer.nick}`}
+                className="flex items-center gap-1.5 border-2 border-foreground/35 px-2.5 py-1 text-[0.72rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground transition-colors hover:border-secondary hover:text-secondary disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                <Icon name="Video" size={14} />
+                <span className="hidden sm:inline">Звонок</span>
+              </button>
               <button
                 type="button"
                 onClick={() => setAskClear(true)}
@@ -417,6 +454,8 @@ const PrivateRoom = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <UserCardDialog person={cardPerson} layered onOpenChange={(v) => !v && setCardPerson(null)} />
     </div>
   );
 };

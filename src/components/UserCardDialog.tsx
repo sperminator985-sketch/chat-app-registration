@@ -21,6 +21,7 @@ export type CardPerson = {
 type Props = {
   person: CardPerson | null;
   onOpenChange: (v: boolean) => void;
+  layered?: boolean;
 };
 
 const humanDate = (iso?: string | null) => {
@@ -52,7 +53,7 @@ const yearsWord = (n: number) => {
   return 'лет';
 };
 
-const UserCardDialog = ({ person, onOpenChange }: Props) => {
+const UserCardDialog = ({ person, onOpenChange, layered }: Props) => {
   const { user, saveProfile } = useAuth();
   const isMe = Boolean(user && person && person.nick === user.nick);
 
@@ -188,7 +189,10 @@ const UserCardDialog = ({ person, onOpenChange }: Props) => {
 
   return (
     <Dialog open onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[420px] border-2 border-foreground/40 bg-card p-0 text-card-foreground">
+      <DialogContent
+        overlayClassName={layered ? 'z-[70]' : undefined}
+        className={cn('max-w-[420px] border-2 border-foreground/40 bg-card p-0 text-card-foreground', layered && 'z-[70]')}
+      >
         <div className="flex flex-col items-center gap-3 border-b-2 border-foreground/35 px-5 py-5">
           <div className="relative shrink-0">
             <div
