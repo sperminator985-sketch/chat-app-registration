@@ -25,7 +25,7 @@ const Footer = () => (
         </Link>
       </div>
 
-      <div className="order-1 shrink-0 sm:order-none">
+      <div className="order-1 hidden shrink-0 sm:order-none md:block">
         <SupportDialog />
       </div>
 
