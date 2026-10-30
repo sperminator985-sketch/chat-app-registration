@@ -209,7 +209,7 @@ const PrivateRoom = () => {
         <div className="flex min-h-0 w-full flex-1 flex-col overflow-hidden bg-background md:border-2 md:border-sky-400">
           <div className="relative flex flex-wrap items-center gap-x-3 gap-y-2 border-b-2 border-sky-400 bg-sky-400/10 px-4 py-3 md:px-5 md:py-4">
             <Logo size="sm" iconAsLetter className="hidden shrink-0 md:flex" />
-            <div className="absolute left-1/2 top-1/2 flex max-w-[calc(100%-7rem)] -translate-x-1/2 -translate-y-1/2 items-center gap-2 md:max-w-[50%] md:gap-3">
+            <div className="flex min-w-0 flex-1 items-center gap-2 md:absolute md:left-1/2 md:top-1/2 md:max-w-[50%] md:flex-none md:-translate-x-1/2 md:-translate-y-1/2 md:gap-3">
               <Icon name="Lock" size={16} className="shrink-0 text-sky-300 md:h-5 md:w-5" />
               <button
                 type="button"
@@ -225,7 +225,6 @@ const PrivateRoom = () => {
                 <span className={cn(staffNickClass(peer.nick, nickColorClass[peer.color]))}>{peer.nick}</span>
               </span>
             </div>
-            <div className="ml-auto h-[30px] md:hidden" />
             <DropdownMenu modal={false}>
               <DropdownMenuTrigger asChild>
                 <button
