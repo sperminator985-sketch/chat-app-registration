@@ -504,6 +504,16 @@ const Header = ({ onProfile, room, onPickRoom }: HeaderProps) => {
                   <Icon name="Users" size={16} />
                   Кто в чате
                 </button>
+                <button
+                  onClick={() => {
+                    setOpen(false);
+                    window.dispatchEvent(new Event('chat:clear'));
+                  }}
+                  className="btn-ghost-brut flex items-center justify-center gap-2"
+                >
+                  <Icon name="Eraser" size={16} />
+                  Очистить чат
+                </button>
                 {(user.isAdmin || user.uni) && (
                   <button
                     onClick={() => {
