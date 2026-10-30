@@ -232,8 +232,8 @@ const PrivateRoom = () => {
               <Icon name={menuOpen ? 'X' : 'Menu'} size={20} />
             </button>
             {menuOpen && (
-              <div className="animate-fade-in absolute left-0 right-0 top-full z-20 border-b-2 border-foreground/35 bg-card shadow-[0_18px_30px_-12px_rgba(0,0,0,0.55)] md:hidden">
-                <div className="flex flex-col divide-y divide-foreground/15">
+              <div className="animate-fade-in absolute left-0 right-0 top-full z-20 border-b-2 border-foreground/35 bg-card px-5 pb-5 pt-5 shadow-[0_18px_30px_-12px_rgba(0,0,0,0.55)] md:hidden">
+                <div className="flex flex-col gap-4">
                   <button
                     type="button"
                     disabled={callStatus !== 'idle'}
@@ -241,9 +241,9 @@ const PrivateRoom = () => {
                       setMenuOpen(false);
                       startCall(peer.nick);
                     }}
-                    className="flex w-full items-center gap-3 px-5 py-3 text-left text-[0.8rem] font-semibold uppercase tracking-[0.08em] transition-colors text-foreground hover:bg-foreground/5 hover:text-secondary disabled:cursor-not-allowed disabled:opacity-40"
+                    className="btn-ghost-brut flex items-center justify-center gap-2 disabled:opacity-40"
                   >
-                    <Icon name="Video" size={15} />
+                    <Icon name="Video" size={16} />
                     Видеозвонок
                   </button>
                   <button
@@ -253,9 +253,9 @@ const PrivateRoom = () => {
                       setMenuOpen(false);
                       setAskClear(true);
                     }}
-                    className="flex w-full items-center gap-3 px-5 py-3 text-left text-[0.8rem] font-semibold uppercase tracking-[0.08em] transition-colors text-foreground hover:bg-foreground/5 hover:text-secondary disabled:cursor-not-allowed disabled:opacity-40"
+                    className="btn-ghost-brut flex items-center justify-center gap-2 disabled:opacity-40"
                   >
-                    <Icon name="Trash2" size={15} />
+                    <Icon name="Trash2" size={16} />
                     Очистить переписку
                   </button>
                   <button
@@ -264,9 +264,9 @@ const PrivateRoom = () => {
                       setMenuOpen(false);
                       leave();
                     }}
-                    className="flex w-full items-center gap-3 px-5 py-3 text-left text-[0.8rem] font-semibold uppercase tracking-[0.08em] transition-colors text-primary hover:bg-primary/10"
+                    className="btn-brut flex items-center justify-center gap-2"
                   >
-                    <Icon name="LogOut" size={15} />
+                    <Icon name="LogOut" size={16} />
                     Выйти из привата
                   </button>
                 </div>
