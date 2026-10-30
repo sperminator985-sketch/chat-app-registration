@@ -94,7 +94,7 @@ const Hero = () => {
       </div>
 
       <div className="relative z-10 mt-5 flex flex-col items-center gap-2 rule-top pt-3 md:mt-10 text-center text-[0.78rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground sm:flex-row sm:items-center sm:justify-center">
-        <span className="hidden text-[1.02rem] font-normal normal-case leading-[1.45] tracking-normal text-foreground sm:inline md:text-[1.15rem]">
+        <span className="text-[1.02rem] font-normal normal-case leading-[1.45] tracking-normal text-foreground md:text-[1.15rem]">
           Чат для студентов Томских вузов (и&nbsp;не&nbsp;только).
           <span className="hidden lg:inline">
             {' '}Этажи, курилка, барахолка, «кто идёт за&nbsp;хлебом» — всё в&nbsp;одном чате.
