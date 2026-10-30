@@ -28,12 +28,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 
 const FILE_ACCEPT =
   'image/jpeg,image/png,image/gif,image/webp,video/mp4,video/webm,video/quicktime,audio/*,.pdf,.txt,.zip,.rar,.doc,.docx,.xls,.xlsx,.ppt,.pptx';
@@ -53,6 +47,7 @@ const PrivateRoom = () => {
   const lastIncoming = useRef<number | null>(null);
   const typingSentAt = useRef(0);
   const [askClear, setAskClear] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   const [cardPerson, setCardPerson] = useState<CardPerson | null>(null);
   const { startCall, status: callStatus } = useCall();
 
@@ -225,39 +220,58 @@ const PrivateRoom = () => {
                 <span className={cn(staffNickClass(peer.nick, nickColorClass[peer.color]))}>{peer.nick}</span>
               </span>
             </div>
-            <DropdownMenu modal={false}>
-              <DropdownMenuTrigger asChild>
-                <button
-                  type="button"
-                  aria-label="Меню привата"
-                  className="relative z-10 flex h-9 w-9 items-center justify-center border-2 border-foreground/35 text-muted-foreground transition-colors hover:border-sky-400 hover:text-sky-300 md:hidden"
-                >
-                  <Icon name="EllipsisVertical" size={16} />
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="z-[70] min-w-[200px] rounded-none border-2 border-sky-400 bg-card p-1 text-card-foreground">
-                <DropdownMenuItem
-                  disabled={callStatus !== 'idle'}
-                  onSelect={() => startCall(peer.nick)}
-                  className="gap-2.5 rounded-none py-2.5"
-                >
-                  <Icon name="Video" size={16} />
-                  Видеозвонок
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  disabled={!hasHistory && items.length === 0}
-                  onSelect={() => setAskClear(true)}
-                  className="gap-2.5 rounded-none py-2.5"
-                >
-                  <Icon name="Trash2" size={16} />
-                  Очистить переписку
-                </DropdownMenuItem>
-                <DropdownMenuItem onSelect={leave} className="gap-2.5 rounded-none py-2.5 text-primary focus:text-primary">
-                  <Icon name="LogOut" size={16} />
-                  Выйти из привата
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <button
+              type="button"
+              onClick={() => setMenuOpen((v) => !v)}
+              aria-label={menuOpen ? 'Закрыть меню' : 'Меню привата'}
+              className={cn(
+                'flex h-10 w-10 shrink-0 items-center justify-center border-2 md:hidden',
+                menuOpen ? 'border-destructive text-destructive' : 'border-foreground/40 text-foreground',
+              )}
+            >
+              <Icon name={menuOpen ? 'X' : 'Menu'} size={20} />
+            </button>
+            {menuOpen && (
+              <div className="animate-fade-in absolute left-0 right-0 top-full z-20 border-b-2 border-foreground/35 bg-card px-5 pb-5 pt-5 shadow-[0_18px_30px_-12px_rgba(0,0,0,0.55)] md:hidden">
+                <div className="flex flex-col gap-4">
+                  <button
+                    type="button"
+                    disabled={callStatus !== 'idle'}
+                    onClick={() => {
+                      setMenuOpen(false);
+                      startCall(peer.nick);
+                    }}
+                    className="btn-ghost-brut flex items-center justify-center gap-2 disabled:opacity-40"
+                  >
+                    <Icon name="Video" size={16} />
+                    Видеозвонок
+                  </button>
+                  <button
+                    type="button"
+                    disabled={!hasHistory && items.length === 0}
+                    onClick={() => {
+                      setMenuOpen(false);
+                      setAskClear(true);
+                    }}
+                    className="btn-ghost-brut flex items-center justify-center gap-2 disabled:opacity-40"
+                  >
+                    <Icon name="Trash2" size={16} />
+                    Очистить переписку
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMenuOpen(false);
+                      leave();
+                    }}
+                    className="btn-brut flex items-center justify-center gap-2"
+                  >
+                    <Icon name="LogOut" size={16} />
+                    Выйти из привата
+                  </button>
+                </div>
+              </div>
+            )}
             <div className="ml-auto hidden items-center gap-2 md:flex">
               <button
                 type="button"
