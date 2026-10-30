@@ -70,7 +70,7 @@ const Hero = () => {
               <span className="sr-only">ТОМСК НА СВЯЗИ</span>
               <span aria-hidden className="inline-flex items-center">
                 Т
-                <span className="relative ml-[0.06em] mr-[0.1em] inline-block h-[0.9em] w-[0.9em]">
+                <span className="relative -ml-[0.04em] mr-[0.04em] inline-block h-[0.9em] w-[0.9em]">
                   {(['moon', 'sun'] as const).map((body) => {
                     const visible = (body === 'sun') === (theme === 'day');
                     return (
