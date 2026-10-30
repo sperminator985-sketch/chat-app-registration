@@ -358,7 +358,7 @@ const ChatWindow = ({ activeRoom }: ChatWindowProps) => {
             )}
 
             <form onSubmit={send} className="flex flex-row items-center gap-2 px-3 py-2 sm:gap-2.5 sm:px-5 sm:py-2.5">
-              <div className="flex flex-1 items-center gap-2 border-2 border-foreground/35 bg-input px-3 py-1.5 focus-within:border-secondary">
+              <div className="flex h-9 flex-1 items-center gap-2 border-2 border-foreground/35 bg-input px-3 focus-within:border-secondary">
                 <input
                   ref={inputRef}
                   value={draft}
@@ -376,7 +376,7 @@ const ChatWindow = ({ activeRoom }: ChatWindowProps) => {
                       ? 'Займи ник, чтобы писать'
                       : 'Напиши что-нибудь…'
                   }
-                  className="chat-font w-full min-w-0 bg-transparent text-[0.95rem] text-foreground outline-none placeholder:text-muted-foreground/70 sm:text-[0.94rem]"
+                  className="chat-font m-0 block h-full w-full min-w-0 self-stretch bg-transparent p-0 text-[0.95rem] leading-[normal] text-foreground outline-none placeholder:text-muted-foreground/70 sm:text-[0.94rem]"
                 />
               </div>
               <div className="flex shrink-0 items-center gap-2 sm:gap-2.5">

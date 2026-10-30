@@ -257,13 +257,13 @@ const PrivateRoom = () => {
             className="flex flex-row items-center gap-2 border-t-2 border-sky-400 px-3 py-2 sm:gap-2.5 sm:px-5 sm:py-2.5"
           >
             {voice.recording ? (
-              <div className="flex flex-1 items-center gap-2.5 border-2 border-primary bg-input px-3 py-1.5">
+              <div className="flex h-9 flex-1 items-center gap-2.5 border-2 border-primary bg-input px-3">
                 <span className="h-2.5 w-2.5 shrink-0 animate-pulse rounded-full bg-primary" />
                 <span className="font-mono text-[0.9rem] font-bold text-foreground">{formatVoiceTime(voice.seconds)}</span>
                 <span className="truncate text-[0.8rem] text-muted-foreground">Идёт запись…</span>
               </div>
             ) : (
-            <div className="flex flex-1 items-center gap-2 border-2 border-foreground/35 bg-input px-3 py-1.5 focus-within:border-sky-400">
+            <div className="flex h-9 flex-1 items-center gap-2 border-2 border-foreground/35 bg-input px-3 focus-within:border-sky-400">
               <input
                 ref={inputRef}
                 value={draft}
@@ -288,7 +288,7 @@ const PrivateRoom = () => {
                       : `В привате с ${peer.nick}…`
                 }
                 className={cn(
-                  'chat-font w-full min-w-0 bg-transparent text-[0.95rem] text-foreground outline-none sm:text-[0.94rem]',
+                  'chat-font m-0 block h-full w-full min-w-0 self-stretch bg-transparent p-0 text-[0.95rem] leading-[normal] text-foreground outline-none sm:text-[0.94rem]',
                   peerTyping ? 'placeholder:text-sky-300' : 'placeholder:text-muted-foreground/70',
                 )}
               />
