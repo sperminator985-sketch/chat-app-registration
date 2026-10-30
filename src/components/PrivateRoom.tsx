@@ -229,7 +229,7 @@ const PrivateRoom = () => {
                 className="flex items-center gap-1.5 border-2 border-foreground/35 px-2.5 py-1 text-[0.72rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground transition-colors hover:border-secondary hover:text-secondary disabled:cursor-not-allowed disabled:opacity-40"
               >
                 <Icon name="Video" size={14} />
-                <span className="hidden sm:inline">Звонок</span>
+                <span className="hidden lg:inline">Звонок</span>
               </button>
               <button
                 type="button"
@@ -239,7 +239,7 @@ const PrivateRoom = () => {
                 className="flex items-center disabled:cursor-not-allowed disabled:opacity-40 gap-1.5 border-2 border-foreground/35 px-2.5 py-1 text-[0.72rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground transition-colors hover:border-primary hover:text-primary"
               >
                 <Icon name="Trash2" size={14} />
-                <span className="hidden sm:inline">Очистить</span>
+                <span className="hidden lg:inline">Очистить</span>
               </button>
               <button
                 type="button"
