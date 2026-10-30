@@ -4,12 +4,14 @@ import { rooms } from '@/data/chat';
 import { useTheme } from '@/hooks/use-theme';
 import moonImg from '@/assets/moon.png';
 import sunImg from '@/assets/sun.png';
+import { useParallax } from '@/hooks/use-parallax';
 
 const bodies = { moon: moonImg, sun: sunImg };
 
 const windows = [1, 0, 1, 1, 1, 1, 0, 0, 1];
 
 const Hero = () => {
+  useParallax();
   const live = useLiveStats();
   const { theme } = useTheme();
   const floorCounts = rooms.map((r) => live?.roomCounts?.[r.id] ?? 0);
@@ -22,7 +24,7 @@ const Hero = () => {
         </p>
 
         <div className="relative z-10 flex animate-rise flex-col items-center gap-6 md:gap-8 xl:flex-row xl:items-start xl:justify-between xl:gap-7">
-          <h1 className="mt-0 hidden min-w-0 flex-nowrap items-center justify-center gap-x-2 font-extrabold uppercase tracking-[-0.035em] md:flex md:gap-x-4 xl:mt-[2cm] xl:justify-start">
+          <h1 className="depth [--d:12] mt-0 hidden min-w-0 flex-nowrap items-center justify-center gap-x-2 font-extrabold uppercase tracking-[-0.035em] md:flex md:gap-x-4 xl:mt-[2cm] xl:justify-start">
             <span className="flex shrink-0 flex-col items-center justify-end border-[3px] border-foreground bg-window-off p-[5px] h-[clamp(1.9rem,8.4vw,3.2rem)] w-[clamp(1.9rem,8.4vw,3.2rem)] md:h-[clamp(2rem,6.7vw,6.3rem)] md:w-[clamp(2rem,6.7vw,6.3rem)]">
               <span className="grid w-full flex-1 grid-cols-3 gap-[3px]">
                 {windows.map((on, i) => (
@@ -44,7 +46,7 @@ const Hero = () => {
             the rebirth of a legend
           </p>
           <Facade
-            className="w-full max-w-[436px] xl:-mt-[1.1cm]"
+            className="depth w-full max-w-[436px] xl:-mt-[1.1cm] [--d:6]"
             rows={9}
             cellAspect="1/0.68"
             floorCounts={floorCounts}
@@ -65,12 +67,12 @@ const Hero = () => {
           className="relative z-10 mt-3 flex animate-rise flex-col items-center gap-6 md:flex-row md:items-start md:justify-center md:gap-9"
           style={{ animationDelay: '.18s' }}
         >
-          <h1 className="relative z-10 text-center font-extrabold uppercase tracking-[-0.035em] md:text-left">
+          <h1 className="depth relative z-10 text-center [--d:18] font-extrabold uppercase tracking-[-0.035em] md:text-left">
             <span className="block whitespace-nowrap text-[clamp(1.5rem,4.3vw,4.2rem)] leading-[.92] tracking-[0.05em] text-foreground md:tracking-[0.1em] xl:tracking-[0.05em] text-stroke-plate">
               <span className="sr-only">ТОМСК НА СВЯЗИ</span>
               <span aria-hidden className="inline-flex items-center">
                 Т
-                <span className="relative -ml-[0.04em] mr-[0.04em] inline-block h-[0.9em] w-[0.9em]">
+                <span className="depth relative -ml-[0.04em] mr-[0.04em] inline-block h-[0.9em] w-[0.9em] [--d:-4]">
                   {(['moon', 'sun'] as const).map((body) => {
                     const visible = (body === 'sun') === (theme === 'day');
                     return (

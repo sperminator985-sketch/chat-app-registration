@@ -139,12 +139,12 @@ const PageBody = () => {
         ) : (
           <>
             <div className="relative flex min-h-[calc(100svh-var(--top-offset,4.5rem))] flex-col overflow-hidden md:min-h-[calc(100vh-var(--top-offset,4.5rem))] md:justify-between">
-              <Stars className="z-0 hidden md:block" />
+              <Stars className="depth z-0 hidden scale-[1.04] md:block [--d:-8]" />
               <div className="relative z-10 -mt-[2px] md:hidden">
                 <Ticker />
               </div>
               <div className="relative z-10 flex min-h-0 flex-1 items-center pb-0 md:pb-[160px]">
-                <Skyline className="pointer-events-none absolute inset-x-0 bottom-0 z-20 hidden h-[160px] md:block" />
+                <Skyline className="depth pointer-events-none absolute -inset-x-6 bottom-0 z-20 hidden h-[160px] md:block [--d:10]" />
                 <div className="relative z-10 w-full">
                   <Hero />
                 </div>

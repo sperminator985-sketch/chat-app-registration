@@ -526,3 +526,8 @@
     transition: none !important;
   }
 }
+
+.depth {
+  translate: calc(var(--px, 0) * var(--d, 0) * -1px) calc(var(--py, 0) * var(--d, 0) * -1px);
+  will-change: translate;
+}
