@@ -66,11 +66,11 @@ const Hero = () => {
           style={{ animationDelay: '.18s' }}
         >
           <h1 className="relative z-10 text-center font-extrabold uppercase tracking-[-0.035em] md:text-left">
-            <span className="block whitespace-nowrap text-[clamp(1.6rem,4.6vw,4.4rem)] leading-[.92] tracking-[-0.03em] text-foreground text-stroke-plate">
+            <span className="block whitespace-nowrap text-[clamp(1.5rem,4.3vw,4.2rem)] leading-[.92] tracking-[0.05em] text-foreground text-stroke-plate">
               <span className="sr-only">ТОМСК НА СВЯЗИ</span>
               <span aria-hidden className="inline-flex items-center">
                 Т
-                <span className="relative mx-[0.04em] inline-block h-[0.9em] w-[0.9em]">
+                <span className="relative ml-[0.06em] mr-[0.1em] inline-block h-[0.9em] w-[0.9em]">
                   {(['moon', 'sun'] as const).map((body) => {
                     const visible = (body === 'sun') === (theme === 'day');
                     return (
