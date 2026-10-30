@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import Icon from '@/components/ui/icon';
+import Logo from '@/components/Logo';
 import { cn } from '@/lib/utils';
 import { toast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/use-auth';
@@ -184,6 +185,7 @@ const PrivateRoom = () => {
       <div className="flex w-full min-h-0 flex-1 flex-col">
         <div className="flex min-h-0 w-full flex-1 flex-col overflow-hidden bg-background md:border-2 md:border-sky-400">
           <div className="relative flex flex-wrap items-center gap-x-3 gap-y-2 border-b-2 border-sky-400 bg-sky-400/10 px-4 py-3 md:px-5 md:py-4">
+            <Logo size="sm" iconAsLetter className="hidden shrink-0 md:flex" />
             <div className="flex min-w-0 items-center gap-3 md:absolute md:left-1/2 md:top-1/2 md:max-w-[50%] md:-translate-x-1/2 md:-translate-y-1/2">
               <Icon name="Lock" size={16} className="shrink-0 text-sky-300 md:h-5 md:w-5" />
               <span className="truncate font-display text-[0.7rem] font-extrabold uppercase tracking-[-0.03em] sm:text-base md:text-lg">
