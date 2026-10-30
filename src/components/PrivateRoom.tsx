@@ -28,6 +28,12 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 const FILE_ACCEPT =
   'image/jpeg,image/png,image/gif,image/webp,video/mp4,video/webm,video/quicktime,audio/*,.pdf,.txt,.zip,.rar,.doc,.docx,.xls,.xlsx,.ppt,.pptx';
@@ -203,7 +209,7 @@ const PrivateRoom = () => {
         <div className="flex min-h-0 w-full flex-1 flex-col overflow-hidden bg-background md:border-2 md:border-sky-400">
           <div className="relative flex flex-wrap items-center gap-x-3 gap-y-2 border-b-2 border-sky-400 bg-sky-400/10 px-4 py-3 md:px-5 md:py-4">
             <Logo size="sm" iconAsLetter className="hidden shrink-0 md:flex" />
-            <div className="flex min-w-0 items-center gap-3 md:absolute md:left-1/2 md:top-1/2 md:max-w-[50%] md:-translate-x-1/2 md:-translate-y-1/2">
+            <div className="absolute left-1/2 top-1/2 flex max-w-[calc(100%-7rem)] -translate-x-1/2 -translate-y-1/2 items-center gap-2 md:max-w-[50%] md:gap-3">
               <Icon name="Lock" size={16} className="shrink-0 text-sky-300 md:h-5 md:w-5" />
               <button
                 type="button"
@@ -219,7 +225,41 @@ const PrivateRoom = () => {
                 <span className={cn(staffNickClass(peer.nick, nickColorClass[peer.color]))}>{peer.nick}</span>
               </span>
             </div>
-            <div className="ml-auto flex items-center gap-2">
+            <div className="ml-auto h-[30px] md:hidden" />
+            <DropdownMenu modal={false}>
+              <DropdownMenuTrigger asChild>
+                <button
+                  type="button"
+                  aria-label="Меню привата"
+                  className="relative z-10 flex h-9 w-9 items-center justify-center border-2 border-foreground/35 text-muted-foreground transition-colors hover:border-sky-400 hover:text-sky-300 md:hidden"
+                >
+                  <Icon name="EllipsisVertical" size={16} />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="z-[70] min-w-[200px] rounded-none border-2 border-sky-400 bg-card p-1 text-card-foreground">
+                <DropdownMenuItem
+                  disabled={callStatus !== 'idle'}
+                  onSelect={() => startCall(peer.nick)}
+                  className="gap-2.5 rounded-none py-2.5"
+                >
+                  <Icon name="Video" size={16} />
+                  Видеозвонок
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  disabled={!hasHistory && items.length === 0}
+                  onSelect={() => setAskClear(true)}
+                  className="gap-2.5 rounded-none py-2.5"
+                >
+                  <Icon name="Trash2" size={16} />
+                  Очистить переписку
+                </DropdownMenuItem>
+                <DropdownMenuItem onSelect={leave} className="gap-2.5 rounded-none py-2.5 text-primary focus:text-primary">
+                  <Icon name="LogOut" size={16} />
+                  Выйти из привата
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <div className="ml-auto hidden items-center gap-2 md:flex">
               <button
                 type="button"
                 onClick={() => startCall(peer.nick)}
