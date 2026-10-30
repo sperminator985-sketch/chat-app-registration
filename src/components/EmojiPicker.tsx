@@ -47,7 +47,7 @@ const EmojiPicker = ({ onPick, className }: EmojiPickerProps) => {
   }, [open]);
 
   return (
-    <div ref={boxRef} className={cn('relative', className)}>
+    <div ref={boxRef} className={cn('relative flex items-center', className)}>
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}

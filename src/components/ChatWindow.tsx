@@ -385,7 +385,7 @@ const ChatWindow = ({ activeRoom }: ChatWindowProps) => {
                   type="submit"
                   disabled={sending}
                   aria-label="Отправить"
-                  className="btn-brut !gap-1.5 !px-2.5 !py-2 !text-xs disabled:opacity-60 sm:!px-3"
+                  className="btn-brut !h-9 !gap-1.5 !px-2.5 !py-0 !text-xs disabled:opacity-60 sm:!px-3"
                 >
                   <Icon name="Send" size={14} />
                   <span className="hidden sm:inline">{sending ? 'Шлём…' : 'Отправить'}</span>

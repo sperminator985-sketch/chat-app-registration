@@ -318,7 +318,7 @@ const PrivateRoom = () => {
                   type="button"
                   onClick={voice.stop}
                   aria-label="Отправить голосовое"
-                  className="btn-brut !gap-1.5 !px-2.5 !py-2 !text-xs sm:!px-3"
+                  className="btn-brut !h-9 !gap-1.5 !px-2.5 !py-0 !text-xs sm:!px-3"
                 >
                   <Icon name="Send" size={14} />
                   <span className="hidden sm:inline">Отправить</span>
@@ -369,7 +369,7 @@ const PrivateRoom = () => {
                   disabled={uploading || !user}
                   title="Записать голосовое (до 5 минут)"
                   aria-label="Записать голосовое"
-                  className="btn-brut !gap-1.5 !px-2.5 !py-2 !text-xs disabled:opacity-60 sm:!px-3"
+                  className="btn-brut !h-9 !gap-1.5 !px-2.5 !py-0 !text-xs disabled:opacity-60 sm:!px-3"
                 >
                   <Icon name="Mic" size={14} />
                   <span className="hidden sm:inline">Голосовое</span>
@@ -379,7 +379,7 @@ const PrivateRoom = () => {
                 type="submit"
                 disabled={sending || !user}
                 aria-label="Отправить"
-                className="btn-brut !gap-1.5 !px-2.5 !py-2 !text-xs disabled:opacity-60 sm:!px-3"
+                className="btn-brut !h-9 !gap-1.5 !px-2.5 !py-0 !text-xs disabled:opacity-60 sm:!px-3"
               >
                 <Icon name="Send" size={14} />
                 <span className="hidden sm:inline">{sending ? 'Шлём…' : 'Отправить'}</span>
