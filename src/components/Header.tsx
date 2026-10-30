@@ -509,7 +509,7 @@ const Header = ({ onProfile, room, onPickRoom }: HeaderProps) => {
               className="btn-ghost-brut flex items-center justify-center gap-2"
             >
               <Icon name="Mail" size={16} />
-              Написать в поддержку
+              Письмо в поддержку
             </button>
             {user ? (
               <>
