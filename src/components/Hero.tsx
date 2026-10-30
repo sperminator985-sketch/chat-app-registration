@@ -100,12 +100,6 @@ const Hero = () => {
             {' '}Этажи, курилка, барахолка, «кто идёт за&nbsp;хлебом» — всё в&nbsp;одном чате.
           </span>
         </span>
-        <span className="flex items-center gap-2 text-secondary">
-          <span className="inline-block h-2 w-2 animate-pulse rounded-full bg-secondary" />
-          {live
-            ? `Сейчас в чате: ${live.online} · жильцов ${live.totalUsers}`
-            : 'Свет горит на всех этажах'}
-        </span>
       </div>
     </section>
   );
