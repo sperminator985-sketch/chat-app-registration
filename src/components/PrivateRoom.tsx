@@ -194,17 +194,16 @@ const PrivateRoom = () => {
               </span>
             </div>
             <div className="ml-auto flex items-center gap-2">
-              {hasHistory && (
-                <button
-                  type="button"
-                  onClick={() => setAskClear(true)}
-                  title="Очистить историю на этом устройстве"
-                  className="flex items-center gap-1.5 border-2 border-foreground/35 px-2.5 py-1 text-[0.72rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground transition-colors hover:border-primary hover:text-primary"
-                >
-                  <Icon name="Trash2" size={14} />
-                  <span className="hidden sm:inline">Очистить</span>
-                </button>
-              )}
+              <button
+                type="button"
+                onClick={() => setAskClear(true)}
+                disabled={!hasHistory && items.length === 0}
+                title="Очистить переписку"
+                className="flex items-center disabled:cursor-not-allowed disabled:opacity-40 gap-1.5 border-2 border-foreground/35 px-2.5 py-1 text-[0.72rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground transition-colors hover:border-primary hover:text-primary"
+              >
+                <Icon name="Trash2" size={14} />
+                <span className="hidden sm:inline">Очистить</span>
+              </button>
               <button
                 type="button"
                 onClick={leave}
