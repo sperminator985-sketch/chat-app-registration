@@ -10,9 +10,9 @@ import { rules } from '@/data/chat';
 const Rules = () => (
   <section
     id="pravila"
-    className="flex scroll-mt-[var(--top-offset,4.5rem)] flex-1 flex-col justify-start bg-card"
+    className="flex scroll-mt-[var(--top-offset,4.5rem)] flex-col md:flex-1 justify-start bg-card"
   >
-    <div className="mx-auto grid w-full max-w-[1400px] gap-12 px-5 pb-16 pt-6 md:px-10 md:pb-20 md:pt-10 lg:grid-cols-[1fr_420px]">
+    <div className="mx-auto grid w-full max-w-[1400px] gap-12 px-5 pb-0 pt-6 md:px-10 md:pb-20 md:pt-10 lg:grid-cols-[1fr_420px]">
       <div>
         <h2 className="text-[clamp(2rem,6vw,3.4rem)] font-extrabold leading-[0.95] tracking-[-0.035em]">
           Правила <span className="text-primary">общаги</span>
@@ -21,7 +21,7 @@ const Rules = () => (
           Их немного, и они простые. Нарушишь — вахтёрша Зина напомнит, второй раз напоминать не будет.
         </p>
 
-        <Accordion type="single" collapsible className="mt-8 border-t-2 border-foreground/25">
+        <Accordion type="single" collapsible className="mt-8 border-t-2 border-foreground/25 max-md:[&>*:last-child]:border-b-0">
           {rules.map((r, i) => (
             <AccordionItem key={r.q} value={`r-${i}`} className="border-b-2 border-foreground/25">
               <AccordionTrigger className="gap-4 py-5 text-left font-display text-base font-extrabold uppercase tracking-[-0.01em] hover:no-underline">

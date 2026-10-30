@@ -154,7 +154,7 @@ const PageBody = () => {
               </div>
             </div>
             <Rooms activeRoom={activeRoom} onPick={pickRoom} />
-            <div className="flex min-h-[calc(100svh-var(--top-offset,4.5rem))] flex-col">
+            <div className="flex flex-col md:min-h-[calc(100svh-var(--top-offset,4.5rem))]">
               <Rules />
               <Footer />
             </div>
