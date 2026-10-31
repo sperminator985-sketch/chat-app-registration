@@ -501,16 +501,18 @@ const Header = ({ onProfile, room, onPickRoom }: HeaderProps) => {
                 {l.label}
               </a>
             ))}
-            <button
-              onClick={() => {
-                setOpen(false);
-                window.dispatchEvent(new Event('chat:support'));
-              }}
-              className="btn-ghost-brut flex items-center justify-center gap-2"
-            >
-              <Icon name="Mail" size={16} />
-              Письмо в поддержку
-            </button>
+            {!user && (
+              <button
+                onClick={() => {
+                  setOpen(false);
+                  window.dispatchEvent(new Event('chat:support'));
+                }}
+                className="btn-ghost-brut flex items-center justify-center gap-2"
+              >
+                <Icon name="Mail" size={16} />
+                Письмо в поддержку
+              </button>
+            )}
             {user ? (
               <>
                 <button
