@@ -4,6 +4,7 @@ import { rooms } from '@/data/chat';
 import { useTheme } from '@/hooks/use-theme';
 import moonImg from '@/assets/moon.png';
 import sunImg from '@/assets/sun.png';
+import FontSamples from '@/components/FontSamples';
 
 const bodies = { moon: moonImg, sun: sunImg };
 
@@ -118,6 +119,7 @@ const Hero = () => {
             </span>
           </h1>
         </div>
+        <FontSamples moon={moonImg} />
       </div>
 
       <div className="relative z-10 mt-5 flex flex-col items-center gap-2 rule-top pt-3 md:mt-10 text-center text-[0.78rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground sm:flex-row sm:items-center sm:justify-center">
