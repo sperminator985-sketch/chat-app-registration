@@ -60,7 +60,7 @@ const EmojiPicker = ({ onPick, className }: EmojiPickerProps) => {
           'flex h-9 w-9 shrink-0 items-center justify-center border-2 transition-colors',
           open
             ? 'border-secondary bg-secondary text-secondary-foreground'
-            : 'border-foreground/35 text-muted-foreground [@media(hover:hover)]:hover:border-secondary [@media(hover:hover)]:hover:text-secondary',
+            : 'border-foreground/35 text-muted-foreground hover:border-secondary hover:text-secondary',
         )}
       >
         <Icon name="Smile" size={18} />
@@ -80,7 +80,7 @@ const EmojiPicker = ({ onPick, className }: EmojiPickerProps) => {
                       key={e}
                       type="button"
                       onClick={() => onPick(e)}
-                      className="flex h-8 w-8 items-center justify-center text-[1.15rem] transition-colors [@media(hover:hover)]:hover:bg-muted"
+                      className="flex h-8 w-8 items-center justify-center text-[1.15rem] transition-colors hover:bg-muted"
                     >
                       {e}
                     </button>

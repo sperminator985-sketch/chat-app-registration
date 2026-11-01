@@ -430,16 +430,22 @@
     @apply border-2 border-[#2F6BFF] transition-colors;
   }
 
-  .support-close:hover {
-    @apply bg-[#2F6BFF] text-white;
-  }
-
   .day .support-close {
     @apply border-white;
   }
 
-  .day .support-close:hover {
-    @apply bg-white text-secondary;
+  @media (hover: hover) and (pointer: fine) {
+    .support-close:hover {
+      @apply bg-[#2F6BFF] text-white;
+    }
+
+    .day .support-close:hover {
+      @apply bg-white text-secondary;
+    }
+
+    .nav-link:hover {
+      @apply border-primary text-foreground;
+    }
   }
 
   .nav-link {
@@ -450,9 +456,6 @@
     content: "";
     position: absolute;
     inset: -12px -10px -12px -10px;
-  }
-  .nav-link:hover {
-    @apply border-primary text-foreground;
   }
 
   .nav-link-active {
