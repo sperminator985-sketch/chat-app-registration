@@ -9,6 +9,16 @@ const bodies = { moon: moonImg, sun: sunImg };
 
 const windows = [1, 0, 1, 1, 1, 1, 0, 0, 1];
 
+const cut = (c: number, h: number, pad = 0) =>
+  `polygon(-20% -20%, 120% -20%, 120% calc(${c}% - ${h}em - ${pad}px), calc(58% - ${pad}px) calc(${c}% - ${h}em - ${pad}px), calc(58% - ${pad}px) calc(${c}% + ${h}em + ${pad}px), 120% calc(${c}% + ${h}em + ${pad}px), 120% 120%, -20% 120%)`;
+
+const OpenC = () => (
+  <span className="relative inline-block">
+    <span className="inline-block text-secondary" style={{ clipPath: cut(50, 0.055) }}>С</span>
+    <span className="absolute inset-0 [text-shadow:none]" style={{ clipPath: cut(50, 0.055, 2) }}>С</span>
+  </span>
+);
+
 const Hero = () => {
   const live = useLiveStats();
   const { theme } = useTheme();
@@ -86,7 +96,7 @@ const Hero = () => {
                     );
                   })}
                 </span>
-                МСК НА СВЯЗИ
+                М<OpenC />К{"\u00a0"}НА{"\u00a0"}<OpenC />ВЯЗИ
               </span>
             </span>
           </h1>
