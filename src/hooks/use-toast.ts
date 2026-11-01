@@ -153,6 +153,7 @@ function toast({ ...props }: Toast) {
     type: "ADD_TOAST",
     toast: {
       ...props,
+      duration: props.duration ?? 3000,
       id,
       open: true,
       onOpenChange: (open) => {
@@ -160,6 +161,9 @@ function toast({ ...props }: Toast) {
       },
     },
   })
+
+  const ms = props.duration ?? 3000
+  if (ms !== Infinity) setTimeout(dismiss, ms)
 
   return {
     id: id,
