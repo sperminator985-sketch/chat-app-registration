@@ -476,6 +476,15 @@
     letter-spacing: 0;
   }
 
+  .depth-far {
+    filter: blur(1.4px) saturate(0.7) brightness(0.92);
+    opacity: 0.72;
+  }
+
+  .depth-near {
+    filter: drop-shadow(0 6px 4px rgb(0 0 0 / 0.45)) drop-shadow(0 18px 22px rgb(0 0 0 / 0.35));
+  }
+
   .text-stroke-plate {
     --plate: hsl(var(--secondary));
     text-shadow:
