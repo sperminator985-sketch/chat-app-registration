@@ -9,6 +9,13 @@ const bodies = { moon: moonImg, sun: sunImg };
 
 const windows = [1, 0, 1, 1, 1, 1, 0, 0, 1];
 
+const OpenC = () => (
+  <span className="relative inline-block">
+    <span className="inline-block text-secondary [clip-path:polygon(-20%_-20%,120%_-20%,120%_30%,58%_30%,58%_70%,120%_70%,120%_120%,-20%_120%)]">С</span>
+    <span className="absolute inset-0 [text-shadow:none] [clip-path:polygon(-20%_-20%,120%_-20%,120%_calc(30%_-_2px),calc(58%_-_2px)_calc(30%_-_2px),calc(58%_-_2px)_calc(70%_+_2px),120%_calc(70%_+_2px),120%_120%,-20%_120%)]">С</span>
+  </span>
+);
+
 const Hero = () => {
   const live = useLiveStats();
   const { theme } = useTheme();
@@ -86,7 +93,7 @@ const Hero = () => {
                     );
                   })}
                 </span>
-                МСК НА СВЯЗИ
+                М<OpenC />К{"\u00a0"}НА{"\u00a0"}<OpenC />ВЯЗИ
               </span>
             </span>
           </h1>
