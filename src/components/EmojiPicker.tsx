@@ -32,16 +32,16 @@ const EmojiPicker = ({ onPick, className }: EmojiPickerProps) => {
 
   useEffect(() => {
     if (!open) return;
-    const onDown = (e: MouseEvent) => {
+    const onDown = (e: PointerEvent) => {
       if (boxRef.current && !boxRef.current.contains(e.target as Node)) setOpen(false);
     };
     const onEsc = (e: KeyboardEvent) => {
       if (e.key === 'Escape') setOpen(false);
     };
-    document.addEventListener('mousedown', onDown);
+    document.addEventListener('pointerdown', onDown);
     document.addEventListener('keydown', onEsc);
     return () => {
-      document.removeEventListener('mousedown', onDown);
+      document.removeEventListener('pointerdown', onDown);
       document.removeEventListener('keydown', onEsc);
     };
   }, [open]);
@@ -50,14 +50,17 @@ const EmojiPicker = ({ onPick, className }: EmojiPickerProps) => {
     <div ref={boxRef} className={cn('relative flex items-center', className)}>
       <button
         type="button"
-        onClick={() => setOpen((v) => !v)}
+        onClick={(e) => {
+          setOpen((v) => !v);
+          e.currentTarget.blur();
+        }}
         title="Смайлики"
         aria-label="Смайлики"
         className={cn(
           'flex h-9 w-9 shrink-0 items-center justify-center border-2 transition-colors',
           open
             ? 'border-secondary bg-secondary text-secondary-foreground'
-            : 'border-foreground/35 text-muted-foreground hover:border-secondary hover:text-secondary',
+            : 'border-foreground/35 text-muted-foreground [@media(hover:hover)]:hover:border-secondary [@media(hover:hover)]:hover:text-secondary',
         )}
       >
         <Icon name="Smile" size={18} />
@@ -77,7 +80,7 @@ const EmojiPicker = ({ onPick, className }: EmojiPickerProps) => {
                       key={e}
                       type="button"
                       onClick={() => onPick(e)}
-                      className="flex h-8 w-8 items-center justify-center text-[1.15rem] transition-colors hover:bg-muted"
+                      className="flex h-8 w-8 items-center justify-center text-[1.15rem] transition-colors [@media(hover:hover)]:hover:bg-muted"
                     >
                       {e}
                     </button>
