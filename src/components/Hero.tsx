@@ -4,37 +4,10 @@ import { rooms } from '@/data/chat';
 import { useTheme } from '@/hooks/use-theme';
 import moonImg from '@/assets/moon.png';
 import sunImg from '@/assets/sun.png';
-import FontSamples from '@/components/FontSamples';
 
 const bodies = { moon: moonImg, sun: sunImg };
 
 const windows = [1, 0, 1, 1, 1, 1, 0, 0, 1];
-
-const cut = (c: number, h: number, pad = 0) =>
-  `polygon(-20% -20%, 120% -20%, 120% calc(${c}% - ${h}em - ${pad}px), calc(58% - ${pad}px) calc(${c}% - ${h}em - ${pad}px), calc(58% - ${pad}px) calc(${c}% + ${h}em + ${pad}px), 120% calc(${c}% + ${h}em + ${pad}px), 120% 120%, -20% 120%)`;
-
-const OpenC = () => (
-  <span className="relative inline-block">
-    <span className="inline-block [filter:url(#c-round)]">
-      <span className="inline-block text-secondary" style={{ clipPath: cut(50, 0.055) }}>С</span>
-    </span>
-    <span className="absolute inset-0 [filter:url(#c-round)]">
-      <span className="inline-block [text-shadow:none]" style={{ clipPath: cut(50, 0.055, 2) }}>С</span>
-    </span>
-  </span>
-);
-
-const RoundFilter = () => (
-  <svg aria-hidden width="0" height="0" className="absolute">
-    <filter id="c-round" x="-20%" y="-20%" width="140%" height="140%">
-      <feGaussianBlur in="SourceAlpha" stdDeviation="1.6" result="b" />
-      <feComponentTransfer in="b" result="t">
-        <feFuncA type="linear" slope="8" intercept="-3.5" />
-      </feComponentTransfer>
-      <feComposite in="SourceGraphic" in2="t" operator="in" />
-    </filter>
-  </svg>
-);
 
 const Hero = () => {
   const live = useLiveStats();
@@ -93,9 +66,8 @@ const Hero = () => {
           style={{ animationDelay: '.18s' }}
         >
           <h1 className="relative z-10 text-center font-extrabold uppercase tracking-[-0.035em] md:text-left">
-            <span className="block whitespace-nowrap font-[Raleway,sans-serif] font-black text-[clamp(1.5rem,4.3vw,4.2rem)] leading-[.92] tracking-[0.05em] text-foreground md:tracking-[0.1em] xl:tracking-[0.05em] text-stroke-plate">
+            <span className="block whitespace-nowrap font-['Prosto_One',sans-serif] font-normal text-[clamp(1.5rem,4.3vw,4.2rem)] leading-[.92] tracking-[0.05em] text-foreground md:tracking-[0.1em] xl:tracking-[0.05em] text-stroke-plate">
               <span className="sr-only">ТОМСК НА СВЯЗИ</span>
-              <RoundFilter />
               <span aria-hidden className="inline-flex items-center">
                 Т
                 <span className="relative -ml-[0.04em] mr-[0.04em] inline-block h-[0.9em] w-[0.9em]">
@@ -114,12 +86,11 @@ const Hero = () => {
                     );
                   })}
                 </span>
-                М<OpenC />К{"\u00a0"}НА{"\u00a0"}<OpenC />ВЯЗИ
+                МСК НА СВЯЗИ
               </span>
             </span>
           </h1>
         </div>
-        <FontSamples moon={moonImg} />
       </div>
 
       <div className="relative z-10 mt-5 flex flex-col items-center gap-2 rule-top pt-3 md:mt-10 text-center text-[0.78rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground sm:flex-row sm:items-center sm:justify-center">
