@@ -16,7 +16,7 @@ z=zipfile.ZipFile('/tmp/chat-site.zip','w',zipfile.ZIP_DEFLATED)
 for r,_,fs in os.walk('.'):
     for f in fs:
         p=os.path.join(r,f)[2:]
-        if not p.endswith('.zip'): z.write(p,p)
+        z.write(p,p)
 z.close()" )
 RESP=$(curl -sS -X POST "$FN" -H "Content-Type: application/json" -H "X-Upload-Key: $KEY" -d "{\"apiVersion\":\"$VER\"}")
 PUT=$(echo "$RESP" | jq -r .putUrl)
