@@ -140,7 +140,7 @@ document.write('<img src="//counter.yadro.ru/hit?t15.1;r'+escape(document.referr
     var b = document.querySelector('.block');
     if (!b) return;
     var vw = document.documentElement.clientWidth, vh = window.innerHeight;
-    if (vw < 800) { b.classList.remove('fit'); b.style.transform = ''; document.body.style.height = ''; return; }
+    if (vw < 760 && !(vw > vh && vw >= 600)) { b.classList.remove('fit'); b.style.transform = ''; document.body.style.height = ''; return; }
     b.classList.add('fit');
     var s = vw > vh ? Math.min(vw / W, vh / H) : vw / W;
     var left = (vw - W * s) / 2 - X * s;
