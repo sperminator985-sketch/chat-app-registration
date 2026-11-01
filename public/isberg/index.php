@@ -148,10 +148,14 @@ document.write('<img src="//counter.yadro.ru/hit?t15.1;r'+escape(document.referr
     var s = vw > vh ? Math.min(vw / W, vh / H) : vw / W;
     var left = (vw - W * s) / 2 - X * s;
     b.style.transform = 'translate(' + left + 'px, 0) scale(' + s + ')';
-    document.body.style.height = Math.ceil(H * s) + 'px';
+    document.body.style.height = Math.floor(H * s) + 'px';
+    if (document.documentElement.clientWidth !== vw && !fit.again) { fit.again = true; fit(); fit.again = false; }
   }
-  window.addEventListener('resize', fit);
-  window.addEventListener('orientationchange', fit);
+  var t1, t2;
+  function later() { fit(); clearTimeout(t1); clearTimeout(t2); t1 = setTimeout(fit, 150); t2 = setTimeout(fit, 500); }
+  if (window.ResizeObserver) new ResizeObserver(function () { fit(); }).observe(document.documentElement);
+  window.addEventListener('resize', later);
+  window.addEventListener('orientationchange', later);
   document.addEventListener('DOMContentLoaded', fit);
   window.addEventListener('load', fit);
   fit();
