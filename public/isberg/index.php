@@ -16,7 +16,9 @@ setcookie('index', 'TimeToLive', time() + 86400, '/');
 html, body { margin: 0; overflow-x: hidden; }
 .block.fit { position: absolute; left: 0; top: 0; margin: 0; width: 1611px; height: 960px; transform-origin: 0 0; }
 .block.fit #Layer1 img { display: block; }
+html.fitwait .block { visibility: hidden; }
 </style>
+<script>document.documentElement.className += ' fitwait'; setTimeout(function(){ document.documentElement.classList.remove('fitwait'); }, 3000);</script>
 <script src="jquery-3.7.0.min.js"></script>
 
 <script>
@@ -139,6 +141,7 @@ document.write('<img src="//counter.yadro.ru/hit?t15.1;r'+escape(document.referr
   function fit() {
     var b = document.querySelector('.block');
     if (!b) return;
+    document.documentElement.classList.remove('fitwait');
     var vw = document.documentElement.clientWidth, vh = window.innerHeight;
     if (vw < 760 && !(vw > vh && vw >= 600)) { b.classList.remove('fit'); b.style.transform = ''; document.body.style.height = ''; return; }
     b.classList.add('fit');
@@ -150,6 +153,7 @@ document.write('<img src="//counter.yadro.ru/hit?t15.1;r'+escape(document.referr
   window.addEventListener('resize', fit);
   window.addEventListener('orientationchange', fit);
   document.addEventListener('DOMContentLoaded', fit);
+  window.addEventListener('load', fit);
   fit();
 })();
 </script>
