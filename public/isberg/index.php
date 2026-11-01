@@ -16,25 +16,6 @@ setcookie('index', 'TimeToLive', time() + 86400, '/');
 html, body { margin: 0; overflow-x: hidden; }
 .block.fit { position: absolute; left: 0; top: 0; margin: 0; width: 1611px; height: 960px; transform-origin: 0 0; }
 .block.fit #Layer1 img { display: block; }
-@media (max-width: 760px) {
-  .block.fit { position: static; width: auto; height: auto; transform: none !important; display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 10px; padding: 12px 10px 24px; box-sizing: border-box; }
-  .block.fit > div, .block.fit > button { position: static !important; width: auto !important; height: auto !important; left: auto; top: auto; margin: 0; }
-  .block.fit img { max-width: 100%; height: auto; }
-  .block.fit #Layer2 { order: 1; flex-basis: 100%; text-align: center; }
-  .block.fit #Layer1 { display: none; }
-  .block.fit .off, .block.fit .on { order: 3; width: 50px !important; height: 50px !important; flex-basis: 100%; max-width: 50px; }
-  .block.fit .on { display: none; }
-  .block.fit #Layer6, .block.fit #Layer8, .block.fit #Layer10, .block.fit #Layer9, .block.fit #Layer11, .block.fit #Layer13, .block.fit #Layer12 { order: 4; }
-  .block.fit #Layer14 { order: 5; flex-basis: 100%; text-align: center; }
-  .block.fit #Layer15 { order: 5; display: none; }
-  .block.fit #Layer7, .block.fit #Layer18, .block.fit #Layer16, .block.fit #Layer19, .block.fit #Layer17, .block.fit #Layer20, .block.fit #Layer22 { order: 6; }
-  .block.fit #Layer21 { order: 7; }
-  .block.fit #Layer7145 { order: 7; max-width: 100%; overflow: hidden; }
-  .block.fit #Layer7145 a { max-width: 100% !important; }
-  .block.fit #Layer3, .block.fit #Layer4, .block.fit #Layer5 { order: 8; flex-basis: 100%; text-align: center; }
-  .block.fit .стиль1 { font-size: 20px; color: #fff; text-shadow: 0 1px 3px #000; }
-  .block.fit #Layer23 { order: 9; flex-basis: 100%; text-align: center; }
-}
 </style>
 <script src="jquery-3.7.0.min.js"></script>
 
@@ -110,7 +91,7 @@ function MM_swapImage() { //v3.0
 }
 </script>
 
-<div class="block fit">
+<div class="block">
 
 <button class="off image-button2" onclick="document.getElementById('player').play()"></button>
 <button class="on image-button" onclick="document.getElementById('player').pause()"></button>
@@ -156,10 +137,11 @@ document.write('<img src="//counter.yadro.ru/hit?t15.1;r'+escape(document.referr
 (function () {
   var W = 1341, H = 960, X = 270;
   function fit() {
-    var b = document.querySelector('.block.fit');
+    var b = document.querySelector('.block');
     if (!b) return;
     var vw = document.documentElement.clientWidth, vh = window.innerHeight;
-    if (vw <= 760) { b.style.transform = ''; document.body.style.height = ''; return; }
+    if (vw < 1025) { b.classList.remove('fit'); b.style.transform = ''; document.body.style.height = ''; return; }
+    b.classList.add('fit');
     var s = vw > vh ? Math.min(vw / W, vh / H) : vw / W;
     var left = (vw - W * s) / 2 - X * s;
     b.style.transform = 'translate(' + left + 'px, 0) scale(' + s + ')';
