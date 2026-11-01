@@ -14,9 +14,25 @@ const cut = (c: number, h: number, pad = 0) =>
 
 const OpenC = () => (
   <span className="relative inline-block">
-    <span className="inline-block text-secondary" style={{ clipPath: cut(50, 0.055) }}>С</span>
-    <span className="absolute inset-0 [text-shadow:none]" style={{ clipPath: cut(50, 0.055, 2) }}>С</span>
+    <span className="inline-block [filter:url(#c-round)]">
+      <span className="inline-block text-secondary" style={{ clipPath: cut(50, 0.055) }}>С</span>
+    </span>
+    <span className="absolute inset-0 [filter:url(#c-round)]">
+      <span className="inline-block [text-shadow:none]" style={{ clipPath: cut(50, 0.055, 2) }}>С</span>
+    </span>
   </span>
+);
+
+const RoundFilter = () => (
+  <svg aria-hidden width="0" height="0" className="absolute">
+    <filter id="c-round" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="1.6" result="b" />
+      <feComponentTransfer in="b" result="t">
+        <feFuncA type="linear" slope="8" intercept="-3.5" />
+      </feComponentTransfer>
+      <feComposite in="SourceGraphic" in2="t" operator="in" />
+    </filter>
+  </svg>
 );
 
 const Hero = () => {
@@ -78,6 +94,7 @@ const Hero = () => {
           <h1 className="relative z-10 text-center font-extrabold uppercase tracking-[-0.035em] md:text-left">
             <span className="block whitespace-nowrap text-[clamp(1.5rem,4.3vw,4.2rem)] leading-[.92] tracking-[0.05em] text-foreground md:tracking-[0.1em] xl:tracking-[0.05em] text-stroke-plate">
               <span className="sr-only">ТОМСК НА СВЯЗИ</span>
+              <RoundFilter />
               <span aria-hidden className="inline-flex items-center">
                 Т
                 <span className="relative -ml-[0.04em] mr-[0.04em] inline-block h-[0.9em] w-[0.9em]">
