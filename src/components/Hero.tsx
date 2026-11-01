@@ -92,7 +92,7 @@ const Hero = () => {
           style={{ animationDelay: '.18s' }}
         >
           <h1 className="relative z-10 text-center font-extrabold uppercase tracking-[-0.035em] md:text-left">
-            <span className="block whitespace-nowrap font-[Montserrat,sans-serif] font-black text-[clamp(1.5rem,4.3vw,4.2rem)] leading-[.92] tracking-[0.05em] text-foreground md:tracking-[0.1em] xl:tracking-[0.05em] text-stroke-plate">
+            <span className="block whitespace-nowrap font-[Raleway,sans-serif] font-black text-[clamp(1.5rem,4.3vw,4.2rem)] leading-[.92] tracking-[0.05em] text-foreground md:tracking-[0.1em] xl:tracking-[0.05em] text-stroke-plate">
               <span className="sr-only">ТОМСК НА СВЯЗИ</span>
               <RoundFilter />
               <span aria-hidden className="inline-flex items-center">
