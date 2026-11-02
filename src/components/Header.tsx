@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Icon from '@/components/ui/icon';
 import { press } from '@/lib/press';
@@ -18,6 +18,9 @@ const navBtn =
 
 const menuBtn =
   'btn-3d flex items-center justify-center gap-2 px-6 py-3 text-center font-display text-sm font-extrabold uppercase tracking-wide';
+
+const chatBtnBase =
+  'flex h-10 min-w-10 items-center justify-center gap-2 whitespace-nowrap border-2 text-[0.74rem] font-semibold uppercase tracking-[0.08em] transition-colors';
 
 const guestLinks = [
   { href: '#top', label: 'Главная' },
@@ -50,6 +53,40 @@ const Header = ({ onProfile, room, onPickRoom }: HeaderProps) => {
   const links = user ? [] : guestLinks;
 
   const themeLabel = theme === 'day' ? 'Ночной режим' : 'Дневной режим';
+
+  const rowRef = useRef<HTMLDivElement>(null);
+  const titleRef = useRef<HTMLSpanElement>(null);
+  const [level, setLevel] = useState(0);
+  const [fitTick, setFitTick] = useState(0);
+  const show = (minLevel: number) => (level < minLevel ? 'hidden lg:inline' : 'hidden');
+  const btn = (minLevel: number) => cn(chatBtnBase, level < minLevel && 'lg:px-3');
+  const compact = level >= 4;
+
+  useEffect(() => {
+    if (!user) return;
+    let raf = 0;
+    const onResize = () => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => {
+        setLevel(0);
+        setFitTick((t) => t + 1);
+      });
+    };
+    window.addEventListener('resize', onResize);
+    document.fonts?.ready.then(onResize).catch(() => undefined);
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener('resize', onResize);
+    };
+  }, [user]);
+
+  useLayoutEffect(() => {
+    const el = rowRef.current;
+    if (!el || !user || level >= 4) return;
+    const title = titleRef.current;
+    const cut = title && title.offsetParent !== null && title.scrollWidth > title.clientWidth + 1;
+    if (el.scrollWidth > el.clientWidth + 1 || cut) setLevel((l) => l + 1);
+  }, [level, fitTick, user, temp, pending, room, theme]);
 
   const themeButton = (extra?: string) => (
     <button
@@ -122,12 +159,14 @@ const Header = ({ onProfile, room, onPickRoom }: HeaderProps) => {
             : 'Объявление в бегущую строку'
         }
         className={cn(
-          'relative flex h-10 w-10 items-center justify-center border-2 transition-colors hover:border-secondary hover:text-secondary',
+          btn(2),
+          'relative hover:border-secondary hover:text-secondary',
           alert ? 'animate-pulse border-primary text-primary' : 'border-foreground/40 text-foreground',
           extra,
         )}
       >
         <Icon name="Megaphone" size={18} />
+        <span className={show(2)}>Строка</span>
         {alert && (
           <span className="absolute -right-2 -top-2 min-w-[20px] border-2 border-foreground/40 bg-primary px-1 font-mono text-[0.68rem] font-bold leading-[16px] text-primary-foreground">
             {pending > 99 ? '99+' : pending}
@@ -239,6 +278,7 @@ const Header = ({ onProfile, room, onPickRoom }: HeaderProps) => {
       )}
     >
       <div
+        ref={rowRef}
         className={cn(
           'mx-auto flex flex-nowrap items-center justify-between gap-x-2 py-4 pl-2.5 pr-5 md:gap-x-3 lg:gap-x-4',
           user ? 'rule-bottom max-w-none md:border-b-0 md:px-4 lg:px-5' : 'rule-bottom max-w-[1400px] md:px-6 lg:px-10',
@@ -252,7 +292,7 @@ const Header = ({ onProfile, room, onPickRoom }: HeaderProps) => {
             </div>
             <div className="mx-auto hidden min-w-0 items-center gap-2 min-[1560px]:flex" title={`Этаж ${room.floor} · ${room.title}`}>
               <Icon name={room.icon} size={20} className="h-4 w-4 shrink-0 text-secondary lg:h-5 lg:w-5" />
-              <span className="whitespace-nowrap font-display text-[0.7rem] font-extrabold uppercase leading-tight tracking-[-0.03em] truncate text-lg">
+              <span ref={titleRef} className="whitespace-nowrap font-display text-[0.7rem] font-extrabold uppercase leading-tight tracking-[-0.03em] truncate text-lg">
                 Этаж {room.floor} · {room.title}
               </span>
             </div>
@@ -282,12 +322,12 @@ const Header = ({ onProfile, room, onPickRoom }: HeaderProps) => {
                 className="flex h-10 items-center gap-2 whitespace-nowrap border-2 border-foreground/30 px-3 text-[0.76rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground transition-colors hover:border-secondary hover:text-foreground"
               >
                 <Icon name={weatherIcon(temp)} size={14} className={temp < 0 ? 'text-primary' : 'text-secondary'} />
-                <span className="hidden min-[1760px]:inline">Сейчас в Томске</span>
+                <span className={show(4)}>Сейчас в Томске</span>
                 <span className={cn('text-[1.05rem] font-bold', temp < 0 ? 'text-primary' : 'text-secondary')}>
                   {formatTemp(temp)}
-                  <span className="min-[1760px]:hidden">°</span>
+                  {compact && '°'}
                 </span>
-                <span className="hidden min-[1760px]:inline">{degreeWord(temp)}</span>
+                <span className={show(4)}>{degreeWord(temp)}</span>
               </a>
             )}
             {themeButton()}
@@ -325,18 +365,20 @@ const Header = ({ onProfile, room, onPickRoom }: HeaderProps) => {
               onClick={() => window.dispatchEvent(new Event('chat:clear'))}
               title="Очистить чат"
               aria-label="Очистить чат"
-              className="flex h-10 w-10 items-center justify-center border-2 border-foreground/40 text-foreground transition-colors hover:border-secondary hover:text-secondary"
+              className={cn(btn(2), 'border-foreground/40 text-foreground hover:border-secondary hover:text-secondary')}
             >
               <Icon name="Eraser" size={16} />
+              <span className={show(2)}>Очистить</span>
             </button>
             {tickerButton()}
             {user.isAdmin && (
               <Link
                 to="/admin"
                 title="Комендантская"
-                className="flex h-10 w-10 items-center justify-center border-2 border-secondary text-secondary transition-colors hover:bg-secondary hover:text-secondary-foreground"
+                className={cn(btn(3), 'border-secondary text-secondary hover:bg-secondary hover:text-secondary-foreground')}
               >
                 <Icon name="Shield" size={18} />
+                <span className={show(3)}>Комендантская</span>
               </Link>
             )}
           </div>
@@ -408,17 +450,19 @@ const Header = ({ onProfile, room, onPickRoom }: HeaderProps) => {
                 onClick={onProfile}
                 title={`Профиль — ${user.nick}`}
                 aria-label="Профиль"
-                className="hidden h-10 w-10 items-center justify-center border-2 border-foreground/40 text-foreground transition-colors hover:border-secondary hover:text-secondary lg:flex"
+                className={cn(btn(1), 'hidden border-foreground/40 text-foreground hover:border-secondary hover:text-secondary lg:flex')}
               >
                 <Icon name="UserRound" size={16} />
+                <span className={cn(show(1), 'max-w-[140px] truncate')}>{user.nick}</span>
               </button>
               <button
                 onClick={signOut}
                 title="Выйти из общаги"
                 aria-label="Выход"
-                className="flex h-10 w-10 items-center justify-center border-2 border-foreground/40 text-foreground transition-colors hover:border-primary hover:text-primary"
+                className={cn(btn(3), 'border-foreground/40 text-foreground hover:border-primary hover:text-primary')}
               >
                 <Icon name="LogOut" size={16} />
+                <span className={show(3)}>Выйти</span>
               </button>
             </>
           ) : (
