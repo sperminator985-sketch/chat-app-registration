@@ -104,7 +104,7 @@ const Header = ({ onProfile, room, onPickRoom }: HeaderProps) => {
       <button
         onClick={() => {
           setOpen(false);
-          if (user.isAdmin) navigate('/admin');
+          if (user.isAdmin) navigate('/admin?tab=ticker');
           else openTicker();
         }}
         aria-label="Бегущая строка"
@@ -539,7 +539,7 @@ const Header = ({ onProfile, room, onPickRoom }: HeaderProps) => {
                   <button
                     onClick={() => {
                       setOpen(false);
-                      if (user.isAdmin) navigate('/admin');
+                      if (user.isAdmin) navigate('/admin?tab=ticker');
                       else openTicker();
                     }}
                     className="btn-ghost-brut flex items-center justify-center gap-2"

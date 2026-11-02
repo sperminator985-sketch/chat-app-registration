@@ -69,6 +69,12 @@ const MODE_OPTIONS: { value: TickerMode; label: string; hint: string }[] = [
 ];
 
 const savedTab = (): AdminTab => {
+  const q = new URLSearchParams(window.location.search).get('tab') as AdminTab | null;
+  if (q && TABS.includes(q)) {
+    localStorage.setItem(TAB_KEY, q);
+    window.history.replaceState(null, '', window.location.pathname);
+    return q;
+  }
   const v = localStorage.getItem(TAB_KEY) as AdminTab | null;
   return v && TABS.includes(v) ? v : 'users';
 };
