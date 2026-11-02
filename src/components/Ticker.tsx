@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import type { CSSProperties } from 'react';
 import { useWeather, formatTemp, dayForecastText, tomorrowForecastText, degreeWord } from '@/hooks/use-weather';
 import { useLiveStats } from '@/hooks/use-live-stats';
 import { useNews } from '@/hooks/use-news';
@@ -31,6 +32,7 @@ const Ticker = () => {
   const trackRef = useRef<HTMLDivElement>(null);
   const passRef = useRef<HTMLDivElement>(null);
   const loopRef = useRef({ solo: false, duration: 30 });
+  const [cpuOnly] = useState(isWeakGpu);
 
   useEffect(() => {
     const timer = window.setInterval(() => setEvening(isEvening()), 60000);
@@ -145,32 +147,64 @@ const Ticker = () => {
     const track = trackRef.current;
     const pass = passRef.current;
     if (!box || !track || !pass) return;
-    const cpuOnly = isWeakGpu();
-    track.style.left = '0px';
-    track.style.willChange = cpuOnly ? '' : 'transform';
+
+    let boxW = box.offsetWidth;
+    let passW = pass.offsetWidth;
+    const ro = new ResizeObserver(() => {
+      boxW = box.offsetWidth;
+      passW = pass.offsetWidth;
+    });
+    ro.observe(box);
+    ro.observe(pass);
+
+    let onScreen = false;
     let raf = 0;
     let last = 0;
     let progress = 0;
+
     const step = (now: number) => {
-      const { solo: one, duration: dur } = loopRef.current;
+      raf = requestAnimationFrame(step);
+      if (last && now - last < 32) return;
       const dt = last ? Math.min(now - last, 100) : 0;
       last = now;
+      const { solo: one, duration: dur } = loopRef.current;
       progress = (progress + dt / (dur * 1000)) % 1;
-      const passW = pass.offsetWidth;
-      const x = one
-        ? box.offsetWidth - progress * (box.offsetWidth + passW)
-        : -progress * passW;
-      if (cpuOnly) track.style.left = `${Math.round(x)}px`;
-      else track.style.transform = `translate3d(${x.toFixed(2)}px,0,0)`;
-      raf = requestAnimationFrame(step);
+      const x = one ? boxW - progress * (boxW + passW) : -progress * passW;
+      track.style.transform = `translate3d(${Math.round(x)}px,0,0)`;
     };
-    raf = requestAnimationFrame(step);
+
+    const sync = () => {
+      const run = onScreen && !document.hidden;
+      if (!cpuOnly) {
+        track.style.animationPlayState = run ? 'running' : 'paused';
+        return;
+      }
+      if (run && !raf) {
+        last = 0;
+        raf = requestAnimationFrame(step);
+      } else if (!run && raf) {
+        cancelAnimationFrame(raf);
+        raf = 0;
+      }
+    };
+
+    const io = new IntersectionObserver(([entry]) => {
+      onScreen = entry.isIntersecting;
+      sync();
+    });
+    io.observe(box);
+    document.addEventListener('visibilitychange', sync);
+    sync();
+
     return () => {
       cancelAnimationFrame(raf);
+      ro.disconnect();
+      io.disconnect();
+      document.removeEventListener('visibilitychange', sync);
       track.style.transform = '';
-      track.style.willChange = '';
+      track.style.animationPlayState = '';
     };
-  }, [hidden]);
+  }, [hidden, cpuOnly]);
 
   if (hidden) return null;
 
@@ -185,7 +219,19 @@ const Ticker = () => {
       ref={boxRef}
       className="group relative my-0 overflow-hidden border-y-2 border-foreground/35 bg-card py-2.5 md:py-3"
     >
-      <div ref={trackRef} className="relative flex w-max">
+      <div
+        ref={trackRef}
+        className={cn('relative flex w-max', !cpuOnly && (solo ? 'animate-marquee-solo' : 'animate-marquee'))}
+        style={
+          cpuOnly
+            ? undefined
+            : ({
+                animationDuration: `${duration}s`,
+                '--marquee-from': '100vw',
+                '--marquee-to': '-100%',
+              } as CSSProperties)
+        }
+      >
         {(solo ? [0] : [0, 1]).map((pass) => (
           <div key={pass} ref={pass === 0 ? passRef : undefined} className="flex shrink-0">
             {items.map((t, idx) => (
