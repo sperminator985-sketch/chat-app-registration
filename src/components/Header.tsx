@@ -82,7 +82,7 @@ const Header = ({ onProfile, room, onPickRoom }: HeaderProps) => {
 
   useLayoutEffect(() => {
     const el = rowRef.current;
-    if (!el || !user || level >= 4) return;
+    if (!el || !user || level >= 5) return;
     const title = titleRef.current;
     const cut = title && title.offsetParent !== null && title.scrollWidth > title.clientWidth + 1;
     if (el.scrollWidth > el.clientWidth + 1 || cut) setLevel((l) => l + 1);
@@ -286,7 +286,7 @@ const Header = ({ onProfile, room, onPickRoom }: HeaderProps) => {
       >
         {user && room && onPickRoom ? (
           <>
-            <Logo size="sm" iconAsLetter className="hidden shrink-0 md:flex lg:hidden min-[1200px]:flex" />
+            <Logo size="sm" iconAsLetter className={cn('hidden shrink-0 md:flex', level >= 5 && 'lg:hidden')} />
             <div className="flex min-w-0 flex-1 md:justify-center min-[1560px]:hidden">
               <FloorMenu room={room} onPick={onPickRoom} className="md:flex-none" />
             </div>
