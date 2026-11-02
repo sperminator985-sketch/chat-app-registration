@@ -143,8 +143,8 @@ const PageBody = () => {
               <div className="relative z-10 -mt-[2px] md:hidden">
                 <Ticker />
               </div>
-              <div className="relative z-10 flex min-h-0 flex-1 items-center pb-0 md:pb-[160px]">
-                <Skyline className="pointer-events-none absolute inset-x-0 bottom-0 z-20 hidden h-[160px] md:block" />
+              <div className="relative z-10 flex min-h-0 flex-1 items-center pb-0 md:pb-[160px] short:md:pb-[100px]">
+                <Skyline className="pointer-events-none absolute inset-x-0 bottom-0 z-20 hidden h-[160px] short:h-[100px] md:block" />
                 <div className="relative z-10 w-full">
                   <Hero />
                 </div>

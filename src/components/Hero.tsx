@@ -15,7 +15,7 @@ const Hero = () => {
   const floorCounts = rooms.map((r) => live?.roomCounts?.[r.id] ?? 0);
 
   return (
-    <section id="top" className="mx-auto w-full max-w-[1400px] overflow-x-clip px-5 pb-4 pt-3 md:px-10 md:py-8">
+    <section id="top" className="mx-auto w-full max-w-[1400px] overflow-x-clip px-5 pb-4 pt-3 md:px-10 md:py-8 short:md:py-3">
       <div className="flex flex-col justify-center gap-2.5">
         <p className="relative z-10 -mt-1 mb-1 whitespace-nowrap text-center font-display text-[clamp(0.7rem,3.1vw,1.1rem)] font-semibold uppercase tracking-[0.34em] text-secondary md:hidden">
           the rebirth of a legend
@@ -57,7 +57,7 @@ const Hero = () => {
         </p>
 
         <div
-          className="animate-rise h-[3px] w-full bg-foreground md:mt-4 xl:mt-[1.85cm]"
+          className="animate-rise h-[3px] w-full bg-foreground md:mt-4 xl:mt-[1.85cm] short:xl:mt-[1.2cm]"
           style={{ animationDelay: '.12s' }}
         />
 
@@ -93,7 +93,7 @@ const Hero = () => {
         </div>
       </div>
 
-      <div className="mt-[22px] h-[3px] w-full bg-foreground" />
+      <div className="mt-[22px] short:mt-3 h-[3px] w-full bg-foreground" />
 
       <div className="relative z-10 mt-3 flex flex-col items-center gap-2 md:mt-5 text-center text-[0.78rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground sm:flex-row sm:items-center sm:justify-center">
         <span className="text-[1.02rem] font-normal normal-case leading-[1.45] tracking-normal text-foreground md:text-[1.15rem]">

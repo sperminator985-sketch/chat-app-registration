@@ -21,6 +21,9 @@ export default {
 			}
 		},
 		extend: {
+			screens: {
+				short: { raw: '(min-width: 768px) and (max-height: 920px)' },
+			},
 			fontFamily: {
 				display: ['Unbounded', 'sans-serif'],
 				body: ['Oswald', 'sans-serif'],
