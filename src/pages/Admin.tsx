@@ -769,7 +769,8 @@ const AdminPanel = () => {
                   step={10}
                   value={tickerSpeed}
                   onChange={(e) => saveSpeed(Number(e.target.value))}
-                  className="w-full max-w-sm accent-secondary"
+                  className="range-3d w-full max-w-sm"
+                  style={{ '--fill': `${((tickerSpeed - 50) / 200) * 100}%` } as React.CSSProperties}
                 />
                 <div className="mt-1 flex max-w-sm justify-between text-[0.68rem] uppercase tracking-[0.08em] text-muted-foreground/80">
                   <span>медленнее</span>
