@@ -14,7 +14,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { useTicker } from '@/hooks/use-ticker';
 
 const navBtn =
-  'btn-3d inline-flex items-center whitespace-nowrap px-2.5 py-1.5 text-[0.72rem] font-semibold uppercase tracking-[0.1em] lg:px-3 lg:text-[0.78rem]';
+  'btn-3d inline-flex items-center whitespace-nowrap px-2 py-1.5 text-[0.66rem] font-semibold uppercase tracking-[0.06em] min-[900px]:px-2.5 min-[900px]:text-[0.72rem] min-[900px]:tracking-[0.1em] lg:px-3 lg:text-[0.78rem]';
 
 const guestLinks = [
   { href: '#top', label: 'Главная' },
@@ -340,7 +340,7 @@ const Header = ({ onProfile, room, onPickRoom }: HeaderProps) => {
         )}
 
         {!user && (
-        <div className="mx-auto hidden items-center gap-3 md:flex">
+        <div className="mx-auto hidden items-center gap-2 md:flex min-[900px]:gap-3">
           {temp !== null && (
             <a
               href="https://yandex.ru/pogoda/ru/tomsk"
@@ -361,14 +361,33 @@ const Header = ({ onProfile, room, onPickRoom }: HeaderProps) => {
               {degreeWord(temp)}
             </a>
           )}
-          <div className="relative mr-[52px] lg:mr-0">
+          {temp !== null && (
+            <a
+              href="https://yandex.ru/pogoda/ru/tomsk"
+              target="_blank"
+              rel="noopener noreferrer"
+              title={`Сейчас в Томске ${formatTemp(temp)} ${degreeWord(temp)}`}
+              aria-label={`Сейчас в Томске ${formatTemp(temp)} ${degreeWord(temp)}`}
+              className="flex h-10 min-w-10 flex-col items-center justify-center gap-0.5 border-2 border-foreground/30 px-1.5 leading-none transition-colors hover:border-secondary lg:hidden"
+            >
+              <Icon
+                name={weatherIcon(temp)}
+                size={12}
+                className={temp < 0 ? 'text-primary' : 'text-secondary'}
+              />
+              <span className={cn('text-[0.8rem] font-bold', temp < 0 ? 'text-primary' : 'text-secondary')}>
+                {formatTemp(temp)}°
+              </span>
+            </a>
+          )}
+          <div className="relative mr-[48px] min-[900px]:mr-[52px] lg:mr-0">
             {themeButton()}
-            <div className="absolute left-full top-0 ml-3">{paletteButton()}</div>
+            <div className="absolute left-full top-0 ml-2 min-[900px]:ml-3">{paletteButton()}</div>
           </div>
         </div>
         )}
 
-        <nav className={cn('hidden items-center md:flex', user ? 'gap-1.5 lg:gap-2' : 'gap-2 pb-1 pt-0.5 lg:gap-2.5')}>
+        <nav className={cn('hidden items-center md:flex', user ? 'gap-1.5 lg:gap-2' : 'gap-1.5 pb-1 pt-0.5 min-[900px]:gap-2 lg:gap-2.5')}>
           {links.map((l) => (
             <a
               key={l.href}
