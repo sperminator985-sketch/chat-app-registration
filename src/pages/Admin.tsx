@@ -285,7 +285,7 @@ const AdminPanel = () => {
             setTickerMode(m.mode ?? 'mix');
             const sp = m.speed && m.speed > 0 ? m.speed : 100;
             setAppliedSpeed(sp);
-            if (!speedDirty.current) setTickerSpeed(sp);
+            if (!speedDirty.current) setTickerSpeed(Math.min(150, Math.max(50, sp)));
           }
         } catch {
           // тихо
@@ -779,16 +779,17 @@ const AdminPanel = () => {
                     <input
                       type="range"
                       min={50}
-                      max={250}
+                      max={150}
                       step={10}
                       value={tickerSpeed}
                       onChange={(e) => pickSpeed(Number(e.target.value))}
                       className="range-3d w-full"
-                      style={{ '--fill': `${((tickerSpeed - 50) / 200) * 100}%` } as React.CSSProperties}
+                      style={{ '--fill': `${((tickerSpeed - 50) / 100) * 100}%` } as React.CSSProperties}
                     />
                     <div className="mt-1 flex justify-between text-[0.68rem] uppercase tracking-[0.08em] text-muted-foreground/80">
-                      <span>медленнее</span>
-                      <span>быстрее</span>
+                      <span>50% · медленнее</span>
+                      <span>100%</span>
+                      <span>быстрее · 150%</span>
                     </div>
                   </div>
                   <button
