@@ -169,11 +169,14 @@ const PENDING_KEY = 'obshaga_pending_verify';
 
 let memToken = '';
 
-export const getToken = () => memToken || localStorage.getItem(TOKEN_KEY) || '';
-export const setToken = (token: string) => {
+export const getToken = () =>
+  memToken || localStorage.getItem(TOKEN_KEY) || sessionStorage.getItem(TOKEN_KEY) || '';
+export const setToken = (token: string, remember = true) => {
   memToken = '';
   localStorage.removeItem(PENDING_KEY);
-  localStorage.setItem(TOKEN_KEY, token);
+  localStorage.removeItem(TOKEN_KEY);
+  sessionStorage.removeItem(TOKEN_KEY);
+  (remember ? localStorage : sessionStorage).setItem(TOKEN_KEY, token);
 };
 export const setTempToken = (token: string) => {
   localStorage.removeItem(TOKEN_KEY);
@@ -192,6 +195,7 @@ export const clearToken = () => {
   memToken = '';
   localStorage.removeItem(PENDING_KEY);
   localStorage.removeItem(TOKEN_KEY);
+  sessionStorage.removeItem(TOKEN_KEY);
 };
 
 let banned: string | null = null;

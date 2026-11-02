@@ -59,6 +59,7 @@ const AuthDialog = () => {
   const [avatar, setAvatar] = useState<AvatarId>(1);
   const [room, setRoom] = useState(rooms[0].id);
   const [agree, setAgree] = useState(false);
+  const [remember, setRemember] = useState(true);
   const [showPass, setShowPass] = useState(false);
   const [showPass2, setShowPass2] = useState(false);
   const [uni, setUni] = useState('');
@@ -163,7 +164,7 @@ const AuthDialog = () => {
           toast({ title: 'Письмо ушло', description: `Код отправлен на ${email.trim()}` });
         }
       } else {
-        await login({ nick: nick.trim(), password: pass });
+        await login({ nick: nick.trim(), password: pass }, remember);
       }
       setPass('');
       setPass2('');
@@ -566,6 +567,7 @@ const AuthDialog = () => {
               <div className="relative">
                 <input
                   type={showPass ? 'text' : 'password'}
+                  autoComplete={isRegister || remember ? (isRegister ? 'new-password' : 'current-password') : 'off'}
                   value={pass}
                   onChange={(e) => setPass(e.target.value)}
                   placeholder="••••••"
@@ -581,6 +583,17 @@ const AuthDialog = () => {
                 </button>
               </div>
               {errors.pass && <p className="mt-1.5 text-[0.85rem] text-primary">{errors.pass}</p>}
+              {!isRegister && (
+                <label className="mt-2.5 flex cursor-pointer items-center gap-2.5 text-[0.9rem] text-muted-foreground sm:text-[0.8rem]">
+                  <input
+                    type="checkbox"
+                    checked={remember}
+                    onChange={(e) => setRemember(e.target.checked)}
+                    className="h-4 w-4 accent-[hsl(var(--secondary))]"
+                  />
+                  <span className={cn(remember && 'text-foreground')}>Запомнить меня</span>
+                </label>
+              )}
             </div>
 
             {isRegister && (

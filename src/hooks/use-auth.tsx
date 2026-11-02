@@ -16,7 +16,7 @@ type AuthState = {
   openAuth: (tab?: 'register' | 'login', room?: string) => void;
   closeAuth: () => void;
   register: (body: { nick: string; password: string; color: number; room: string; avatar: number; uni?: string; email?: string }) => Promise<boolean>;
-  login: (body: { nick: string; password: string }) => Promise<void>;
+  login: (body: { nick: string; password: string }, remember?: boolean) => Promise<void>;
   verifyEmail: (code: string) => Promise<void>;
   cancelRegister: () => Promise<void>;
   signOut: () => void;
@@ -106,11 +106,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setUser(null);
   }, []);
 
-  const login = useCallback(async (body: { nick: string; password: string }) => {
+  const login = useCallback(async (body: { nick: string; password: string }, remember = true) => {
     stashSecret(await deriveSecret(body.nick, body.password));
     const res = await api.login(body);
+    setToken(res.token, remember);
     bindSecret(res.user.id);
-    setToken(res.token);
     setUser(res.user);
     setAuthOpen(false);
   }, []);
