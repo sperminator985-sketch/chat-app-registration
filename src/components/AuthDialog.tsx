@@ -559,7 +559,7 @@ const AuthDialog = () => {
             </div>
           )}
 
-          <div className="grid gap-4 sm:grid-cols-2 sm:gap-3">
+          <div className={cn('grid gap-4 sm:grid-cols-2 sm:gap-3', !isRegister && 'grid-cols-[1fr_auto] gap-3')}>
             <div>
               <label className="mb-1.5 block text-[0.78rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground sm:mb-1 sm:text-[0.7rem]">
                 Пароль
@@ -583,18 +583,27 @@ const AuthDialog = () => {
                 </button>
               </div>
               {errors.pass && <p className="mt-1.5 text-[0.85rem] text-primary">{errors.pass}</p>}
-              {!isRegister && (
-                <label className="mt-2.5 flex cursor-pointer items-center gap-2.5 text-[0.9rem] text-muted-foreground sm:text-[0.8rem]">
+            </div>
+
+            {!isRegister && (
+              <div className="flex flex-col">
+                <span
+                  aria-hidden
+                  className="mb-1.5 block text-[0.78rem] font-semibold uppercase tracking-[0.14em] opacity-0 sm:mb-1 sm:text-[0.7rem]"
+                >
+                  &nbsp;
+                </span>
+                <label className="flex flex-1 cursor-pointer items-center gap-2.5 text-[0.9rem] text-muted-foreground sm:text-[0.8rem]">
                   <input
                     type="checkbox"
                     checked={remember}
                     onChange={(e) => setRemember(e.target.checked)}
-                    className="h-4 w-4 accent-[hsl(var(--secondary))]"
+                    className="h-4 w-4 shrink-0 accent-[hsl(var(--secondary))]"
                   />
                   <span className={cn(remember && 'text-foreground')}>Запомнить меня</span>
                 </label>
-              )}
-            </div>
+              </div>
+            )}
 
             {isRegister && (
               <div>
