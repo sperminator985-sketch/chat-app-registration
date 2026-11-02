@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import Facade from '@/components/Facade';
 import { useLiveStats } from '@/hooks/use-live-stats';
 import { rooms } from '@/data/chat';
@@ -9,10 +10,77 @@ const bodies = { moon: moonImg, sun: sunImg };
 
 const windows = [1, 0, 1, 1, 1, 1, 0, 0, 1];
 
+const MAX_W = 436;
+const MIN_W = 220;
+const GAP = 16;
+
+const docTop = (el: HTMLElement) => {
+  let y = 0;
+  let node: HTMLElement | null = el;
+  while (node) {
+    y += node.offsetTop;
+    node = node.offsetParent as HTMLElement | null;
+  }
+  return y;
+};
+
 const Hero = () => {
   const live = useLiveStats();
   const { theme } = useTheme();
   const floorCounts = rooms.map((r) => live?.roomCounts?.[r.id] ?? 0);
+  const rowRef = useRef<HTMLDivElement>(null);
+  const titleRef = useRef<HTMLHeadingElement>(null);
+  const houseRef = useRef<HTMLDivElement>(null);
+  const lineRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const row = rowRef.current;
+    const title = titleRef.current;
+    const house = houseRef.current;
+    const line = lineRef.current;
+    if (!row || !title || !house || !line) return;
+    const wide = window.matchMedia('(min-width: 1280px)');
+
+    const fit = () => {
+      if (!wide.matches) {
+        house.style.width = '';
+        house.style.top = '';
+        return;
+      }
+      const bar = document.getElementById('topbar');
+      const headerBottom = bar ? bar.offsetHeight : 0;
+      const lineTop = docTop(line);
+      const room = Math.max(lineTop - headerBottom - GAP * 2, 120);
+      const sideRoom = row.clientWidth - title.offsetWidth - 28;
+      let w = Math.min(MAX_W, Math.max(MIN_W, sideRoom));
+      for (let i = 0; i < 4; i += 1) {
+        house.style.width = `${w}px`;
+        const h = house.offsetHeight;
+        if (h <= room + 1 && (w >= MAX_W || w >= sideRoom || h >= room - 2)) break;
+        const fixed = 60;
+        w = Math.min(MAX_W, sideRoom, Math.max(MIN_W, Math.floor(((room - fixed) / Math.max(h - fixed, 1)) * w)));
+      }
+      house.style.width = `${w}px`;
+      const h = house.offsetHeight;
+      const top = headerBottom + (lineTop - headerBottom - h) / 2;
+      house.style.top = `${Math.round(top - docTop(row))}px`;
+    };
+
+    fit();
+    const ro = new ResizeObserver(fit);
+    ro.observe(row);
+    ro.observe(document.body);
+    const bar = document.getElementById('topbar');
+    if (bar) ro.observe(bar);
+    wide.addEventListener('change', fit);
+    window.addEventListener('resize', fit);
+    document.fonts?.ready.then(fit).catch(() => undefined);
+    return () => {
+      ro.disconnect();
+      wide.removeEventListener('change', fit);
+      window.removeEventListener('resize', fit);
+    };
+  }, []);
 
   return (
     <section id="top" className="mx-auto w-full max-w-[1400px] overflow-x-clip px-5 pb-4 pt-3 md:px-10 md:py-8 short:md:py-3">
@@ -21,8 +89,14 @@ const Hero = () => {
           the rebirth of a legend
         </p>
 
-        <div className="relative z-10 flex animate-rise flex-col items-center gap-6 md:gap-8 xl:flex-row xl:items-start xl:justify-between xl:gap-7">
-          <h1 className="mt-0 hidden min-w-0 flex-nowrap items-center justify-center gap-x-2 font-extrabold uppercase tracking-[-0.035em] md:flex md:gap-x-4 xl:mt-[2cm] xl:justify-start">
+        <div
+          ref={rowRef}
+          className="relative z-10 flex animate-rise flex-col items-center gap-6 md:gap-8 xl:flex-row xl:items-start xl:justify-between xl:gap-7"
+        >
+          <h1
+            ref={titleRef}
+            className="mt-0 hidden min-w-0 flex-nowrap items-center justify-center gap-x-2 font-extrabold uppercase tracking-[-0.035em] md:flex md:gap-x-4 xl:mt-10 xl:justify-start"
+          >
             <span className="flex shrink-0 flex-col items-center justify-end border-[3px] border-foreground bg-window-off p-[5px] h-[clamp(1.9rem,8.4vw,3.2rem)] w-[clamp(1.9rem,8.4vw,3.2rem)] md:h-[clamp(2rem,6.7vw,6.3rem)] md:w-[clamp(2rem,6.7vw,6.3rem)]">
               <span className="grid w-full flex-1 grid-cols-3 gap-[3px]">
                 {windows.map((on, i) => (
@@ -43,21 +117,24 @@ const Hero = () => {
           <p className="-mt-2 hidden whitespace-nowrap text-center font-display text-[clamp(0.95rem,2.6vw,1.6rem)] font-semibold uppercase tracking-[0.34em] text-secondary md:block xl:hidden">
             the rebirth of a legend
           </p>
-          <Facade
-            className="w-full max-w-[436px] xl:-mt-[1.1cm] short:xl:max-w-[380px]"
-            rows={9}
-            cellAspect="1/0.68"
-            floorCounts={floorCounts}
-            alarm={live?.adminOnline ?? false}
-          />
+          <div ref={houseRef} className="w-full max-w-[436px] xl:absolute xl:right-0">
+            <Facade
+              className="w-full"
+              rows={9}
+              cellAspect="1/0.68"
+              floorCounts={floorCounts}
+              alarm={live?.adminOnline ?? false}
+            />
+          </div>
         </div>
 
-        <p className="hidden whitespace-nowrap font-display font-semibold uppercase tracking-[0.34em] text-secondary xl:-mt-[3.1cm] xl:block xl:text-left xl:text-[clamp(0.95rem,2.42vw,2.1rem)]">
+        <p className="hidden whitespace-nowrap font-display font-semibold uppercase tracking-[0.34em] text-secondary xl:mt-3 xl:block xl:text-left xl:text-[clamp(0.95rem,2.42vw,2.1rem)]">
           the rebirth of a legend
         </p>
 
         <div
-          className="animate-rise h-[3px] w-full bg-foreground md:mt-4 xl:mt-[1.85cm]"
+          ref={lineRef}
+          className="animate-rise h-[3px] w-full bg-foreground md:mt-4 xl:mt-10"
           style={{ animationDelay: '.12s' }}
         />
 
