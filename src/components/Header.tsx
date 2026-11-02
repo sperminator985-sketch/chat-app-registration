@@ -16,6 +16,9 @@ import { useTicker } from '@/hooks/use-ticker';
 const navBtn =
   'btn-3d inline-flex items-center whitespace-nowrap px-2.5 py-1.5 text-[0.72rem] font-semibold uppercase tracking-[0.1em] lg:px-3 lg:text-[0.78rem]';
 
+const menuBtn =
+  'btn-3d flex items-center justify-center gap-2 px-6 py-3 text-center font-display text-sm font-extrabold uppercase tracking-wide';
+
 const guestLinks = [
   { href: '#top', label: 'Главная' },
   { href: '#etazhi', label: 'Этажи' },
@@ -476,19 +479,19 @@ const Header = ({ onProfile, room, onPickRoom }: HeaderProps) => {
 
       {open && (
         <div className="animate-fade-in absolute left-0 right-0 top-full z-50 max-h-[calc(100dvh-var(--top-offset,4.5rem)-0.75rem)] overflow-y-auto overscroll-contain border-b-2 border-foreground/35 bg-card px-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] pt-5 shadow-[0_18px_30px_-12px_rgba(0,0,0,0.55)] md:hidden">
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-4 pt-1">
             {!user && (
               <a
                 href="#top"
                 onClick={go('#top')}
-                className="btn-ghost-brut flex items-center justify-center gap-2"
+                className={cn(menuBtn, 'btn-3d-raise')}
               >
                 <Icon name="Home" size={16} />
                 Главная
               </a>
             )}
             {!user && (
-              <button onClick={toggle} className="btn-ghost-brut flex items-center justify-center gap-2">
+              <button onClick={toggle} className={cn(menuBtn, 'btn-3d-raise')}>
                 <Icon name={theme === 'day' ? 'Moon' : 'Sun'} size={16} />
                 {themeLabel}
               </button>
@@ -517,7 +520,7 @@ const Header = ({ onProfile, room, onPickRoom }: HeaderProps) => {
                 key={l.href}
                 href={l.href}
                 onClick={go(l.href)}
-                className="btn-ghost-brut flex items-center justify-center gap-2"
+                className={cn(menuBtn, 'btn-3d-raise')}
               >
                 <Icon name={l.href === '#etazhi' ? 'Building2' : 'ScrollText'} size={16} />
                 {l.label}
@@ -529,7 +532,7 @@ const Header = ({ onProfile, room, onPickRoom }: HeaderProps) => {
                   setOpen(false);
                   window.dispatchEvent(new Event('chat:support'));
                 }}
-                className="btn-ghost-brut flex items-center justify-center gap-2"
+                className={cn(menuBtn, 'btn-3d-raise')}
               >
                 <Icon name="Mail" size={16} />
                 Письмо в поддержку
@@ -542,7 +545,7 @@ const Header = ({ onProfile, room, onPickRoom }: HeaderProps) => {
                     setOpen(false);
                     window.dispatchEvent(new Event('chat:who'));
                   }}
-                  className="btn-ghost-brut flex items-center justify-center gap-2"
+                  className={cn(menuBtn, 'btn-3d-raise')}
                 >
                   <Icon name="Users" size={16} />
                   Кто в чате
@@ -552,7 +555,7 @@ const Header = ({ onProfile, room, onPickRoom }: HeaderProps) => {
                     setOpen(false);
                     window.dispatchEvent(new Event('chat:clear'));
                   }}
-                  className="btn-ghost-brut flex items-center justify-center gap-2"
+                  className={cn(menuBtn, 'btn-3d-raise')}
                 >
                   <Icon name="Eraser" size={16} />
                   Очистить чат
@@ -564,7 +567,7 @@ const Header = ({ onProfile, room, onPickRoom }: HeaderProps) => {
                       if (user.isAdmin) navigate('/admin?tab=ticker');
                       else openTicker();
                     }}
-                    className="btn-ghost-brut flex items-center justify-center gap-2"
+                    className={cn(menuBtn, 'btn-3d-raise')}
                   >
                     <Icon name="Megaphone" size={16} />
                     Бегущая строка
@@ -580,12 +583,12 @@ const Header = ({ onProfile, room, onPickRoom }: HeaderProps) => {
                     setOpen(false);
                     onProfile();
                   }}
-                  className="btn-ghost-brut"
+                  className={cn(menuBtn, 'btn-3d-raise')}
                 >
                   Профиль — {user.nick}
                 </button>
                 {user.isAdmin && (
-                  <Link to="/admin" onClick={() => setOpen(false)} className="btn-ghost-brut text-center">
+                  <Link to="/admin" onClick={() => setOpen(false)} className={cn(menuBtn, 'btn-3d-raise')}>
                     Комендантская
                   </Link>
                 )}
@@ -594,7 +597,7 @@ const Header = ({ onProfile, room, onPickRoom }: HeaderProps) => {
                     setOpen(false);
                     signOut();
                   }}
-                  className="btn-ghost-brut flex items-center justify-center gap-2 border-primary/60 text-primary"
+                  className={cn(menuBtn, 'btn-3d-raise text-primary')}
                 >
                   <Icon name="LogOut" size={16} />
                   Выйти из общаги
@@ -607,7 +610,7 @@ const Header = ({ onProfile, room, onPickRoom }: HeaderProps) => {
                     setOpen(false);
                     openAuth('login');
                   }}
-                  className="btn-ghost-brut"
+                  className={cn(menuBtn, 'btn-3d-raise')}
                 >
                   Вход
                 </button>
@@ -616,7 +619,7 @@ const Header = ({ onProfile, room, onPickRoom }: HeaderProps) => {
                     setOpen(false);
                     openAuth('register');
                   }}
-                  className="btn-ghost-brut"
+                  className={cn(menuBtn, 'btn-3d-raise')}
                 >
                   Регистрация
                 </button>
