@@ -44,7 +44,7 @@ const Hero = () => {
             the rebirth of a legend
           </p>
           <Facade
-            className="w-full max-w-[436px] xl:-mt-[1.1cm]"
+            className="w-full max-w-[436px] xl:-mt-[1.1cm] short:xl:max-w-[380px]"
             rows={9}
             cellAspect="1/0.68"
             floorCounts={floorCounts}
@@ -57,7 +57,7 @@ const Hero = () => {
         </p>
 
         <div
-          className="animate-rise h-[3px] w-full bg-foreground md:mt-4 xl:mt-[1.85cm] short:xl:mt-[1.2cm]"
+          className="animate-rise h-[3px] w-full bg-foreground md:mt-4 xl:mt-[1.85cm]"
           style={{ animationDelay: '.12s' }}
         />
 
