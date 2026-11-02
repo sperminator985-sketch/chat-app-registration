@@ -735,18 +735,16 @@ const AdminPanel = () => {
             <p className="mb-2 text-[0.7rem] font-bold uppercase tracking-[0.14em] text-muted-foreground">
               Что крутится в строке
             </p>
-            <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
+            <div className="grid grid-cols-2 gap-3 pb-1 pt-1 sm:flex sm:flex-wrap">
               {MODE_OPTIONS.map((m) => (
                 <button
                   key={m.value}
                   onClick={() => changeMode(m.value)}
                   disabled={busy}
                   className={cn(
-                    'border-2 px-3 py-2 text-[0.72rem] font-bold uppercase tracking-[0.08em] transition-colors disabled:opacity-60 sm:order-none',
+                    'btn-3d px-3 py-2 text-[0.72rem] font-bold uppercase tracking-[0.08em] disabled:cursor-default sm:order-none',
                     MODE_ORDER[m.value],
-                    tickerMode === m.value
-                      ? 'border-secondary bg-secondary text-secondary-foreground'
-                      : 'border-foreground/35 text-muted-foreground hover:border-secondary',
+                    tickerMode === m.value ? 'btn-3d-down btn-3d-busy' : 'btn-3d-raise',
                   )}
                 >
                   {m.label}
