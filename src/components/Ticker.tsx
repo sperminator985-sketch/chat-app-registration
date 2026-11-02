@@ -1,5 +1,4 @@
-import { useEffect, useState } from 'react';
-import type { CSSProperties } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useWeather, formatTemp, dayForecastText, tomorrowForecastText, degreeWord } from '@/hooks/use-weather';
 import { useLiveStats } from '@/hooks/use-live-stats';
 import { useNews } from '@/hooks/use-news';
@@ -27,6 +26,10 @@ const isEvening = () => tomskHour() >= 18;
 
 const Ticker = () => {
   const [evening, setEvening] = useState(isEvening);
+  const boxRef = useRef<HTMLDivElement>(null);
+  const trackRef = useRef<HTMLDivElement>(null);
+  const passRef = useRef<HTMLDivElement>(null);
+  const loopRef = useRef({ solo: false, duration: 30 });
 
   useEffect(() => {
     const timer = window.setInterval(() => setEvening(isEvening()), 60000);
@@ -133,30 +136,49 @@ const Ticker = () => {
 
   const items: Line[] = mode === 'news' ? core : mode === 'posts' ? postLines : mixed;
 
-  if (mode === 'off' || items.length === 0) return null;
+  const hidden = mode === 'off' || items.length === 0;
+
+  useEffect(() => {
+    if (hidden) return;
+    const box = boxRef.current;
+    const track = trackRef.current;
+    const pass = passRef.current;
+    if (!box || !track || !pass) return;
+    let raf = 0;
+    let last = 0;
+    let progress = 0;
+    const step = (now: number) => {
+      const { solo: one, duration: dur } = loopRef.current;
+      const dt = last ? Math.min(now - last, 100) : 0;
+      last = now;
+      progress = (progress + dt / (dur * 1000)) % 1;
+      const passW = pass.offsetWidth;
+      const x = one
+        ? box.offsetWidth - progress * (box.offsetWidth + passW)
+        : -progress * passW;
+      track.style.left = `${Math.round(x)}px`;
+      raf = requestAnimationFrame(step);
+    };
+    raf = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(raf);
+  }, [hidden]);
+
+  if (hidden) return null;
 
   const solo = mode === 'posts';
   const chars = items.reduce((sum, t) => sum + t.nick.length + t.text.length + 6, 0);
   const baseDuration = Math.max(18, Math.round((solo ? chars + 90 : chars) / 11));
   const duration = Math.max(6, Math.round((baseDuration * 100) / (speed || 100)));
+  loopRef.current = { solo, duration };
 
   return (
-    <div className="group my-0 overflow-hidden border-y-2 border-foreground/35 bg-card py-2.5 [contain:content] [transform:translateZ(0)] md:py-3">
-      <div
-        className={cn(
-          'flex w-max [backface-visibility:hidden] [contain:layout_paint] [perspective:1000px] [transform:translate3d(0,0,0)] [will-change:transform]',
-          solo ? 'animate-marquee-solo' : 'animate-marquee',
-        )}
-        style={
-          {
-            animationDuration: `${duration}s`,
-            '--marquee-from': '100vw',
-            '--marquee-to': '-100%',
-          } as CSSProperties
-        }
-      >
+    <div
+      ref={boxRef}
+      className="group relative my-0 overflow-hidden border-y-2 border-foreground/35 bg-card py-2.5 md:py-3"
+    >
+      <div ref={trackRef} className="relative flex w-max" style={{ left: solo ? '100%' : 0 }}>
         {(solo ? [0] : [0, 1]).map((pass) => (
-          <div key={pass} className="flex shrink-0">
+          <div key={pass} ref={pass === 0 ? passRef : undefined} className="flex shrink-0">
             {items.map((t, idx) => (
               <span
                 key={`${pass}-${idx}-${t.text}`}
