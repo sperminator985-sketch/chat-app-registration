@@ -48,12 +48,12 @@ const MODE_ORDER: Record<TickerMode, string> = {
 const MODE_OPTIONS: { value: TickerMode; label: string; hint: string }[] = [
   {
     value: 'news',
-    label: 'Только новости',
+    label: 'Новости',
     hint: 'В строке идут городские новости и погода. Объявления жильцов не показываются.',
   },
   {
     value: 'posts',
-    label: 'Только объявления',
+    label: 'Объявления',
     hint: 'В строке идут одобренные объявления жильцов. Если их нет — крутятся обычные надписи.',
   },
   {
