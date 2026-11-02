@@ -658,6 +658,47 @@
       inset 0 3px 4px hsl(0 0% 0% / 0.3),
       inset 0 -1px 2px hsl(0 0% 100% / 0.6);
   }
+
+  .btn-3d {
+    position: relative;
+    border-radius: 6px;
+    border: 1px solid hsl(0 0% 0% / 0.45);
+    transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.2s ease, color 0.2s ease;
+  }
+
+  .btn-3d-up {
+    background: linear-gradient(180deg, hsl(0 0% 100% / 0.45), transparent 50%, hsl(0 0% 0% / 0.15)), hsl(var(--secondary));
+    color: hsl(var(--secondary-foreground));
+    transform: translateY(-2px);
+    box-shadow:
+      0 4px 0 hsl(var(--secondary) / 0.55),
+      0 4px 0 1px hsl(0 0% 0% / 0.45),
+      0 8px 12px hsl(0 0% 0% / 0.45),
+      inset 0 1px 0 hsl(0 0% 100% / 0.6);
+  }
+
+  .btn-3d-up:hover {
+    filter: brightness(1.06);
+  }
+
+  .btn-3d-up:active,
+  .btn-3d-down {
+    transform: translateY(2px);
+    box-shadow:
+      inset 0 3px 6px hsl(0 0% 0% / 0.55),
+      inset 0 -1px 0 hsl(0 0% 100% / 0.12),
+      0 1px 0 hsl(0 0% 100% / 0.1);
+  }
+
+  .btn-3d-down {
+    background: linear-gradient(180deg, hsl(0 0% 0% / 0.25), transparent 60%), hsl(var(--muted));
+    color: hsl(var(--muted-foreground));
+  }
+
+  .btn-3d-busy {
+    background: linear-gradient(180deg, hsl(0 0% 0% / 0.2), transparent 60%), hsl(var(--secondary));
+    color: hsl(var(--secondary-foreground));
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

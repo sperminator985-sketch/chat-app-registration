@@ -788,10 +788,8 @@ const AdminPanel = () => {
                     onClick={applySpeed}
                     disabled={speedBusy || tickerSpeed === appliedSpeed}
                     className={cn(
-                      'flex shrink-0 items-center gap-1.5 border-2 px-3 py-1.5 text-[0.7rem] font-bold uppercase tracking-[0.1em] transition-colors disabled:cursor-default',
-                      tickerSpeed !== appliedSpeed
-                        ? 'border-secondary bg-secondary text-secondary-foreground hover:opacity-90'
-                        : 'border-foreground/35 text-muted-foreground opacity-60',
+                      'btn-3d mt-0.5 flex shrink-0 items-center gap-1.5 px-3.5 py-1.5 text-[0.7rem] font-bold uppercase tracking-[0.1em] disabled:cursor-default',
+                      speedBusy ? 'btn-3d-down btn-3d-busy' : tickerSpeed !== appliedSpeed ? 'btn-3d-up' : 'btn-3d-down',
                     )}
                   >
                     <Icon name={speedBusy ? 'Loader2' : 'Check'} size={14} className={cn(speedBusy && 'animate-spin')} />
