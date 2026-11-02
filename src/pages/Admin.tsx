@@ -561,7 +561,7 @@ const AdminPanel = () => {
               onClick={() => navigate('/')}
               title="Выход"
               aria-label="Выход"
-              className="relative z-10 hidden items-center gap-1.5 border-2 border-foreground/35 px-2.5 py-1 text-[0.72rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground transition-colors hover:border-primary hover:text-primary"
+              className="btn-3d btn-3d-raise relative z-10 hidden items-center gap-1.5 px-2.5 py-1 text-[0.72rem] font-semibold uppercase tracking-[0.1em] hover:text-primary"
             >
               <Icon name="LogOut" size={14} />
               <span>Выйти</span>
@@ -573,22 +573,22 @@ const AdminPanel = () => {
           <span className="pointer-events-none relative hidden basis-full whitespace-nowrap pb-3 text-center after:absolute after:bottom-0 after:left-1/2 after:w-[200vw] after:-translate-x-1/2 after:border-b-2 after:border-foreground/35 after:content-[''] font-display text-lg font-extrabold uppercase tracking-[0.04em] md:order-first md:block">
             Комендантская
           </span>
-          <div className="flex items-center justify-start gap-1 md:order-1 md:gap-2">
+          <div className="flex items-center justify-start gap-1.5 pb-1 pt-0.5 md:order-1 md:gap-2.5">
             <button
               onClick={() => navigate('/')}
               title="Выход"
               aria-label="Выход"
-              className="order-last ml-auto flex items-center border-2 border-foreground/35 px-1.5 py-1.5 text-muted-foreground transition-colors hover:border-primary hover:text-primary md:hidden"
+              className="btn-3d btn-3d-raise order-last ml-auto flex items-center px-1.5 py-1.5 hover:text-primary md:hidden"
             >
               <Icon name="LogOut" size={13} />
             </button>
             <button
               onClick={() => setTab('vault')}
               className={cn(
-                'border-2 px-1.5 py-1.5 text-[0.55rem] font-bold uppercase tracking-[0.02em] transition-colors md:px-3 md:text-[0.72rem] md:tracking-[0.1em]',
+                'btn-3d px-1.5 py-1.5 text-[0.55rem] font-bold uppercase tracking-[0.02em] md:px-3 md:text-[0.72rem] md:tracking-[0.1em]',
                 tab === 'vault'
-                  ? 'border-secondary bg-secondary text-secondary-foreground'
-                  : 'border-foreground/35 text-muted-foreground hover:border-secondary',
+                  ? 'btn-3d-down btn-3d-busy'
+                  : 'btn-3d-raise',
               )}
             >
               Серверная
@@ -596,12 +596,12 @@ const AdminPanel = () => {
             <button
               onClick={() => setTab('security')}
               className={cn(
-                'border-2 px-1.5 py-1.5 text-[0.55rem] font-bold uppercase tracking-[0.02em] transition-colors md:px-3 md:text-[0.72rem] md:tracking-[0.1em]',
+                'btn-3d px-1.5 py-1.5 text-[0.55rem] font-bold uppercase tracking-[0.02em] md:px-3 md:text-[0.72rem] md:tracking-[0.1em]',
                 tab === 'security'
-                  ? 'border-secondary bg-secondary text-secondary-foreground'
+                  ? 'btn-3d-down btn-3d-busy'
                   : alerts > 0
-                    ? 'animate-pulse border-primary bg-primary text-primary-foreground'
-                    : 'border-foreground/35 text-muted-foreground hover:border-secondary',
+                    ? 'btn-3d-alert animate-pulse'
+                    : 'btn-3d-raise',
               )}
             >
               Журнал
@@ -609,10 +609,10 @@ const AdminPanel = () => {
             <button
               onClick={() => setTab('users')}
               className={cn(
-                'border-2 px-1.5 py-1.5 text-[0.55rem] font-bold uppercase tracking-[0.02em] transition-colors md:px-3 md:text-[0.72rem] md:tracking-[0.1em]',
+                'btn-3d px-1.5 py-1.5 text-[0.55rem] font-bold uppercase tracking-[0.02em] md:px-3 md:text-[0.72rem] md:tracking-[0.1em]',
                 tab === 'users'
-                  ? 'border-secondary bg-secondary text-secondary-foreground'
-                  : 'border-foreground/35 text-muted-foreground hover:border-secondary',
+                  ? 'btn-3d-down btn-3d-busy'
+                  : 'btn-3d-raise',
               )}
             >
               Жильцы
@@ -620,10 +620,10 @@ const AdminPanel = () => {
             <button
               onClick={() => setTab('messages')}
               className={cn(
-                'border-2 px-1.5 py-1.5 text-[0.55rem] font-bold uppercase tracking-[0.02em] transition-colors md:px-3 md:text-[0.72rem] md:tracking-[0.1em]',
+                'btn-3d px-1.5 py-1.5 text-[0.55rem] font-bold uppercase tracking-[0.02em] md:px-3 md:text-[0.72rem] md:tracking-[0.1em]',
                 tab === 'messages'
-                  ? 'border-secondary bg-secondary text-secondary-foreground'
-                  : 'border-foreground/35 text-muted-foreground hover:border-secondary',
+                  ? 'btn-3d-down btn-3d-busy'
+                  : 'btn-3d-raise',
               )}
             >
               Сообщения
@@ -631,12 +631,12 @@ const AdminPanel = () => {
             <button
               onClick={() => setTab('ticker')}
               className={cn(
-                'border-2 px-1.5 py-1.5 text-[0.55rem] font-bold uppercase tracking-[0.02em] transition-colors md:px-3 md:text-[0.72rem] md:tracking-[0.1em]',
+                'btn-3d px-1.5 py-1.5 text-[0.55rem] font-bold uppercase tracking-[0.02em] md:px-3 md:text-[0.72rem] md:tracking-[0.1em]',
                 tab === 'ticker'
-                  ? 'border-secondary bg-secondary text-secondary-foreground'
+                  ? 'btn-3d-down btn-3d-busy'
                   : pendingCount > 0
-                    ? 'animate-pulse border-primary bg-primary text-primary-foreground'
-                    : 'border-foreground/35 text-muted-foreground hover:border-secondary',
+                    ? 'btn-3d-alert animate-pulse'
+                    : 'btn-3d-raise',
               )}
             >
               Строка
