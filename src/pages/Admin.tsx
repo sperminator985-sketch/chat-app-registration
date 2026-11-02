@@ -105,7 +105,9 @@ const AdminPanel = () => {
   const [pendingTicker, setPendingTicker] = useState(0);
   const [tickerMode, setTickerMode] = useState<TickerMode>('mix');
   const [tickerSpeed, setTickerSpeed] = useState(100);
-  const speedTimer = useRef<number | null>(null);
+  const [appliedSpeed, setAppliedSpeed] = useState(100);
+  const [speedBusy, setSpeedBusy] = useState(false);
+  const speedDirty = useRef(false);
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [messages, setMessages] = useState<AdminMessage[]>([]);
   const [ticker, setTicker] = useState<AdminTickerPost[]>([]);
@@ -281,7 +283,9 @@ const AdminPanel = () => {
           const m = await api.ticker();
           if (alive) {
             setTickerMode(m.mode ?? 'mix');
-            setTickerSpeed(m.speed && m.speed > 0 ? m.speed : 100);
+            const sp = m.speed && m.speed > 0 ? m.speed : 100;
+            setAppliedSpeed(sp);
+            if (!speedDirty.current) setTickerSpeed(sp);
           }
         } catch {
           // тихо
@@ -319,16 +323,24 @@ const AdminPanel = () => {
     }
   };
 
-  const saveSpeed = async (value: number) => {
+  const pickSpeed = (value: number) => {
     setTickerSpeed(value);
-    if (speedTimer.current) window.clearTimeout(speedTimer.current);
-    speedTimer.current = window.setTimeout(async () => {
-      try {
-        await api.adminTickerSpeed(value);
-      } catch (e) {
-        toast({ title: (e as Error).message, variant: 'destructive' });
-      }
-    }, 600);
+    speedDirty.current = value !== appliedSpeed;
+  };
+
+  const applySpeed = async () => {
+    if (speedBusy || tickerSpeed === appliedSpeed) return;
+    setSpeedBusy(true);
+    try {
+      await api.adminTickerSpeed(tickerSpeed);
+      setAppliedSpeed(tickerSpeed);
+      speedDirty.current = false;
+      toast({ title: `Скорость строки: ${tickerSpeed}%` });
+    } catch (e) {
+      toast({ title: (e as Error).message, variant: 'destructive' });
+    } finally {
+      setSpeedBusy(false);
+    }
   };
 
   const clearSecurity = async () => {
@@ -755,27 +767,49 @@ const AdminPanel = () => {
                   </span>
                   {tickerSpeed !== 100 && (
                     <button
-                      onClick={() => saveSpeed(100)}
+                      onClick={() => pickSpeed(100)}
                       className="text-[0.7rem] font-bold uppercase tracking-[0.08em] text-muted-foreground underline transition-colors hover:text-secondary"
                     >
                       сбросить
                     </button>
                   )}
                 </div>
-                <input
-                  type="range"
-                  min={50}
-                  max={250}
-                  step={10}
-                  value={tickerSpeed}
-                  onChange={(e) => saveSpeed(Number(e.target.value))}
-                  className="range-3d w-full max-w-sm"
-                  style={{ '--fill': `${((tickerSpeed - 50) / 200) * 100}%` } as React.CSSProperties}
-                />
-                <div className="mt-1 flex max-w-sm justify-between text-[0.68rem] uppercase tracking-[0.08em] text-muted-foreground/80">
-                  <span>медленнее</span>
-                  <span>быстрее</span>
+                <div className="flex max-w-lg items-start gap-3">
+                  <div className="min-w-0 flex-1">
+                    <input
+                      type="range"
+                      min={50}
+                      max={250}
+                      step={10}
+                      value={tickerSpeed}
+                      onChange={(e) => pickSpeed(Number(e.target.value))}
+                      className="range-3d w-full"
+                      style={{ '--fill': `${((tickerSpeed - 50) / 200) * 100}%` } as React.CSSProperties}
+                    />
+                    <div className="mt-1 flex justify-between text-[0.68rem] uppercase tracking-[0.08em] text-muted-foreground/80">
+                      <span>медленнее</span>
+                      <span>быстрее</span>
+                    </div>
+                  </div>
+                  <button
+                    onClick={applySpeed}
+                    disabled={speedBusy || tickerSpeed === appliedSpeed}
+                    className={cn(
+                      'flex shrink-0 items-center gap-1.5 border-2 px-3 py-1.5 text-[0.7rem] font-bold uppercase tracking-[0.1em] transition-colors disabled:cursor-default',
+                      tickerSpeed !== appliedSpeed
+                        ? 'border-secondary bg-secondary text-secondary-foreground hover:opacity-90'
+                        : 'border-foreground/35 text-muted-foreground opacity-60',
+                    )}
+                  >
+                    <Icon name={speedBusy ? 'Loader2' : 'Check'} size={14} className={cn(speedBusy && 'animate-spin')} />
+                    Применить
+                  </button>
                 </div>
+                {tickerSpeed !== appliedSpeed && (
+                  <p className="mt-1.5 text-[0.72rem] text-muted-foreground">
+                    Сейчас в строке {appliedSpeed}% — нажмите «Применить», чтобы сохранить.
+                  </p>
+                )}
               </div>
             )}
           </div>
