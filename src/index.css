@@ -426,6 +426,30 @@
     }
   }
 
+  .check-brut {
+    @apply relative h-4 w-4 shrink-0 cursor-pointer appearance-none border-2 border-foreground/50 bg-transparent transition-colors;
+  }
+
+  .check-brut:checked {
+    @apply border-secondary bg-secondary;
+  }
+
+  .check-brut:checked::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 45%;
+    width: 5px;
+    height: 9px;
+    border: solid hsl(var(--secondary-foreground));
+    border-width: 0 2px 2px 0;
+    transform: translate(-50%, -50%) rotate(45deg);
+  }
+
+  .check-brut:focus-visible {
+    @apply outline-none ring-2 ring-secondary ring-offset-2 ring-offset-background;
+  }
+
   .support-close {
     @apply border-2 border-[#2F6BFF] transition-colors;
   }

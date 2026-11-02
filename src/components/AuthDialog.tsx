@@ -598,7 +598,7 @@ const AuthDialog = () => {
                     type="checkbox"
                     checked={remember}
                     onChange={(e) => setRemember(e.target.checked)}
-                    className="h-4 w-4 shrink-0 accent-[hsl(var(--secondary))]"
+                    className="check-brut"
                   />
                   <span className={cn(remember && 'text-foreground')}>Запомнить меня</span>
                 </label>
@@ -717,7 +717,7 @@ const AuthDialog = () => {
                   type="checkbox"
                   checked={agree}
                   onChange={(e) => setAgree(e.target.checked)}
-                  className="mt-0.5 h-4 w-4 accent-[hsl(var(--secondary))]"
+                  className="check-brut mt-0.5"
                 />
                 <span className={cn(agree ? 'text-foreground' : errors.agree ? 'text-primary' : 'text-muted-foreground')}>
                   Правила общаги прочитал. Обещаю соблюдать их как воинский устав.
