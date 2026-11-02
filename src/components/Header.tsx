@@ -347,7 +347,7 @@ const Header = ({ onProfile, room, onPickRoom }: HeaderProps) => {
               target="_blank"
               rel="noopener noreferrer"
               title="Погода в Томске"
-              className="hidden items-center gap-2 border-2 border-foreground/30 px-3 py-1.5 text-[0.76rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground transition-colors hover:border-secondary hover:text-foreground lg:flex"
+              className="hidden items-center gap-2 border-2 border-foreground/30 px-3 py-1.5 text-[0.76rem] font-semibold uppercase tracking-[0.1em] text-muted-foreground transition-colors hover:border-secondary hover:text-foreground xl:flex"
             >
               <Icon
                 name={weatherIcon(temp)}
@@ -368,7 +368,7 @@ const Header = ({ onProfile, room, onPickRoom }: HeaderProps) => {
               rel="noopener noreferrer"
               title={`Сейчас в Томске ${formatTemp(temp)} ${degreeWord(temp)}`}
               aria-label={`Сейчас в Томске ${formatTemp(temp)} ${degreeWord(temp)}`}
-              className="flex h-10 min-w-10 flex-col items-center justify-center gap-0.5 border-2 border-foreground/30 px-1.5 leading-none transition-colors hover:border-secondary lg:hidden"
+              className="flex h-10 min-w-10 flex-col items-center justify-center gap-0.5 border-2 border-foreground/30 px-1.5 leading-none transition-colors hover:border-secondary xl:hidden"
             >
               <Icon
                 name={weatherIcon(temp)}
