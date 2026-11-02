@@ -765,14 +765,6 @@ const AdminPanel = () => {
                   <span className="font-mono text-[0.8rem] font-bold text-secondary">
                     {tickerSpeed}%
                   </span>
-                  {tickerSpeed !== 100 && (
-                    <button
-                      onClick={() => pickSpeed(100)}
-                      className="text-[0.7rem] font-bold uppercase tracking-[0.08em] text-muted-foreground underline transition-colors hover:text-secondary"
-                    >
-                      сбросить
-                    </button>
-                  )}
                 </div>
                 <div className="flex max-w-lg items-start gap-3">
                   <div className="min-w-0 flex-1">
