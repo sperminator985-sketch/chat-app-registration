@@ -13,6 +13,9 @@ import { useTheme, PALETTES } from '@/hooks/use-theme';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useTicker } from '@/hooks/use-ticker';
 
+const navBtn =
+  'btn-3d inline-flex items-center whitespace-nowrap px-2.5 py-1.5 text-[0.72rem] font-semibold uppercase tracking-[0.1em] lg:px-3 lg:text-[0.78rem]';
+
 const guestLinks = [
   { href: '#top', label: 'Главная' },
   { href: '#etazhi', label: 'Этажи' },
@@ -365,13 +368,13 @@ const Header = ({ onProfile, room, onPickRoom }: HeaderProps) => {
         </div>
         )}
 
-        <nav className={cn('hidden items-center md:flex', user ? 'gap-1.5 lg:gap-2' : 'gap-7')}>
+        <nav className={cn('hidden items-center md:flex', user ? 'gap-1.5 lg:gap-2' : 'gap-2 pb-1 pt-0.5 lg:gap-2.5')}>
           {links.map((l) => (
             <a
               key={l.href}
               href={l.href}
               onClick={go(l.href)}
-              className={cn('nav-link', active === l.href && 'nav-link-active')}
+              className={cn(navBtn, active === l.href ? 'btn-3d-down btn-3d-busy' : 'btn-3d-raise')}
             >
               {l.label}
             </a>
@@ -398,13 +401,13 @@ const Header = ({ onProfile, room, onPickRoom }: HeaderProps) => {
             </>
           ) : (
             <>
-              <button type="button" {...press(() => openAuth('login'))} className="nav-link">
+              <button type="button" {...press(() => openAuth('login'))} className={cn(navBtn, 'btn-3d-raise')}>
                 Вход
               </button>
               <button
                 type="button"
                 {...press(() => openAuth('register'))}
-                className="nav-link"
+                className={cn(navBtn, 'btn-3d-raise')}
               >
                 Регистрация
               </button>
