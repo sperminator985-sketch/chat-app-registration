@@ -59,7 +59,7 @@ const AuthDialog = () => {
   const [avatar, setAvatar] = useState<AvatarId>(1);
   const [room, setRoom] = useState(rooms[0].id);
   const [agree, setAgree] = useState(false);
-  const [remember, setRemember] = useState(true);
+  const [remember, setRemember] = useState(false);
   const [showPass, setShowPass] = useState(false);
   const [showPass2, setShowPass2] = useState(false);
   const [uni, setUni] = useState('');
