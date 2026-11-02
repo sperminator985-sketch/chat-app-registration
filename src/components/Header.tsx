@@ -287,10 +287,10 @@ const Header = ({ onProfile, room, onPickRoom }: HeaderProps) => {
         {user && room && onPickRoom ? (
           <>
             <Logo size="sm" iconAsLetter className={cn('hidden shrink-0 md:flex', level >= 5 && 'lg:hidden')} />
-            <div className="flex min-w-0 flex-1 md:justify-center min-[1560px]:hidden">
+            <div className="flex min-w-0 flex-1 md:justify-center lg:flex-initial lg:justify-start min-[1560px]:hidden">
               <FloorMenu room={room} onPick={onPickRoom} className="md:flex-none" />
             </div>
-            <div className="mx-auto hidden min-w-0 items-center gap-2 min-[1560px]:flex" title={`Этаж ${room.floor} · ${room.title}`}>
+            <div className="hidden min-w-0 items-center gap-2 min-[1560px]:flex" title={`Этаж ${room.floor} · ${room.title}`}>
               <Icon name={room.icon} size={20} className="h-4 w-4 shrink-0 text-secondary lg:h-5 lg:w-5" />
               <span ref={titleRef} className="whitespace-nowrap font-display text-[0.7rem] font-extrabold uppercase leading-tight tracking-[-0.03em] truncate text-lg">
                 Этаж {room.floor} · {room.title}
@@ -312,7 +312,7 @@ const Header = ({ onProfile, room, onPickRoom }: HeaderProps) => {
         )}
 
         {user && room && (
-          <div className="hidden shrink-0 items-center gap-2 lg:flex">
+          <div className="hidden flex-1 items-center justify-center gap-2 lg:flex">
             {temp !== null && (
               <a
                 href="https://yandex.ru/pogoda/ru/tomsk"
@@ -339,7 +339,7 @@ const Header = ({ onProfile, room, onPickRoom }: HeaderProps) => {
           <FloorSwitcher
             activeRoom={room.id}
             onPick={onPickRoom}
-            className="hidden lg:mx-auto min-[1560px]:flex"
+            className="hidden min-[1560px]:flex"
           />
         )}
 
