@@ -9,6 +9,7 @@ import { nickColorClass } from '@/data/chat';
 import type { NickColor } from '@/data/chat';
 import type { TickerLine } from '@/lib/api';
 import { cn } from '@/lib/utils';
+import { isWeakGpu } from '@/lib/gpu';
 
 const base = [
   'КТО ИДЁТ ЗА ХЛЕБОМ',
@@ -144,6 +145,9 @@ const Ticker = () => {
     const track = trackRef.current;
     const pass = passRef.current;
     if (!box || !track || !pass) return;
+    const cpuOnly = isWeakGpu();
+    track.style.left = '0px';
+    track.style.willChange = cpuOnly ? '' : 'transform';
     let raf = 0;
     let last = 0;
     let progress = 0;
@@ -156,11 +160,16 @@ const Ticker = () => {
       const x = one
         ? box.offsetWidth - progress * (box.offsetWidth + passW)
         : -progress * passW;
-      track.style.left = `${Math.round(x)}px`;
+      if (cpuOnly) track.style.left = `${Math.round(x)}px`;
+      else track.style.transform = `translate3d(${x.toFixed(2)}px,0,0)`;
       raf = requestAnimationFrame(step);
     };
     raf = requestAnimationFrame(step);
-    return () => cancelAnimationFrame(raf);
+    return () => {
+      cancelAnimationFrame(raf);
+      track.style.transform = '';
+      track.style.willChange = '';
+    };
   }, [hidden]);
 
   if (hidden) return null;
@@ -176,7 +185,7 @@ const Ticker = () => {
       ref={boxRef}
       className="group relative my-0 overflow-hidden border-y-2 border-foreground/35 bg-card py-2.5 md:py-3"
     >
-      <div ref={trackRef} className="relative flex w-max" style={{ left: solo ? '100%' : 0 }}>
+      <div ref={trackRef} className="relative flex w-max">
         {(solo ? [0] : [0, 1]).map((pass) => (
           <div key={pass} ref={pass === 0 ? passRef : undefined} className="flex shrink-0">
             {items.map((t, idx) => (
